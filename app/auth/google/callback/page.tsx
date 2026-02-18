@@ -1,13 +1,14 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">(
-    "loading"
+    "loading",
   );
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -34,7 +35,6 @@ export default function GoogleCallbackPage() {
           return;
         }
 
-        // เก็บข้อมูลลง localStorage
         const userData = {
           userId: userId ? parseInt(userId) : null,
           email: email,
@@ -51,13 +51,11 @@ export default function GoogleCallbackPage() {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("userType", "user");
 
-        // แจ้ง component อื่นๆ ว่า login แล้ว
         window.dispatchEvent(new Event("storage"));
         window.dispatchEvent(new Event("userStatusChanged"));
 
         setStatus("success");
 
-        // redirect ไปหน้าแรก
         setTimeout(() => {
           window.location.href = "/";
         }, 1500);
@@ -82,7 +80,6 @@ export default function GoogleCallbackPage() {
             <p className="text-gray-500">กรุณารอสักครู่</p>
           </>
         )}
-
         {status === "success" && (
           <>
             <div className="text-6xl mb-6">✅</div>
@@ -92,7 +89,6 @@ export default function GoogleCallbackPage() {
             <p className="text-gray-500">กำลังพาคุณไปหน้าหลัก...</p>
           </>
         )}
-
         {status === "error" && (
           <>
             <div className="text-6xl mb-6">❌</div>
@@ -110,5 +106,13 @@ export default function GoogleCallbackPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GoogleCallbackContent />
+    </Suspense>
   );
 }
