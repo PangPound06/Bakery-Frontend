@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
@@ -17,7 +18,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // โหลดข้อมูลที่บันทึกไว้ + ตรวจ error จาก Google callback
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     const savedPassword = localStorage.getItem("rememberedPassword");
@@ -31,7 +31,6 @@ export default function LoginPage() {
       }));
     }
 
-    // ตรวจสอบ error จาก Google OAuth redirect
     const googleError = searchParams.get("error");
     if (googleError) {
       setError(decodeURIComponent(googleError));
@@ -80,7 +79,6 @@ export default function LoginPage() {
         throw new Error(data.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       }
 
-      // จัดการ "จดจำฉันไว้"
       if (formData.rememberMe) {
         localStorage.setItem("rememberedEmail", formData.email);
         localStorage.setItem("rememberedPassword", formData.password);
@@ -217,9 +215,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {loading ? "🔄 กำลังเข้าสู่ระบบ..." : "🔓 เข้าสู่ระบบ"}
             </button>
@@ -231,14 +227,11 @@ export default function LoginPage() {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
-          {/* Google Login Button */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
-            className={`w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${
-              googleLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${googleLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {googleLoading ? (
               <>
@@ -293,5 +286,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
