@@ -332,6 +332,7 @@ export default function CheckoutPage() {
       setError(validation.reason || "รูปภาพไม่ถูกต้อง");
       setSlipValid(false);
     } else {
+      setError("");
       setSlipValid(true);
     }
   };
