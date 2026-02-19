@@ -74,7 +74,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart", {
+      const response = await fetch("http://localhost:8080/api/cart", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -103,7 +103,7 @@ export default function CheckoutPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/payment/promptpay/generate",
+        "http://localhost:8080/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -332,7 +332,6 @@ export default function CheckoutPage() {
       setError(validation.reason || "รูปภาพไม่ถูกต้อง");
       setSlipValid(false);
     } else {
-      setError("");
       setSlipValid(true);
     }
   };
@@ -345,19 +344,10 @@ export default function CheckoutPage() {
       const formData = new FormData();
       formData.append("file", slipFile);
 
-      // อัพโหลดสลิปไปยัง backend ซึ่งจะทำการอัพโหลดต่อไปยัง Cloudinary และคืน URL ของรูปภาพกลับมา
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image", {
+      const response = await fetch("http://localhost:8080/api/slip/upload", {
         method: "POST",
         body: formData,
       });
-
-      // ค่อยแก้เป็นแบบ http://localhost:8080/api/upload/image เมื่อรันในเครื่อง และแก้ URL ใน WebConfig.java ด้วย
-      /*
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image", {
-        method: "POST",
-        body: formData,
-      });
-      */
 
       const data = await response.json();
 
@@ -417,7 +407,7 @@ export default function CheckoutPage() {
       const [expMonth, expYear] = cardData.expiry.split("/");
 
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/payment/card/charge",
+        "http://localhost:8080/api/payment/card/charge",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -516,7 +506,7 @@ export default function CheckoutPage() {
         paymentStatus = "paid";
       }
 
-      const orderResponse = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders", {
+      const orderResponse = await fetch("http://localhost:8080/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -551,7 +541,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart/clear", {
+      await fetch("http://localhost:8080/api/cart/clear", {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
