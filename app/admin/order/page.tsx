@@ -68,7 +68,9 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders/all");
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
+      );
       if (response.ok) {
         const data = await response.json();
         setOrders(data);
@@ -476,12 +478,12 @@ export default function AdminOrdersPage() {
                           </span>
                           {order.slipImage && (
                             <button
-                              onClick={() =>
-                                setSlipModal(
-                                  //`https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`,
-                                  order.slipImage,
-                                )
-                              }
+                              onClick={() => {
+                                const url = order.slipImage.startsWith("http")
+                                  ? order.slipImage // Cloudinary URL ใหม่
+                                  : `https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`; // Path เก่า
+                                setSlipModal(url);
+                              }}
                               className="block text-xs text-blue-600 hover:underline"
                             >
                               🧾 ดูสลิป
@@ -692,12 +694,12 @@ export default function AdminOrdersPage() {
                   </div>
                   {selectedOrder.slipImage && (
                     <button
-                      onClick={() =>
-                        setSlipModal(
-                          //`https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`,
-                          selectedOrder.slipImage,
-                        )
-                      }
+                      onClick={() => {
+                        const url = selectedOrder.slipImage.startsWith("http")
+                          ? selectedOrder.slipImage // Cloudinary URL ใหม่
+                          : `https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`; // Path เก่า
+                        setSlipModal(url);
+                      }}
                       className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium w-full"
                     >
                       🧾 ดูสลิปการโอนเงิน
