@@ -349,7 +349,7 @@ export default function CheckoutPage() {
       // 1. ดึง Token จาก localStorage
       const token = localStorage.getItem("token");
 
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload/image", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload", {
         method: "POST",
         // 2. แนบ Header ยืนยันตัวตนเข้าไป
         headers: {
