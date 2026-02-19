@@ -336,23 +336,32 @@ export default function CheckoutPage() {
     }
   };
 
-  const uploadSlip = async (): Promise<string | null> => {
+ const uploadSlip = async (): Promise<string | null> => {
     if (!slipFile) return null;
 
     setUploadingSlip(true);
     try {
       const formData = new FormData();
+      // หมายเหตุ: ตรวจสอบให้แน่ใจว่า Backend ของคุณรับค่าตัวแปรชื่อ 'file' หรือไม่ 
+      // (บางระบบอาจใช้ชื่อ 'image', 'slip' ฯลฯ หาก Backend ใช้ชื่ออื่น ต้องแก้ตรงนี้ให้ตรงกันครับ)
       formData.append("file", slipFile);
 
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload/image", {
+      // 1. ดึง Token จาก localStorage
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image", {
         method: "POST",
+        // 2. แนบ Header ยืนยันตัวตนเข้าไป
+        headers: {
+          Authorization: `Bearer ${token}` 
+        },
         body: formData,
       });
 
       const data = await response.json();
 
       if (data.success) {
-        return data.path;
+        return data.path; // ถ้าสำเร็จ ส่ง path กลับไปให้ handlePayment ไปทำงานต่อ
       } else {
         setError(data.message || "อัพโหลดสลิปไม่สำเร็จ");
         return null;
