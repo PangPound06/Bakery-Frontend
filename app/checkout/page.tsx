@@ -346,7 +346,7 @@ export default function CheckoutPage() {
       formData.append("file", slipFile);
 
       // อัพโหลดสลิปไปยัง backend ซึ่งจะทำการอัพโหลดต่อไปยัง Cloudinary และคืน URL ของรูปภาพกลับมา
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image/image", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image", {
         method: "POST",
         body: formData,
       });
