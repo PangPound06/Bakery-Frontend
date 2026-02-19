@@ -478,7 +478,8 @@ export default function AdminOrdersPage() {
                             <button
                               onClick={() =>
                                 setSlipModal(
-                                  `https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`,
+                                  //`https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`,
+                                  order.slipImage,
                                 )
                               }
                               className="block text-xs text-blue-600 hover:underline"
@@ -693,7 +694,8 @@ export default function AdminOrdersPage() {
                     <button
                       onClick={() =>
                         setSlipModal(
-                          `https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`,
+                          //`https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`,
+                          selectedOrder.slipImage,
                         )
                       }
                       className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium w-full"
