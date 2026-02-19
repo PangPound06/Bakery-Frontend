@@ -36,7 +36,7 @@ export default function FavoritesPage() {
 
       const userId = user.id || user.userId;
       const response = await fetch(
-        `http://localhost:8080/api/favorites/user/${userId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/favorites/user/${userId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -55,7 +55,7 @@ export default function FavoritesPage() {
       const userId = user.id || user.userId;
 
       const response = await fetch(
-        `http://localhost:8080/api/favorites/${userId}/${productId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/favorites/${userId}/${productId}`,
         { method: "DELETE" },
       );
       const data = await response.json();
@@ -72,7 +72,7 @@ export default function FavoritesPage() {
   const addToCart = async (item: FavoriteItem) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/cart/add", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export default function FavoritesPage() {
   const getImageUrl = (img: string) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:8080${img}`;
+    return `https://bakery-backend-production-6fc9.up.railway.app${img}`;
   };
 
   return (

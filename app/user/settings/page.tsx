@@ -80,7 +80,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:8080/api/auth/user/${user.userId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/auth/user/${user.userId}`,
         {
           method: "PUT",
           headers: {

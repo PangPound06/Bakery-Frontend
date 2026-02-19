@@ -56,14 +56,14 @@ export default function ReportsPage() {
 
   const fetchReportData = async () => {
     try {
-      const ordersRes = await fetch("http://localhost:8080/api/orders/all");
+      const ordersRes = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders/all");
       if (ordersRes.ok) {
         const ordersData: Order[] = await ordersRes.json();
         const ordersWithItems: OrderWithItems[] = await Promise.all(
           ordersData.map(async (order) => {
             try {
               const detailRes = await fetch(
-                `http://localhost:8080/api/orders/${order.id}`,
+                `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${order.id}`,
               );
               if (detailRes.ok) {
                 const detail = await detailRes.json();

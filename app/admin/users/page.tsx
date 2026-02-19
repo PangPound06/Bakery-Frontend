@@ -34,7 +34,7 @@ export default function UserManagementPage() {
   const fetchAdmins = async () => {
     try {
       // ✅ ใช้ API ใหม่: /api/admin/list
-      const response = await fetch("http://localhost:8080/api/admin/list");
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/admin/list");
       const data = await response.json();
       setAdmins(data);
     } catch (err) {
@@ -115,7 +115,7 @@ export default function UserManagementPage() {
       if (editingAdmin) {
         // ✅ แก้ไข Admin: PUT /api/admin/{id}
         response = await fetch(
-          `http://localhost:8080/api/admin/${editingAdmin.id}`,
+          `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${editingAdmin.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -128,7 +128,7 @@ export default function UserManagementPage() {
         );
       } else {
         // ✅ เพิ่ม Admin ใหม่: POST /api/admin/register
-        response = await fetch("http://localhost:8080/api/admin/register", {
+        response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/admin/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -160,7 +160,7 @@ export default function UserManagementPage() {
     try {
       // ✅ ใช้ API ใหม่: PUT /api/admin/{id}/toggle-status
       const response = await fetch(
-        `http://localhost:8080/api/admin/${admin.id}/toggle-status`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${admin.id}/toggle-status`,
         { method: "PUT" }
       );
       const data = await response.json();
@@ -184,7 +184,7 @@ export default function UserManagementPage() {
     try {
       // ✅ ใช้ API ใหม่: DELETE /api/admin/{id}
       const response = await fetch(
-        `http://localhost:8080/api/admin/${admin.id}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${admin.id}`,
         { method: "DELETE" }
       );
       const data = await response.json();

@@ -59,7 +59,7 @@ export default function HomePage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/products");
+      const res = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products");
       if (res.ok) {
         const data = await res.json();
         const fmt = data.map((item: any) => ({
@@ -78,7 +78,7 @@ export default function HomePage() {
 
   const handleStockUpdate = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/products");
+      const res = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products");
       if (res.ok) {
         const data = await res.json();
         const fmt = data.map((item: any) => ({

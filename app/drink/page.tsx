@@ -23,7 +23,7 @@ export default function DrinkPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/products/category/drink");
+        const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products/category/drink");
         if (response.ok) {
           const data = await response.json();
           setProducts(data.map((item: any) => ({

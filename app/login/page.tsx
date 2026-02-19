@@ -49,7 +49,7 @@ function LoginContent() {
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     setError("");
-    window.location.href = "http://localhost:8080/api/auth/google";
+    window.location.href = "https://bakery-backend-production-6fc9.up.railway.app/api/auth/google";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +64,7 @@ function LoginContent() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

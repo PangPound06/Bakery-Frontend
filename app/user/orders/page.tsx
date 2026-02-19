@@ -53,7 +53,7 @@ export default function OrdersPage() {
       if (!user.email) return;
 
       const response = await fetch(
-        `http://localhost:8080/api/orders/user/${user.email}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/user/${user.email}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -70,7 +70,7 @@ export default function OrdersPage() {
     setLoadingDetail(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/orders/${orderId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -91,7 +91,7 @@ export default function OrdersPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/orders/${orderId}/cancel`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}/cancel`,
         { method: "PUT" },
       );
       const data = await response.json();

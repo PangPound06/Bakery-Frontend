@@ -46,7 +46,7 @@ export default function ProductDetail({
       if (!userId) return;
 
       const response = await fetch(
-        `http://localhost:8080/api/favorites/check/${userId}/${productId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/favorites/check/${userId}/${productId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -73,7 +73,7 @@ export default function ProductDetail({
     setTogglingFav(true);
     try {
       const response = await fetch(
-        "http://localhost:8080/api/favorites/toggle",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/favorites/toggle",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -106,7 +106,7 @@ export default function ProductDetail({
         // ดึงสินค้าทั้งหมดในหมวดนี้ แล้วหาจากชื่อ
         const productName = decodeURIComponent(params.name as string);
         const response = await fetch(
-          `http://localhost:8080/api/products/category/${category}`,
+          `https://bakery-backend-production-6fc9.up.railway.app/api/products/category/${category}`,
         );
 
         if (response.ok) {
@@ -148,7 +148,7 @@ export default function ProductDetail({
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/cart/add", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

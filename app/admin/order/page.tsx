@@ -68,7 +68,7 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/orders/all");
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders/all");
       if (response.ok) {
         const data = await response.json();
         setOrders(data);
@@ -84,7 +84,7 @@ export default function AdminOrdersPage() {
     setLoadingDetail(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/orders/${orderId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -112,7 +112,7 @@ export default function AdminOrdersPage() {
       if (paymentStatus) body.paymentStatus = paymentStatus;
 
       const response = await fetch(
-        `http://localhost:8080/api/orders/${orderId}/status`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}/status`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -147,7 +147,7 @@ export default function AdminOrdersPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/orders/${orderId}/cancel`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}/cancel`,
         { method: "PUT" },
       );
       const data = await response.json();
@@ -478,7 +478,7 @@ export default function AdminOrdersPage() {
                             <button
                               onClick={() =>
                                 setSlipModal(
-                                  `http://localhost:8080${order.slipImage}`,
+                                  `https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`,
                                 )
                               }
                               className="block text-xs text-blue-600 hover:underline"
@@ -693,7 +693,7 @@ export default function AdminOrdersPage() {
                     <button
                       onClick={() =>
                         setSlipModal(
-                          `http://localhost:8080${selectedOrder.slipImage}`,
+                          `https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`,
                         )
                       }
                       className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium w-full"

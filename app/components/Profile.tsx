@@ -55,7 +55,7 @@ export default function ProfilePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/user/profile', {
+      const response = await fetch('https://bakery-backend-production-6fc9.up.railway.app/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

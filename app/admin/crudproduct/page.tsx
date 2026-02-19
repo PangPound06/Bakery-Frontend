@@ -70,7 +70,7 @@ export default function CrudProductPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/products");
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products");
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -170,7 +170,7 @@ export default function CrudProductPage() {
       formDataUpload.append("file", file);
 
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/upload/image", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formDataUpload,
@@ -227,8 +227,8 @@ export default function CrudProductPage() {
       const token = localStorage.getItem("token");
       const url =
         modalMode === "create"
-          ? "http://localhost:8080/api/products"
-          : `http://localhost:8080/api/products/${selectedProduct?.id}`;
+          ? "https://bakery-backend-production-6fc9.up.railway.app/api/products"
+          : `https://bakery-backend-production-6fc9.up.railway.app/api/products/${selectedProduct?.id}`;
 
       const method = modalMode === "create" ? "POST" : "PUT";
 
@@ -264,7 +264,7 @@ export default function CrudProductPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+      const response = await fetch(`https://bakery-backend-production-6fc9.up.railway.app/api/products/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

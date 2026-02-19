@@ -44,7 +44,7 @@ export default function ProfilePage() {
   const fetchProfile = async (userId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/profile/${userId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -70,7 +70,7 @@ export default function ProfilePage() {
     try {
       const userId = user.id || user.userId;
       const response = await fetch(
-        `http://localhost:8080/api/profile/${userId}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

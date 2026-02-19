@@ -74,7 +74,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await fetch("http://localhost:8080/api/cart", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -103,7 +103,7 @@ export default function CheckoutPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/payment/promptpay/generate",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
       const formData = new FormData();
       formData.append("file", slipFile);
 
-      const response = await fetch("http://localhost:8080/api/slip/upload", {
+      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload", {
         method: "POST",
         body: formData,
       });
@@ -407,7 +407,7 @@ export default function CheckoutPage() {
       const [expMonth, expYear] = cardData.expiry.split("/");
 
       const response = await fetch(
-        "http://localhost:8080/api/payment/card/charge",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/payment/card/charge",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -506,7 +506,7 @@ export default function CheckoutPage() {
         paymentStatus = "paid";
       }
 
-      const orderResponse = await fetch("http://localhost:8080/api/orders", {
+      const orderResponse = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -541,7 +541,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      await fetch("http://localhost:8080/api/cart/clear", {
+      await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart/clear", {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

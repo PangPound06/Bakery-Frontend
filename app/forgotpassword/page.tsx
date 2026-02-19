@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/auth/forgot-password",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/forgot-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/auth/verify-otp",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/verify-otp",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/auth/reset-password",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/reset-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -205,7 +205,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/auth/resend-otp",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/resend-otp",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

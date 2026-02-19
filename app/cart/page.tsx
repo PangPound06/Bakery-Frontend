@@ -28,7 +28,7 @@ export default function CartPage() {
   const [updating, setUpdating] = useState<number | null>(null);
   const router = useRouter();
 
-  const API_URL = "http://localhost:8080/api/cart";
+  const API_URL = "https://bakery-backend-production-6fc9.up.railway.app/api/cart";
 
   const getToken = () => {
     if (typeof window !== "undefined") {

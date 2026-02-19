@@ -23,7 +23,7 @@ export default function BakeryPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/products/category/bakery");
+        const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products/category/bakery");
         if (response.ok) {
           const data = await response.json();
           setProducts(data.map((item: any) => ({
