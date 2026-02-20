@@ -7,9 +7,11 @@ export default function CheckoutSuccessPage() {
   const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
-    // สร้าง Order ID แบบสุ่ม
-    const id = "ORD" + Date.now().toString().slice(-8);
-    setOrderId(id);
+    const lastOrderId = localStorage.getItem("lastOrderId");
+    if (lastOrderId) {
+      const id = "ORD" + String(lastOrderId).padStart(8, "0");
+      setOrderId(id);
+    }
   }, []);
 
   return (
