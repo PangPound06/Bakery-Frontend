@@ -56,7 +56,9 @@ export default function ReportsPage() {
 
   const fetchReportData = async () => {
     try {
-      const ordersRes = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders/all");
+      const ordersRes = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
+      );
       if (ordersRes.ok) {
         const ordersData: Order[] = await ordersRes.json();
         const ordersWithItems: OrderWithItems[] = await Promise.all(
@@ -140,6 +142,7 @@ export default function ReportsPage() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Bangkok", // ← เพิ่มบรรทัดนี้
     });
   };
 

@@ -174,10 +174,11 @@ export default function OrdersPage() {
     const date = new Date(dateStr);
     return date.toLocaleDateString("th-TH", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Bangkok", // ← เพิ่มบรรทัดนี้
     });
   };
 

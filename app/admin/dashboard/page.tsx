@@ -41,7 +41,9 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       // ดึงข้อมูลสินค้า
-      const productsRes = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products");
+      const productsRes = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/products",
+      );
       if (productsRes.ok) {
         const products = await productsRes.json();
         setTotalProducts(products.length);
@@ -51,14 +53,18 @@ export default function AdminDashboard() {
       }
 
       // ดึงข้อมูล Orders จริง
-      const ordersRes = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders/all");
+      const ordersRes = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
+      );
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
         setOrders(ordersData);
       }
 
       // ดึงข้อมูล Users จริง
-      const usersRes = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/auth/users");
+      const usersRes = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/users",
+      );
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         setTotalUsers(usersData.length);
@@ -152,10 +158,12 @@ export default function AdminDashboard() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("th-TH", {
+      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Bangkok", // ← เพิ่มบรรทัดนี้
     });
   };
 
