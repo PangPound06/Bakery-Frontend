@@ -91,7 +91,7 @@ export default function SettingsPage() {
             currentPassword: passwordData.currentPassword, // ✅ ส่งรหัสเดิมไปตรวจสอบ
             password: passwordData.newPassword,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -130,15 +130,39 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (
-      confirm(
-        "⚠️ คุณแน่ใจหรือไม่ที่จะลบบัญชี?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!"
+      !confirm(
+        "⚠️ คุณแน่ใจหรือไม่ที่จะลบบัญชี?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้!",
       )
-    ) {
-      if (confirm("ยืนยันอีกครั้ง: ลบบัญชีถาวร?")) {
-        alert("ฟีเจอร์นี้ยังไม่พร้อมใช้งาน กรุณาติดต่อ support@mybakery.com");
+    )
+      return;
+    if (!confirm("ยืนยันอีกครั้ง: ลบบัญชีถาวร?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/auth/user/${user.id || user.userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        alert("ลบบัญชีสำเร็จ");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userType");
+        localStorage.removeItem("userSettings");
+        window.dispatchEvent(new Event("userStatusChanged"));
+        router.push("/");
+      } else {
+        alert(data.message || "ไม่สามารถลบบัญชีได้");
       }
+    } catch (err) {
+      alert("ไม่สามารถเชื่อมต่อ Server ได้");
     }
   };
 
