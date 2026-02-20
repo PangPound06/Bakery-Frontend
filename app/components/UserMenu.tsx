@@ -70,7 +70,7 @@ export default function UserMenu({ user }: UserMenuProps) {
     { href: "/user/profile", label: "ข้อมูลส่วนตัว", icon: "profile" },
     { href: "/user/orders", label: "รายการสั่งซื้อ", icon: "orders" },
     {
-      href: "/user/profile/search-order",
+      href: "/user/search-order",
       label: "ค้นหาคำสั่งซื้อ",
       icon: "search",
     },
