@@ -51,6 +51,12 @@ const userPages = [
     ],
   },
   {
+    href: "/user/search-order",
+    label: "ค้นหาคำสั่งซื้อ",
+    icon: "🔍",
+    keywords: ["search order", "ค้นหาคำสั่งซื้อ", "ORD", "หมายเลขคำสั่งซื้อ", "ติดตามคำสั่งซื้อ"],
+  },
+  {
     href: "/user/favorites",
     label: "รายการโปรด",
     icon: "❤️",

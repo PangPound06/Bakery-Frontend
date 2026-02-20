@@ -206,6 +206,12 @@ export default function SettingsPage() {
                   <span>📋</span> รายการสั่งซื้อ
                 </Link>
                 <Link
+                  href="/user/search-order"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>🔍</span> ค้นหาคำสั่งซื้อ
+                </Link>
+                <Link
                   href="/user/favorites"
                   className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
                 >
