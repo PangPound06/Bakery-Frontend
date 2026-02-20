@@ -70,7 +70,9 @@ export default function CrudProductPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products");
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/products",
+      );
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -170,11 +172,14 @@ export default function CrudProductPage() {
       formDataUpload.append("file", file);
 
       const token = localStorage.getItem("token");
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/upload/image", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formDataUpload,
-      });
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/upload/image",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formDataUpload,
+        },
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -243,7 +248,7 @@ export default function CrudProductPage() {
 
       if (response.ok) {
         alert(
-          modalMode === "create" ? "เพิ่มสินค้าสำเร็จ!" : "แก้ไขสินค้าสำเร็จ!"
+          modalMode === "create" ? "เพิ่มสินค้าสำเร็จ!" : "แก้ไขสินค้าสำเร็จ!",
         );
         fetchProducts();
         closeModal();
@@ -264,10 +269,13 @@ export default function CrudProductPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://bakery-backend-production-6fc9.up.railway.app/api/products/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/products/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (response.ok) {
         alert("ลบสินค้าสำเร็จ!");
@@ -669,17 +677,44 @@ export default function CrudProductPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     ประเภท *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.type}
                     onChange={(e) =>
                       setFormData({ ...formData, type: e.target.value })
                     }
                     disabled={modalMode === "view"}
-                    required
-                    placeholder="เช่น Cupcake, Cookie"
                     className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
-                  />
+                  >
+                    <option value="">-- เลือกประเภท --</option>
+                    {formData.category === "bakery" && (
+                      <>
+                        <option value="Brownie">Brownie</option>
+                        <option value="Cookie">Cookie</option>
+                        <option value="Cupcake">Cupcake</option>
+                        <option value="Muffin">Muffin</option>
+                        <option value="Pastry">Pastry</option>
+                        <option value="Sweet Roll">Sweet Roll</option>
+                      </>
+                    )}
+                    {formData.category === "cake" && (
+                      <>
+                        <option value="Chocolate">Chocolate</option>
+                        <option value="Cheesecake">Cheesecake</option>
+                        <option value="Crape">Crape</option>
+                        <option value="Fruit">Fruit</option>
+                        <option value="Special">Special</option>
+                      </>
+                    )}
+                    {formData.category === "drink" && (
+                      <>
+                        <option value="Chocolate">Chocolate</option>
+                        <option value="Coffee">Coffee</option>
+                        <option value="Juice">Juice</option>
+                        <option value="Tea">Tea</option>
+                        <option value="Smoothie">Smoothie</option>
+                      </>
+                    )}
+                  </select>
                 </div>
               </div>
 
