@@ -54,7 +54,13 @@ const userPages = [
     href: "/user/search-order",
     label: "ค้นหาคำสั่งซื้อ",
     icon: "🔍",
-    keywords: ["search order", "ค้นหาคำสั่งซื้อ", "ORD", "หมายเลขคำสั่งซื้อ", "ติดตามคำสั่งซื้อ"],
+    keywords: [
+      "search order",
+      "ค้นหาคำสั่งซื้อ",
+      "ORD",
+      "หมายเลขคำสั่งซื้อ",
+      "ติดตามคำสั่งซื้อ",
+    ],
   },
   {
     href: "/user/favorites",
@@ -165,7 +171,9 @@ export default function Header() {
     if (isAdmin) return;
     const fetchProducts = async () => {
       try {
-        const res = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/products");
+        const res = await fetch(
+          "https://bakery-backend-production-6fc9.up.railway.app/api/products",
+        );
         if (res.ok) {
           const data = await res.json();
           setAllProducts(
@@ -244,7 +252,18 @@ export default function Header() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // ถ้ามี page result ตรง category → ไปหน้า category
+
+    // ถ้าพิมพ์ ORD... → ไปหน้าค้นหาคำสั่งซื้อเลย
+    if (searchQuery.trim().toUpperCase().startsWith("ORD")) {
+      setSearchQuery("");
+      setShowResults(false);
+      setShowSearch(false);
+      router.push(
+        `/user/profile/search-order?q=${searchQuery.trim().toUpperCase()}`,
+      );
+      return;
+    }
+
     if (pageResults.length > 0) {
       handlePageSelect(pageResults[0]);
     } else if (searchResults.length > 0) {

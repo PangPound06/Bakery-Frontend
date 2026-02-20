@@ -39,8 +39,13 @@ export default function SearchOrderPage() {
     setOrder(null);
 
     try {
+      const numericPart = searchInput
+        .trim()
+        .replace("ORD", "")
+        .replace(/^0+/, "");
+
       const res = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/search/${searchInput.trim()}`,
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/search/${numericPart}`,
       );
       const data = await res.json();
 
