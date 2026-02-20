@@ -134,7 +134,7 @@ export default function CrudProductPage() {
     setFormData((prev) => ({
       ...prev,
       stockQuantity: newStock,
-      isAvailable: newStock > 0 ? prev.isAvailable : false,
+      isAvailable: newStock > 0,
     }));
   };
 
@@ -226,7 +226,7 @@ export default function CrudProductPage() {
       const dataToSubmit = {
         ...formData,
         image: imageUrl,
-        isAvailable: formData.stockQuantity > 0 ? formData.isAvailable : false,
+        isAvailable: formData.stockQuantity > 0,
       };
 
       const token = localStorage.getItem("token");
@@ -854,33 +854,6 @@ export default function CrudProductPage() {
                   rows={3}
                   className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 resize-none"
                 />
-              </div>
-
-              {/* isAvailable */}
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="isAvailable"
-                  checked={formData.isAvailable}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isAvailable: e.target.checked })
-                  }
-                  disabled={
-                    modalMode === "view" || formData.stockQuantity === 0
-                  }
-                  className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500 disabled:opacity-50"
-                />
-                <label
-                  htmlFor="isAvailable"
-                  className={`font-medium ${formData.stockQuantity === 0 ? "text-gray-400" : "text-gray-700"}`}
-                >
-                  พร้อมขาย
-                </label>
-                {formData.stockQuantity === 0 && (
-                  <span className="text-xs text-red-500">
-                    (ไม่สามารถเปิดขายได้เมื่อ stock หมด)
-                  </span>
-                )}
               </div>
 
               {/* Buttons */}
