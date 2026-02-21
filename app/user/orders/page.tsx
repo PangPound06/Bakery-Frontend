@@ -312,7 +312,7 @@ export default function OrdersPage() {
                         <span className="text-2xl">{status.icon}</span>
                         <div>
                           <p className="font-semibold text-gray-800">
-                            คำสั่งซื้อ #{order.id}
+                            คำสั่งซื้อ #ORD{String(order.id).padStart(8, "0")}
                           </p>
                           <p className="text-xs text-gray-500">
                             {formatDate(order.createdAt)}

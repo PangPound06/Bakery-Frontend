@@ -552,7 +552,7 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
-                📋 คำสั่งซื้อ #{selectedOrder.id}
+                📋 คำสั่งซื้อ #ORD{String(selectedOrder.id).padStart(8, "0")}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}
