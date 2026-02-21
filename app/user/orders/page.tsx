@@ -41,7 +41,7 @@ export default function OrdersPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
     fetchOrders();

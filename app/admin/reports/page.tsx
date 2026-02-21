@@ -44,11 +44,11 @@ export default function ReportsPage() {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
         alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
-        router.push("/");
+        router.replace("/");
         return;
       }
     } else {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
     fetchReportData();

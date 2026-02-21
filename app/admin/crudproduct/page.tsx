@@ -49,7 +49,7 @@ export default function CrudProductPage() {
 
     if (!token || !userData) {
       alert("กรุณาเข้าสู่ระบบ");
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
@@ -57,11 +57,11 @@ export default function CrudProductPage() {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
         alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
-        router.push("/");
+        router.replace("/");
         return;
       }
     } catch {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 

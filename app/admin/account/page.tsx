@@ -51,12 +51,12 @@ export default function AccountPage() {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
         alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
-        router.push("/");
+        router.replace("/");
         return;
       }
       fetchProfile(user.email);
     } else {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
   }, [router]);

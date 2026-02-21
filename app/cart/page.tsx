@@ -41,7 +41,7 @@ export default function CartPage() {
   const fetchCart = async () => {
     const token = getToken();
     if (!token) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
@@ -54,7 +54,7 @@ export default function CartPage() {
 
       if (response.status === 401) {
         localStorage.removeItem("token");
-        router.push("/login");
+        router.replace("/login");
         return;
       }
 

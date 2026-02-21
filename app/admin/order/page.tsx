@@ -47,7 +47,7 @@ export default function AdminOrdersPage() {
     const userData = localStorage.getItem("user");
 
     if (!token || !userData) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
@@ -55,11 +55,11 @@ export default function AdminOrdersPage() {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
         alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
-        router.push("/");
+        router.replace("/");
         return;
       }
     } catch {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
