@@ -28,6 +28,7 @@ export default function ProfilePage() {
     phone: "",
     address: "",
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -98,6 +99,34 @@ export default function ProfilePage() {
       setError("ไม่สามารถบันทึกข้อมูลได้");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ฟังก์ชันอัปโหลด
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const userId = user.id || user.userId;
+      const res = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
+        { method: "POST", body: formData },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setProfile((prev) =>
+          prev ? { ...prev, profileImage: data.url } : prev,
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -177,17 +206,37 @@ export default function ProfilePage() {
 
               {/* Profile Header */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
-                  {profile?.profileImage ? (
-                    <img
-                      src={profile.profileImage}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
+                {/* Avatar + ปุ่มอัปโหลด */}
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+                    {profile?.profileImage ? (
+                      <img
+                        src={profile.profileImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      formData.fullname?.charAt(0)?.toUpperCase() || "U"
+                    )}
+                  </div>
+                  {/* ปุ่มอัปโหลดรูป */}
+                  <label className="absolute bottom-0 right-0 w-7 h-7 bg-amber-500 hover:bg-amber-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors">
+                    <span className="text-white text-xs">📷</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
                     />
-                  ) : (
-                    formData.fullname?.charAt(0)?.toUpperCase() || "U"
+                  </label>
+                  {/* Loading overlay */}
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
                   )}
                 </div>
+
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">
                     {formData.fullname || "ผู้ใช้"}
@@ -196,10 +245,10 @@ export default function ProfilePage() {
                     {profile?.email || user?.email}
                   </p>
                 </div>
+
                 <button
                   onClick={() => {
                     if (isEditing) {
-                      // Reset form
                       setFormData({
                         fullname: profile?.fullname || "",
                         phone: profile?.phone || "",
