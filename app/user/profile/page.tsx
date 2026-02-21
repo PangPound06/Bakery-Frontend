@@ -130,6 +130,24 @@ export default function ProfilePage() {
     }
   };
 
+  const handleDeleteImage = async () => {
+    if (!confirm("ต้องการลบรูปภาพโปรไฟล์หรือไม่?")) return;
+
+    try {
+      const userId = user.id || user.userId;
+      const res = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
+        { method: "DELETE" },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setProfile((prev) => (prev ? { ...prev, profileImage: "" } : prev));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -229,6 +247,15 @@ export default function ProfilePage() {
                       className="hidden"
                     />
                   </label>
+                  {/* ✅ เพิ่มปุ่มลบ - แสดงเฉพาะตอนมีรูป */}
+                  {profile?.profileImage && (
+                    <button
+                      onClick={handleDeleteImage}
+                      className="absolute top-0 right-0 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-md transition-colors"
+                    >
+                      <span className="text-white text-xs">✕</span>
+                    </button>
+                  )}
                   {/* Loading overlay */}
                   {uploadingImage && (
                     <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
