@@ -14,6 +14,7 @@ interface CartItem {
   subtotal: number;
   category: string;
   image: string;
+  stock: number;
 }
 
 interface CartResponse {
@@ -289,7 +290,7 @@ export default function CartPage() {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity + 1)
                           }
-                          disabled={updating === item.id}
+                          disabled={updating === item.id || item.quantity >= item.stock}
                           className="w-9 h-9 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center disabled:opacity-50 transition-colors"
                         >
                           <svg
@@ -312,6 +313,7 @@ export default function CartPage() {
                         <p className="font-bold text-lg text-amber-900">
                           ฿{item.subtotal.toLocaleString()}
                         </p>
+                        <p className="text-xs text-gray-400">คงเหลือ: {item.stock} ชิ้น</p>
                         <button
                           onClick={() => removeItem(item.id)}
                           className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
