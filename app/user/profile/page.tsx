@@ -332,12 +332,15 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="tel"
+                    inputMode="numeric"
                     value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                      setFormData({ ...formData, phone: onlyNumbers });
+                    }}
                     disabled={!isEditing}
                     placeholder="0812345678"
+                    maxLength={20}
                     className={`w-full px-4 py-3 border rounded-lg transition-colors ${
                       isEditing
                         ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
