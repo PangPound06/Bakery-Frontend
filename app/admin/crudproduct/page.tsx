@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface Product {
   id: number;
@@ -48,7 +49,11 @@ export default function CrudProductPage() {
     const userData = localStorage.getItem("user");
 
     if (!token || !userData) {
-      alert("กรุณาเข้าสู่ระบบ");
+      Swal.fire({
+        title: "กรุณาเข้าสู่ระบบ",
+        icon: "warning",
+        confirmButtonColor: "#f97316",
+      });
       router.replace("/login");
       return;
     }
@@ -56,7 +61,11 @@ export default function CrudProductPage() {
     try {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
-        alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
+        Swal.fire({
+          title: "ไม่มีสิทธิ์เข้าถึง",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
         router.replace("/");
         return;
       }
@@ -124,9 +133,7 @@ export default function CrudProductPage() {
     setImagePreview("");
     setImageInputType("url");
     setPendingFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleStockChange = (value: number) => {
@@ -138,39 +145,41 @@ export default function CrudProductPage() {
     }));
   };
 
-  // ✅ แก้ไข: เลือกไฟล์แล้วแสดง preview อย่างเดียว — ไม่ upload ทันที
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      alert("กรุณาเลือกไฟล์รูปภาพ (JPG, PNG, GIF, WEBP)");
+      await Swal.fire({
+        title: "ไฟล์ไม่ถูกต้อง",
+        text: "กรุณาเลือกไฟล์รูปภาพ (JPG, PNG, GIF, WEBP)",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("ขนาดไฟล์ต้องไม่เกิน 5MB");
+      await Swal.fire({
+        title: "ไฟล์ใหญ่เกินไป",
+        text: "ขนาดไฟล์ต้องไม่เกิน 5MB",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
       return;
     }
 
-    // เก็บไฟล์ไว้รอ upload ตอนกดบันทึก
     setPendingFile(file);
-
-    // แสดง preview จาก local เท่านั้น (ไม่ upload)
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
+    reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
-  // ✅ ฟังก์ชัน upload จริง — เรียกเฉพาะตอนกดบันทึก
   const uploadImageFile = async (file: File): Promise<string | null> => {
     try {
       const formDataUpload = new FormData();
       formDataUpload.append("file", file);
-
       const token = localStorage.getItem("token");
       const response = await fetch(
         "https://bakery-backend-production-6fc9.up.railway.app/api/upload/image",
@@ -180,7 +189,6 @@ export default function CrudProductPage() {
           body: formDataUpload,
         },
       );
-
       if (response.ok) {
         const data = await response.json();
         return data.url || data.imageUrl;
@@ -205,20 +213,28 @@ export default function CrudProductPage() {
     try {
       let imageUrl = formData.image;
 
-      // ✅ ถ้ามีไฟล์รอ upload → upload ตอนนี้เท่านั้น
       if (pendingFile) {
         const uploadedUrl = await uploadImageFile(pendingFile);
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
         } else {
-          alert("อัพโหลดรูปภาพไม่สำเร็จ กรุณาลองใหม่");
+          await Swal.fire({
+            title: "อัพโหลดไม่สำเร็จ",
+            text: "กรุณาลองใหม่อีกครั้ง",
+            icon: "error",
+            confirmButtonColor: "#f97316",
+          });
           setSaving(false);
           return;
         }
       }
 
       if (!imageUrl) {
-        alert("กรุณาเลือกรูปภาพ");
+        await Swal.fire({
+          title: "กรุณาเลือกรูปภาพ",
+          icon: "warning",
+          confirmButtonColor: "#f97316",
+        });
         setSaving(false);
         return;
       }
@@ -228,17 +244,14 @@ export default function CrudProductPage() {
         image: imageUrl,
         isAvailable: formData.stockQuantity > 0,
       };
-
       const token = localStorage.getItem("token");
       const url =
         modalMode === "create"
           ? "https://bakery-backend-production-6fc9.up.railway.app/api/products"
           : `https://bakery-backend-production-6fc9.up.railway.app/api/products/${selectedProduct?.id}`;
 
-      const method = modalMode === "create" ? "POST" : "PUT";
-
       const response = await fetch(url, {
-        method,
+        method: modalMode === "create" ? "POST" : "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -247,25 +260,53 @@ export default function CrudProductPage() {
       });
 
       if (response.ok) {
-        alert(
-          modalMode === "create" ? "เพิ่มสินค้าสำเร็จ!" : "แก้ไขสินค้าสำเร็จ!",
-        );
         fetchProducts();
         closeModal();
+        await Swal.fire({
+          title: "สำเร็จ!",
+          text:
+            modalMode === "create"
+              ? "เพิ่มสินค้าสำเร็จ!"
+              : "แก้ไขสินค้าสำเร็จ!",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
         const data = await response.json();
-        alert(data.message || "เกิดข้อผิดพลาด");
+        await Swal.fire({
+          title: "เกิดข้อผิดพลาด",
+          text: data.message || "กรุณาลองใหม่",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("เกิดข้อผิดพลาด");
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("ต้องการลบสินค้านี้หรือไม่?")) return;
+    const result = await Swal.fire({
+      title: "ลบสินค้า?",
+      text: "ต้องการลบสินค้านี้หรือไม่? ไม่สามารถกู้คืนได้",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -278,14 +319,28 @@ export default function CrudProductPage() {
       );
 
       if (response.ok) {
-        alert("ลบสินค้าสำเร็จ!");
         fetchProducts();
+        await Swal.fire({
+          title: "ลบสำเร็จ!",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+          timer: 1500,
+          showConfirmButton: false,
+        });
       } else {
-        alert("เกิดข้อผิดพลาด");
+        await Swal.fire({
+          title: "เกิดข้อผิดพลาด",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("เกิดข้อผิดพลาด");
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
     }
   };
 
@@ -319,12 +374,10 @@ export default function CrudProductPage() {
   };
 
   const getAvailabilityStatus = (product: Product) => {
-    if (product.stockQuantity === 0) {
+    if (product.stockQuantity === 0)
       return { text: "✗ สินค้าหมด", className: "bg-red-100 text-red-700" };
-    }
-    if (product.isAvailable) {
+    if (product.isAvailable)
       return { text: "✓ พร้อมขาย", className: "bg-green-100 text-green-700" };
-    }
     return { text: "⏸ ปิดการขาย", className: "bg-gray-100 text-gray-700" };
   };
 
@@ -342,12 +395,10 @@ export default function CrudProductPage() {
   return (
     <div className="min-h-screen bg-amber-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📦</span>
-              จัดการสินค้า
+              <span className="text-4xl">📦</span> จัดการสินค้า
             </h1>
             <p className="text-amber-600 mt-1">
               สินค้าทั้งหมด {products.length} รายการ
@@ -374,7 +425,6 @@ export default function CrudProductPage() {
           </button>
         </div>
 
-        {/* Search & Filter */}
         <div className="bg-white rounded-2xl p-4 mb-6 shadow-md flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <input
@@ -410,7 +460,6 @@ export default function CrudProductPage() {
           </select>
         </div>
 
-        {/* Products Table */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -561,7 +610,6 @@ export default function CrudProductPage() {
               </tbody>
             </table>
           </div>
-
           {filteredProducts.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📦</div>
@@ -571,7 +619,6 @@ export default function CrudProductPage() {
         </div>
       </div>
 
-      {/* Modal */}
       {modalMode && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -614,7 +661,6 @@ export default function CrudProductPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {/* Image Preview */}
               <div className="flex justify-center">
                 {imagePreview ? (
                   <img
@@ -629,7 +675,6 @@ export default function CrudProductPage() {
                 )}
               </div>
 
-              {/* ✅ แสดงชื่อไฟล์ที่เลือก (ยังไม่ upload) */}
               {pendingFile && (
                 <div className="flex items-center justify-center gap-2 text-sm text-amber-600 bg-amber-50 py-2 rounded-lg">
                   <span>📎</span>
@@ -637,7 +682,6 @@ export default function CrudProductPage() {
                 </div>
               )}
 
-              {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   ชื่อสินค้า *
@@ -654,7 +698,6 @@ export default function CrudProductPage() {
                 />
               </div>
 
-              {/* Category & Type */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -718,7 +761,6 @@ export default function CrudProductPage() {
                 </div>
               </div>
 
-              {/* Price & Stock */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -760,12 +802,10 @@ export default function CrudProductPage() {
                 </div>
               </div>
 
-              {/* Image Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   รูปภาพ *
                 </label>
-
                 {modalMode !== "view" && (
                   <div className="flex gap-2 mb-3">
                     <button
@@ -784,7 +824,6 @@ export default function CrudProductPage() {
                     </button>
                   </div>
                 )}
-
                 {imageInputType === "url" && (
                   <input
                     type="text"
@@ -795,7 +834,6 @@ export default function CrudProductPage() {
                     className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
                   />
                 )}
-
                 {imageInputType === "file" && modalMode !== "view" && (
                   <div className="relative">
                     <input
@@ -832,7 +870,6 @@ export default function CrudProductPage() {
                     </label>
                   </div>
                 )}
-
                 {modalMode === "view" && (
                   <div className="px-4 py-3 bg-gray-100 rounded-xl text-gray-600 text-sm break-all">
                     {formData.image}
@@ -840,7 +877,6 @@ export default function CrudProductPage() {
                 )}
               </div>
 
-              {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   รายละเอียด
@@ -856,7 +892,6 @@ export default function CrudProductPage() {
                 />
               </div>
 
-              {/* Buttons */}
               {modalMode !== "view" && (
                 <div className="flex gap-3 pt-4">
                   <button

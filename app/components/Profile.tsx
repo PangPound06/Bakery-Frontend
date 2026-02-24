@@ -1,263 +1,392 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+interface Profile {
+  id: number;
+  userId: number;
+  fullname: string;
+  email: string;
+  phone: string;
+  address: string;
+  profileImage: string;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    fullname: '',  // ✅ เปลี่ยนเป็น fullname
-    email: '',
-    phone: '',
-    address: '',
+    fullname: "",
+    phone: "",
+    address: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
-    // ตรวจสอบการ login
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-
-    if (!token || !userData) {
-      router.push('/login');
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.replace("/login");
       return;
     }
-
-    try {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      setFormData({
-        fullname: parsedUser.fullname || '',  // ✅ เปลี่ยนเป็น fullname
-        email: parsedUser.email || '',
-        phone: parsedUser.phone || '',
-        address: parsedUser.address || '',
-      });
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      router.push('/login');
-    }
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    setUser(userData);
+    fetchProfile(userData.id || userData.userId);
   }, [router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const fetchProfile = async (userId: number) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('https://bakery-backend-production-6fc9.up.railway.app/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
+      const response = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.profile) {
+          setProfile(data.profile);
+          setFormData({
+            fullname: data.profile.fullname || "",
+            phone: data.profile.phone || "",
+            address: data.profile.address || "",
+          });
+        }
       }
-
-      const data = await response.json();
-      
-      // อัพเดท localStorage
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-      setIsEditing(false);
-      alert('อัพเดทข้อมูลสำเร็จ! ✅');
-      
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('เกิดข้อผิดพลาดในการอัพเดทข้อมูล');
+    } catch (err) {
+      console.error("Error fetching profile:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
+  // ✅ Helper: sync profileImage ไป localStorage แล้ว dispatch event ให้ Header รับรู้
+  const syncProfileImageToHeader = (imageUrl: string) => {
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const updatedUser = { ...currentUser, profileImage: imageUrl };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new Event("userStatusChanged"));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const userId = user.id || user.userId;
+      const response = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        },
+      );
+      const data = await response.json();
+      if (data.success) {
+        setProfile(data.profile);
+        const updatedUser = { ...user, fullname: formData.fullname };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("userStatusChanged"));
+        setIsEditing(false);
+        setSuccess("บันทึกข้อมูลสำเร็จ");
+        setTimeout(() => setSuccess(""), 3000);
+      } else {
+        setError(data.message || "เกิดข้อผิดพลาด");
+      }
+    } catch (err) {
+      setError("ไม่สามารถบันทึกข้อมูลได้");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formDataUpload = new FormData();
+    formDataUpload.append("file", file);
+
+    try {
+      const userId = user.id || user.userId;
+      const res = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
+        { method: "POST", body: formDataUpload },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setProfile((prev) =>
+          prev ? { ...prev, profileImage: data.url } : prev,
+        );
+        // ✅ Sync ไป Header ด้วย
+        syncProfileImageToHeader(data.url);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    if (!confirm("ต้องการลบรูปภาพโปรไฟล์หรือไม่?")) return;
+
+    try {
+      const userId = user.id || user.userId;
+      const res = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
+        { method: "DELETE" },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setProfile((prev) => (prev ? { ...prev, profileImage: "" } : prev));
+        // ✅ Sync ไป Header ด้วย (ลบรูป → เคลียร์)
+        syncProfileImageToHeader("");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">กำลังโหลด...</p>
-        </div>
+      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
-          <Link href="/" className="text-amber-600 hover:text-amber-700 font-medium flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            กลับหน้าหลัก
+          <Link
+            href="/"
+            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+          >
+            ← กลับหน้าหลัก
           </Link>
+          <h1 className="text-3xl font-bold text-gray-800">👤 ข้อมูลส่วนตัว</h1>
         </div>
 
-        {/* Profile Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header Section */}
-          <div className="bg-gradient-to-r from-orange-600 to-amber-600 px-8 py-6">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center text-white text-3xl font-bold">
-                {user.fullname?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
-              </div>
-              <div className="text-white">
-                <h1 className="text-2xl font-bold">{user.fullname || 'ผู้ใช้งาน'}</h1>
-                <p className="text-amber-100">{user.email}</p>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="md:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <nav className="space-y-2">
+                <Link
+                  href="/user/profile"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                >
+                  <span>👤</span> ข้อมูลส่วนตัว
+                </Link>
+                <Link
+                  href="/user/orders"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>📋</span> รายการสั่งซื้อ
+                </Link>
+                <Link
+                  href="/user/search-order"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>🔍</span> ค้นหาคำสั่งซื้อ
+                </Link>
+                <Link
+                  href="/user/favorites"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>❤️</span> รายการโปรด
+                </Link>
+                <Link
+                  href="/user/settings"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>⚙️</span> ตั้งค่า
+                </Link>
+              </nav>
             </div>
           </div>
 
-          {/* Content Section */}
-          <div className="p-8">
-            {!isEditing ? (
-              // View Mode
-              <div className="space-y-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">ข้อมูลส่วนตัว</h2>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    แก้ไขข้อมูล
-                  </button>
+          {/* Main */}
+          <div className="md:col-span-3">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              {success && (
+                <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                  ✅ {success}
                 </div>
-
-                <div className="grid gap-4">
-                  <div className="border-b border-gray-200 pb-4">
-                    <label className="text-sm font-medium text-gray-500">ชื่อ-นามสกุล</label>
-                    <p className="text-lg text-gray-800 mt-1">{user.fullname || '-'}</p>
-                  </div>
-
-                  <div className="border-b border-gray-200 pb-4">
-                    <label className="text-sm font-medium text-gray-500">อีเมล</label>
-                    <p className="text-lg text-gray-800 mt-1">{user.email}</p>
-                  </div>
-
-                  <div className="border-b border-gray-200 pb-4">
-                    <label className="text-sm font-medium text-gray-500">เบอร์โทรศัพท์</label>
-                    <p className="text-lg text-gray-800 mt-1">{user.phone || '-'}</p>
-                  </div>
-
-                  <div className="pb-4">
-                    <label className="text-sm font-medium text-gray-500">ที่อยู่</label>
-                    <p className="text-lg text-gray-800 mt-1">{user.address || '-'}</p>
-                  </div>
+              )}
+              {error && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  ⚠️ {error}
                 </div>
-              </div>
-            ) : (
-              // Edit Mode
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">แก้ไขข้อมูลส่วนตัว</h2>
-                </div>
+              )}
 
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="fullname" className="block text-sm font-medium text-gray-700 mb-2">
-                      ชื่อ-นามสกุล
-                    </label>
+              {/* Profile Header */}
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b">
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+                    {profile?.profileImage ? (
+                      <img
+                        src={profile.profileImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      formData.fullname?.charAt(0)?.toUpperCase() || "U"
+                    )}
+                  </div>
+                  <label className="absolute bottom-0 right-0 w-7 h-7 bg-amber-500 hover:bg-amber-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors">
+                    <span className="text-white text-xs">📷</span>
                     <input
-                      id="fullname"
-                      name="fullname"
-                      type="text"
-                      value={formData.fullname}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                      placeholder="กรอกชื่อ-นามสกุล"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
                     />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      อีเมล
-                    </label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      disabled
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      เบอร์โทรศัพท์
-                    </label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                      placeholder="0xx-xxx-xxxx"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                      ที่อยู่
-                    </label>
-                    <textarea
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                      placeholder="กรอกที่อยู่สำหรับจัดส่ง"
-                    />
-                  </div>
+                  </label>
+                  {profile?.profileImage && (
+                    <button
+                      onClick={handleDeleteImage}
+                      className="absolute top-0 right-0 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-md transition-colors"
+                    >
+                      <span className="text-white text-xs">✕</span>
+                    </button>
+                  )}
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {loading ? '🔄 กำลังบันทึก...' : '💾 บันทึกข้อมูล'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(false);
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {formData.fullname || "ผู้ใช้"}
+                  </h2>
+                  <p className="text-gray-500">
+                    {profile?.email || user?.email}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (isEditing) {
                       setFormData({
-                        fullname: user.fullname || '',  // ✅ เปลี่ยนเป็น fullname
-                        email: user.email || '',
-                        phone: user.phone || '',
-                        address: user.address || '',
+                        fullname: profile?.fullname || "",
+                        phone: profile?.phone || "",
+                        address: profile?.address || "",
                       });
-                    }}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-lg transition-colors"
-                  >
-                    ยกเลิก
-                  </button>
+                    }
+                    setIsEditing(!isEditing);
+                  }}
+                  className="ml-auto px-4 py-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                >
+                  {isEditing ? "ยกเลิก" : "✏️ แก้ไข"}
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ชื่อ-นามสกุล
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.fullname}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullname: e.target.value })
+                    }
+                    disabled={!isEditing}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
+                  />
                 </div>
-              </form>
-            )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    อีเมล
+                  </label>
+                  <input
+                    type="email"
+                    value={profile?.email || user?.email || ""}
+                    disabled
+                    className="w-full px-4 py-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-500"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    ไม่สามารถเปลี่ยนอีเมลได้
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    เบอร์โทรศัพท์
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        phone: e.target.value.replace(/[^0-9]/g, ""),
+                      })
+                    }
+                    disabled={!isEditing}
+                    placeholder="0812345678"
+                    maxLength={20}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ที่อยู่
+                  </label>
+                  <textarea
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    disabled={!isEditing}
+                    rows={3}
+                    placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
+                  />
+                </div>
+
+                {isEditing && (
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setFormData({
+                          fullname: profile?.fullname || "",
+                          phone: profile?.phone || "",
+                          address: profile?.address || "",
+                        });
+                      }}
+                      className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    >
+                      ยกเลิก
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex-1 px-4 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 font-medium"
+                    >
+                      {saving ? "กำลังบันทึก..." : "💾 บันทึกข้อมูล"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

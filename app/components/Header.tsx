@@ -22,7 +22,6 @@ const adminNavLinks = [
   { href: "/admin/account", label: "บัญชี", icon: "⚙️" },
 ];
 
-// ═══ User Pages สำหรับค้นหา ═══
 const userPages = [
   {
     href: "/user/profile",
@@ -117,9 +116,11 @@ interface PageResult {
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ email: string; fullname?: string } | null>(
-    null,
-  );
+  const [user, setUser] = useState<{
+    email: string;
+    fullname?: string;
+    profileImage?: string;
+  } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -141,8 +142,10 @@ export default function Header() {
           const parsedUser = JSON.parse(userData);
           const email = parsedUser.email;
           const fullname = parsedUser.fullname || parsedUser.fullName;
+          // ✅ อ่าน profileImage จาก localStorage ด้วย
+          const profileImage = parsedUser.profileImage || "";
           if (email) {
-            setUser({ email, fullname });
+            setUser({ email, fullname, profileImage });
             setIsAdmin(email.endsWith("@empbakery.com"));
           } else {
             setUser(null);
@@ -158,12 +161,11 @@ export default function Header() {
       }
     };
     checkLoginStatus();
-    const handler = () => checkLoginStatus();
-    window.addEventListener("storage", handler);
-    window.addEventListener("userStatusChanged", handler);
+    window.addEventListener("storage", checkLoginStatus);
+    window.addEventListener("userStatusChanged", checkLoginStatus);
     return () => {
-      window.removeEventListener("storage", handler);
-      window.removeEventListener("userStatusChanged", handler);
+      window.removeEventListener("storage", checkLoginStatus);
+      window.removeEventListener("userStatusChanged", checkLoginStatus);
     };
   }, []);
 
@@ -193,7 +195,6 @@ export default function Header() {
     fetchProducts();
   }, [isAdmin]);
 
-  // ═══ Search logic — ค้นหาทั้งสินค้า + หน้า ═══
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setSearchResults([]);
@@ -201,25 +202,23 @@ export default function Header() {
       setShowResults(false);
       return;
     }
-
     const q = searchQuery.toLowerCase().trim();
-
-    // ค้นหาสินค้า — ชื่อสินค้า หรือ category
-    const productResults = allProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q),
+    setSearchResults(
+      allProducts
+        .filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            p.category.toLowerCase().includes(q),
+        )
+        .slice(0, 10),
     );
-    setSearchResults(productResults.slice(0, 10));
-
-    // ค้นหาหน้า — label หรือ keywords
-    const matchedPages = userPages.filter(
-      (page) =>
-        page.label.toLowerCase().includes(q) ||
-        page.keywords.some((kw) => kw.toLowerCase().includes(q)),
+    setPageResults(
+      userPages.filter(
+        (page) =>
+          page.label.toLowerCase().includes(q) ||
+          page.keywords.some((kw) => kw.toLowerCase().includes(q)),
+      ),
     );
-    setPageResults(matchedPages);
-
     setShowResults(true);
   }, [searchQuery, allProducts]);
 
@@ -252,8 +251,6 @@ export default function Header() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // ถ้าพิมพ์ ORD... → ไปหน้าค้นหาคำสั่งซื้อเลย
     if (searchQuery.trim().toUpperCase().startsWith("ORD")) {
       setSearchQuery("");
       setShowResults(false);
@@ -263,29 +260,19 @@ export default function Header() {
       );
       return;
     }
-
-    if (pageResults.length > 0) {
-      handlePageSelect(pageResults[0]);
-    } else if (searchResults.length > 0) {
-      handleSearchSelect(searchResults[0]);
-    }
+    if (pageResults.length > 0) handlePageSelect(pageResults[0]);
+    else if (searchResults.length > 0) handleSearchSelect(searchResults[0]);
   };
 
   const navLinks = isAdmin ? adminNavLinks : userNavLinks;
-  const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
-    return pathname?.startsWith(href);
-  };
-
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname?.startsWith(href);
   const hasAnyResults = searchResults.length > 0 || pageResults.length > 0;
 
-  // ═══ Dropdown Component (ใช้ร่วม Desktop + Mobile) ═══
   const SearchDropdown = () => {
     if (!showResults || searchQuery.trim() === "") return null;
-
     return (
       <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Page Results */}
         {pageResults.length > 0 && (
           <div>
             <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
@@ -322,8 +309,6 @@ export default function Header() {
             ))}
           </div>
         )}
-
-        {/* Product Results */}
         {searchResults.length > 0 && (
           <div>
             <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
@@ -357,8 +342,6 @@ export default function Header() {
             </div>
           </div>
         )}
-
-        {/* No Results */}
         {!hasAnyResults && (
           <div className="p-6 text-center">
             <p className="text-gray-400 text-sm">
@@ -414,7 +397,6 @@ export default function Header() {
 
           {/* Right Section */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Search (User only) */}
             {!isAdmin && (
               <div ref={searchRef} className="relative">
                 {/* Desktop */}
@@ -443,12 +425,10 @@ export default function Header() {
                     </svg>
                   </form>
                 </div>
-
                 {/* Mobile toggle */}
                 <button
                   onClick={() => setShowSearch(!showSearch)}
                   className="sm:hidden p-2 rounded-lg hover:bg-amber-800 transition-colors"
-                  aria-label="Search"
                 >
                   <svg
                     className="w-5 h-5"
@@ -464,7 +444,6 @@ export default function Header() {
                     />
                   </svg>
                 </button>
-
                 {/* Desktop Dropdown */}
                 {showResults && (
                   <div className="absolute right-0 sm:left-0 top-full mt-2 w-80 z-50 hidden sm:block">
@@ -483,6 +462,7 @@ export default function Header() {
                   </span>
                 )}
                 <div className="hidden sm:block">
+                  {/* ✅ ส่ง profileImage ไปให้ UserMenu ด้วย */}
                   <UserMenu user={user} />
                 </div>
               </>
@@ -499,7 +479,6 @@ export default function Header() {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`lg:hidden p-2 rounded-lg transition-colors ${isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-800"}`}
-              aria-label="Toggle menu"
             >
               {isMenuOpen ? (
                 <svg
@@ -534,7 +513,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Search (expanded) */}
+        {/* Mobile Search */}
         {showSearch && !isAdmin && (
           <div className="sm:hidden pb-3">
             <form onSubmit={handleSearchSubmit} className="relative">
@@ -561,7 +540,6 @@ export default function Header() {
                 />
               </svg>
             </form>
-            {/* Mobile Dropdown */}
             {showResults && (
               <div className="mt-2">
                 <SearchDropdown />

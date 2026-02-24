@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -39,17 +40,15 @@ function LoginContent() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
     setError("");
   };
 
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     setError("");
-    window.location.href = "https://bakery-backend-production-6fc9.up.railway.app/api/auth/google";
+    window.location.href =
+      "https://bakery-backend-production-6fc9.up.railway.app/api/auth/google";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,14 +63,17 @@ function LoginContent() {
     }
 
     try {
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        },
+      );
 
       const data = await response.json();
 
@@ -99,7 +101,6 @@ function LoginContent() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("userType");
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(userDataToSave));
       localStorage.setItem("userType", data.userType);
@@ -107,13 +108,21 @@ function LoginContent() {
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("userStatusChanged"));
 
-      if (data.userType === "admin") {
-        alert("เข้าสู่ระบบสำเร็จ! 🎉 ยินดีต้อนรับ Admin");
-        window.location.href = data.redirectUrl || "/admin/dashboard";
-      } else {
-        alert("เข้าสู่ระบบสำเร็จ! 🎉");
-        window.location.href = data.redirectUrl || "/";
-      }
+      await Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ!",
+        text:
+          data.userType === "admin"
+            ? "ยินดีต้อนรับ Admin 🎉"
+            : "ยินดีต้อนรับกลับมา 🎉",
+        icon: "success",
+        confirmButtonColor: "#f97316",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      window.location.href =
+        data.redirectUrl ||
+        (data.userType === "admin" ? "/admin/dashboard" : "/");
     } catch (err: any) {
       setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {

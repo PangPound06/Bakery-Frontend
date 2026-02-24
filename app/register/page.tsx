@@ -1,93 +1,97 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
     acceptTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
-    setError('');
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
-    // Validation
-    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (
+      !formData.fullName ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
+      setError("กรุณากรอกข้อมูลให้ครบถ้วน");
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+      setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
       setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('รหัสผ่านไม่ตรงกัน');
+      setError("รหัสผ่านไม่ตรงกัน");
       setLoading(false);
       return;
     }
 
     if (!formData.acceptTerms) {
-      setError('กรุณายอมรับข้อกำหนดและเงื่อนไข');
+      setError("กรุณายอมรับข้อกำหนดและเงื่อนไข");
       setLoading(false);
       return;
     }
 
-    // เชื่อมต่อกับ Backend API
     try {
-      const response = await fetch('https://bakery-backend-production-6fc9.up.railway.app/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullname: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+          }),
         },
-        body: JSON.stringify({
-          fullname: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        // แสดง error message จาก Backend
-        throw new Error(data.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก');
+        throw new Error(data.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก");
       }
 
-      // สมัครสมาชิกสำเร็จ
-      console.log('Register success:', data);
-      alert('สมัครสมาชิกสำเร็จ! 🎉');
-      
-      // Redirect ไปหน้า Login
-      router.push('/login');
-      
+      await Swal.fire({
+        title: "สมัครสมาชิกสำเร็จ!",
+        text: "ยินดีต้อนรับสู่ My Bakery 🎉",
+        icon: "success",
+        confirmButtonColor: "#f97316",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      router.push("/login");
     } catch (err: any) {
-      console.error('Register error:', err);
-      setError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+      console.error("Register error:", err);
+      setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
       setLoading(false);
     }
@@ -96,9 +100,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-10">
-          {/* Header */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-4xl font-bold text-amber-600 mb-2">
@@ -113,18 +115,18 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
               ⚠️ {error}
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Full Name */}
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Name-Surname
               </label>
               <input
@@ -139,9 +141,11 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email
               </label>
               <input
@@ -157,16 +161,18 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
                   value={formData.password}
@@ -179,22 +185,26 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</p>
+              <p className="mt-1 text-xs text-gray-500">
+                รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร
+              </p>
             </div>
 
-            {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Confirm Password
               </label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
                   value={formData.confirmPassword}
@@ -207,12 +217,11 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                  {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
               </div>
             </div>
 
-            {/* Terms & Conditions */}
             <div className="flex items-start">
               <input
                 id="acceptTerms"
@@ -222,33 +231,37 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 mt-1"
               />
-              <label htmlFor="acceptTerms" className="ml-2 text-sm text-gray-600">
-                ฉันยอมรับ{' '}
-                <Link href="/terms" className="text-amber-600 hover:text-amber-700 font-medium">
+              <label
+                htmlFor="acceptTerms"
+                className="ml-2 text-sm text-gray-600"
+              >
+                ฉันยอมรับ{" "}
+                <Link
+                  href="/terms"
+                  className="text-amber-600 hover:text-amber-700 font-medium"
+                >
                   ข้อกำหนดและเงื่อนไข
-                </Link>
-                {' '}และ{' '}
-                <Link href="/privacy" className="text-amber-600 hover:text-amber-700 font-medium">
+                </Link>{" "}
+                และ{" "}
+                <Link
+                  href="/privacy"
+                  className="text-amber-600 hover:text-amber-700 font-medium"
+                >
                   นโยบายความเป็นส่วนตัว
                 </Link>
               </label>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {loading ? '🔄 กำลังสมัครสมาชิก...' : '✨ สมัครสมาชิก'}
+              {loading ? "🔄 กำลังสมัครสมาชิก..." : "✨ สมัครสมาชิก"}
             </button>
           </form>
-
         </div>
 
-        {/* Back to Home */}
         <div className="mt-6 text-center">
           <Link
             href="/"

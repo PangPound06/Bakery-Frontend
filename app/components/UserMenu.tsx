@@ -2,11 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Swal from "sweetalert2";
 
 interface UserMenuProps {
   user: {
     email: string;
     fullname?: string;
+    profileImage?: string; // ✅ เพิ่ม profileImage
   };
 }
 
@@ -16,7 +18,6 @@ export default function UserMenu({ user }: UserMenuProps) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // ตรวจสอบว่าเป็น Admin หรือไม่
     setIsAdmin(user.email?.endsWith("@empbakery.com") || false);
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,18 +38,30 @@ export default function UserMenu({ user }: UserMenuProps) {
     };
   }, [isOpen, user.email]);
 
-  const handleLogout = () => {
-    const confirmed = window.confirm("คุณต้องการออกจากระบบหรือไม่?");
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: "ออกจากระบบ?",
+      text: "คุณต้องการออกจากระบบหรือไม่?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#f97316",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ออกจากระบบ",
+      cancelButtonText: "ยกเลิก",
+    });
 
-    if (confirmed) {
-      // ลบข้อมูลทั้งหมด
+    if (result.isConfirmed) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      // แจ้งเตือน
-      alert("ออกจากระบบสำเร็จ! 👋");
+      await Swal.fire({
+        title: "ออกจากระบบสำเร็จ!",
+        text: "ขอบคุณที่ใช้บริการ 👋",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
 
-      // ใช้ window.location.href เพื่อ refresh หน้าใหม่ทั้งหมด
       window.location.href = "/login";
     }
   };
@@ -65,12 +78,11 @@ export default function UserMenu({ user }: UserMenuProps) {
     return user.email.charAt(0).toUpperCase();
   };
 
-  // เมนูสำหรับ User ทั่วไป
   const userMenuItems = [
     { href: "/user/profile", label: "ข้อมูลส่วนตัว", icon: "profile" },
     { href: "/user/orders", label: "รายการสั่งซื้อ", icon: "orders" },
     {
-      href: "/user/search-order",
+      href: "/user/profile/search-order",
       label: "ค้นหาคำสั่งซื้อ",
       icon: "search",
     },
@@ -78,7 +90,6 @@ export default function UserMenu({ user }: UserMenuProps) {
     { href: "/user/settings", label: "ตั้งค่า", icon: "settings" },
   ];
 
-  // เมนูสำหรับ Admin
   const adminMenuItems = [
     { href: "/admin/account", label: "ข้อมูลส่วนตัว", icon: "profile" },
     { href: "/admin/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -222,23 +233,27 @@ export default function UserMenu({ user }: UserMenuProps) {
         }`}
       >
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm border-2 ${
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm border-2 overflow-hidden ${
             isAdmin
               ? "bg-slate-600 border-slate-500"
               : "bg-amber-500 border-amber-400"
           }`}
         >
-          {getInitials()}
+          {user.profileImage ? (
+            <img
+              src={user.profileImage}
+              alt="avatar"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            getInitials()
+          )}
         </div>
-
         <span className="text-white text-sm font-medium hidden md:block max-w-[150px] truncate">
           {user.email}
         </span>
-
         <svg
-          className={`w-4 h-4 text-white transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`w-4 h-4 text-white transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -263,13 +278,21 @@ export default function UserMenu({ user }: UserMenuProps) {
           >
             <div className="flex items-center gap-3">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 ${
+                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 overflow-hidden ${
                   isAdmin
                     ? "bg-slate-600 border-slate-500"
                     : "bg-amber-500 border-amber-400"
                 }`}
               >
-                {getInitials()}
+                {user.profileImage ? (
+                  <img
+                    src={user.profileImage}
+                    alt="avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getInitials()
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 truncate">
