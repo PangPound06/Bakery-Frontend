@@ -42,6 +42,8 @@ export default function AdminOrdersPage() {
   const [slipModal, setSlipModal] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
 
+  const [prevOrderCount, setPrevOrderCount] = useState(0);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
@@ -64,21 +66,51 @@ export default function AdminOrdersPage() {
     }
 
     fetchOrders();
+
+    const interval = setInterval(() => {
+      fetchOrders(true); // true = silent (ไม่แสดง loading)
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [router]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const response = await fetch(
         "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
       );
       if (response.ok) {
         const data = await response.json();
+
+        // ═══ แจ้งเตือนเมื่อมี order ใหม่ ═══
+        if (silent && data.length > prevOrderCount && prevOrderCount > 0) {
+          // เล่นเสียง
+          try {
+            const audio = new Audio(
+              "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjlkp9/LpnQyHEBvruHLn2kvGT5wse7TpWcqFTpxsvLWpWUnEzlxtPfaqmMkETd0t/3grGAgDDR3u8U",
+            );
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+          } catch {}
+
+          // แสดง notification (ถ้า browser อนุญาต)
+          if (Notification.permission === "granted") {
+            new Notification("🛒 คำสั่งซื้อใหม่!", {
+              body: `มีคำสั่งซื้อใหม่เข้ามา (ทั้งหมด ${data.length} รายการ)`,
+            });
+          } else if (Notification.permission !== "denied") {
+            Notification.requestPermission();
+          }
+        }
+
+        setPrevOrderCount(data.length);
         setOrders(data);
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      if (!silent) console.error("Error fetching orders:", error);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 

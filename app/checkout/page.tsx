@@ -54,6 +54,13 @@ export default function CheckoutPage() {
 
   const PROMPTPAY_ID = "0931253748";
 
+  // ═══ Shipping Fee — เหมือนกับ Cart ═══
+  const getShippingFee = (total: number) => {
+    if (total < 100) return 50;
+    if (total <= 500) return 20;
+    return 0;
+  };
+
   useEffect(() => {
     fetchCartData();
     loadUserData();
@@ -74,9 +81,12 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/cart",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       const data = await response.json();
 
@@ -85,7 +95,7 @@ export default function CheckoutPage() {
           (sum: number, item: CartItem) => sum + item.price * item.quantity,
           0,
         );
-        const shipping = 0;
+        const shipping = getShippingFee(subtotal); // ✅ คิดค่าส่งตามยอด
         const total = subtotal + shipping;
 
         setOrderSummary({ items: data.items, subtotal, shipping, total });
@@ -122,7 +132,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // โหลด jsQR library แบบ dynamic
   const loadJsQR = (): Promise<typeof import("jsqr").default> => {
     return new Promise((resolve, reject) => {
       if ((window as any).jsQR) {
@@ -137,7 +146,6 @@ export default function CheckoutPage() {
     });
   };
 
-  // ตรวจจับ QR Code ในรูปภาพ (สแกนหลายขนาด)
   const detectQRCode = async (
     img: HTMLImageElement,
     canvas: HTMLCanvasElement,
@@ -201,7 +209,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // ตรวจสอบว่าเป็นสลิปโอนเงินหรือไม่
   const validateSlipImage = (
     file: File,
   ): Promise<{ valid: boolean; reason?: string }> => {
@@ -336,32 +343,29 @@ export default function CheckoutPage() {
     }
   };
 
- const uploadSlip = async (): Promise<string | null> => {
+  const uploadSlip = async (): Promise<string | null> => {
     if (!slipFile) return null;
 
     setUploadingSlip(true);
     try {
       const formData = new FormData();
-      // หมายเหตุ: ตรวจสอบให้แน่ใจว่า Backend ของคุณรับค่าตัวแปรชื่อ 'file' หรือไม่ 
-      // (บางระบบอาจใช้ชื่อ 'image', 'slip' ฯลฯ หาก Backend ใช้ชื่ออื่น ต้องแก้ตรงนี้ให้ตรงกันครับ)
       formData.append("file", slipFile);
 
-      // 1. ดึง Token จาก localStorage
       const token = localStorage.getItem("token");
 
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload", {
-        method: "POST",
-        // 2. แนบ Header ยืนยันตัวตนเข้าไป
-        headers: {
-          Authorization: `Bearer ${token}` 
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
         },
-        body: formData,
-      });
+      );
 
       const data = await response.json();
 
       if (data.success) {
-        return data.path; // ถ้าสำเร็จ ส่ง path กลับไปให้ handlePayment ไปทำงานต่อ
+        return data.path;
       } else {
         setError(data.message || "อัพโหลดสลิปไม่สำเร็จ");
         return null;
@@ -388,17 +392,35 @@ export default function CheckoutPage() {
     const { name, value } = e.target;
     let formattedValue = value;
 
-    if (name === "cardNumber") {
-      formattedValue = value
-        .replace(/\s/g, "")
-        .replace(/(\d{4})/g, "$1 ")
-        .trim()
-        .slice(0, 19);
+    if (name === "name") {
+      // ตัวอักษรและช่องว่างเท่านั้น (A-Z, a-z, ไทย, space)
+      formattedValue = value.replace(/[^a-zA-Zก-๙\s]/g, "").toUpperCase();
+    } else if (name === "cardNumber") {
+      // ตัวเลขเท่านั้น จัดรูปแบบ xxxx xxxx xxxx xxxx
+      const digits = value.replace(/\D/g, "").slice(0, 16);
+      formattedValue = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
     } else if (name === "expiry") {
-      formattedValue = value
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d)/, "$1/$2")
-        .slice(0, 5);
+      const digits = value.replace(/\D/g, "").slice(0, 4);
+      if (digits.length === 0) {
+        formattedValue = "";
+      } else if (digits.length <= 2) {
+        // ตรวจสอบเดือนขณะพิมพ์
+        const month = parseInt(digits, 10);
+        if (digits.length === 2) {
+          if (month < 1) formattedValue = "01";
+          else if (month > 12) formattedValue = "12";
+          else formattedValue = digits;
+        } else {
+          formattedValue = digits;
+        }
+      } else {
+        // มีส่วนปีแล้ว → ตรวจเดือนก่อน
+        const monthPart = digits.slice(0, 2);
+        const yearPart = digits.slice(2);
+        const month = parseInt(monthPart, 10);
+        const validMonth = month < 1 ? "01" : month > 12 ? "12" : monthPart;
+        formattedValue = `${validMonth}/${yearPart}`;
+      }
     } else if (name === "cvc") {
       formattedValue = value.replace(/\D/g, "").slice(0, 4);
     }
@@ -406,7 +428,6 @@ export default function CheckoutPage() {
     setCardData({ ...cardData, [name]: formattedValue });
   };
 
-  // ═══ Card Payment — ใช้ /api/payment/card/charge ═══
   const handleCardPayment = async (): Promise<{
     success: boolean;
     paymentId?: string;
@@ -449,7 +470,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // ═══ Handle Payment ═══
   const handlePayment = async () => {
     setError("");
 
@@ -515,32 +535,35 @@ export default function CheckoutPage() {
         paymentStatus = "paid";
       }
 
-      const orderResponse = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const orderResponse = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            email: user.email,
+            items: orderSummary?.items.map((item) => ({
+              productId: item.productId,
+              productName: item.productName,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+            subtotal: orderSummary?.subtotal,
+            shipping: orderSummary?.shipping,
+            total: orderSummary?.total,
+            paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
+            paymentStatus: paymentStatus,
+            paymentId: paymentId,
+            slipImage: slipImagePath,
+            shippingInfo: shippingData,
+            cardName: paymentMethod === "card" ? cardData.name : null,
+            cardLast4: cardLast4,
+          }),
         },
-        body: JSON.stringify({
-          email: user.email,
-          items: orderSummary?.items.map((item) => ({
-            productId: item.productId,
-            productName: item.productName,
-            price: item.price,
-            quantity: item.quantity,
-          })),
-          subtotal: orderSummary?.subtotal,
-          shipping: orderSummary?.shipping,
-          total: orderSummary?.total,
-          paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
-          paymentStatus: paymentStatus,
-          paymentId: paymentId,
-          slipImage: slipImagePath,
-          shippingInfo: shippingData,
-          cardName: paymentMethod === "card" ? cardData.name : null,
-          cardLast4: cardLast4,
-        }),
-      });
+      );
 
       const orderData = await orderResponse.json();
 
@@ -550,10 +573,13 @@ export default function CheckoutPage() {
         return;
       }
 
-      await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart/clear", {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/cart/clear",
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       window.dispatchEvent(new Event("cartUpdated"));
       localStorage.setItem("lastOrderId", orderData.orderId.toString());
@@ -666,10 +692,7 @@ export default function CheckoutPage() {
                     type="text"
                     value={shippingData.note}
                     onChange={(e) =>
-                      setShippingData({
-                        ...shippingData,
-                        note: e.target.value,
-                      })
+                      setShippingData({ ...shippingData, note: e.target.value })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="เช่น ฝากไว้ที่ป้อม รปภ."
@@ -687,11 +710,7 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <button
                   onClick={() => setPaymentMethod("qr")}
-                  className={`p-4 border-2 rounded-xl transition-all ${
-                    paymentMethod === "qr"
-                      ? "border-amber-500 bg-amber-50"
-                      : "border-gray-200 hover:border-amber-300"
-                  }`}
+                  className={`p-4 border-2 rounded-xl transition-all ${paymentMethod === "qr" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300"}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
@@ -713,11 +732,7 @@ export default function CheckoutPage() {
 
                 <button
                   onClick={() => setPaymentMethod("card")}
-                  className={`p-4 border-2 rounded-xl transition-all ${
-                    paymentMethod === "card"
-                      ? "border-amber-500 bg-amber-50"
-                      : "border-gray-200 hover:border-amber-300"
-                  }`}
+                  className={`p-4 border-2 rounded-xl transition-all ${paymentMethod === "card" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300"}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl">
@@ -770,11 +785,7 @@ export default function CheckoutPage() {
 
                   {/* อัพโหลดสลิป */}
                   <div
-                    className={`rounded-xl p-6 ${
-                      slipValid
-                        ? "bg-gradient-to-br from-green-50 to-emerald-50"
-                        : "bg-gradient-to-br from-yellow-50 to-orange-50"
-                    }`}
+                    className={`rounded-xl p-6 ${slipValid ? "bg-gradient-to-br from-green-50 to-emerald-50" : "bg-gradient-to-br from-yellow-50 to-orange-50"}`}
                   >
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
                       📤 ขั้นตอนที่ 2: อัพโหลดสลิปการโอนเงิน{" "}
@@ -811,9 +822,7 @@ export default function CheckoutPage() {
                     ) : (
                       <div>
                         <div
-                          className={`p-4 rounded-xl shadow-md ${
-                            slipValid ? "bg-white" : "bg-red-50"
-                          }`}
+                          className={`p-4 rounded-xl shadow-md ${slipValid ? "bg-white" : "bg-red-50"}`}
                         >
                           <img
                             src={slipPreview}
@@ -821,7 +830,6 @@ export default function CheckoutPage() {
                             className="max-h-64 mx-auto rounded-lg"
                           />
                         </div>
-
                         <div className="mt-4">
                           {slipValidating ? (
                             <div className="flex items-center justify-center gap-2 text-amber-600">
@@ -872,7 +880,6 @@ export default function CheckoutPage() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
                     กรอกข้อมูลบัตร
                   </h3>
-
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
                     <p className="text-sm font-medium text-yellow-800">
                       🧪 ทดสอบด้วย Test Card:
@@ -884,7 +891,6 @@ export default function CheckoutPage() {
                       <span className="font-mono">123</span>
                     </p>
                   </div>
-
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -976,8 +982,32 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>ค่าจัดส่ง</span>
-                  <span className="text-green-600">ฟรี</span>
+                  {orderSummary?.shipping === 0 ? (
+                    <span className="text-green-600 font-medium">ฟรี</span>
+                  ) : (
+                    <span className="text-red-500 font-medium">
+                      ฿{orderSummary?.shipping}
+                    </span>
+                  )}
                 </div>
+                {/* แสดงข้อความแนะนำค่าส่ง */}
+                {orderSummary && orderSummary.subtotal < 100 && (
+                  <p className="text-xs text-gray-400 text-right">
+                    สั่งเพิ่ม ฿{100 - orderSummary.subtotal} ลดค่าส่งเหลือ ฿20
+                  </p>
+                )}
+                {orderSummary &&
+                  orderSummary.subtotal >= 100 &&
+                  orderSummary.subtotal <= 500 && (
+                    <p className="text-xs text-gray-400 text-right">
+                      สั่งเพิ่ม ฿{501 - orderSummary.subtotal} ได้รับค่าส่งฟรี
+                    </p>
+                  )}
+                {orderSummary && orderSummary.subtotal > 500 && (
+                  <p className="text-xs text-green-500 text-right">
+                    🎉 คุณได้รับค่าส่งฟรี!
+                  </p>
+                )}
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-gray-800">
@@ -1079,7 +1109,6 @@ export default function CheckoutPage() {
                   * กรุณาอัพโหลดสลิปโอนเงินจากแอปธนาคาร
                 </p>
               )}
-
               {paymentMethod === "qr" && !slipFile && (
                 <p className="text-xs text-amber-600 text-center mt-2">
                   * กรุณาอัพโหลดสลิปการโอนเงินก่อนยืนยัน

@@ -62,7 +62,7 @@ export default function CheckoutSuccessPage() {
           <div className="text-sm text-gray-500 mb-6">
             <p>มีคำถาม? ติดต่อเราได้ที่</p>
             <p className="text-amber-600 font-medium">support@mybakery.com</p>
-            <p className="text-amber-600 font-medium">Tel: 02-XXX-XXXX</p>
+            <p className="text-amber-600 font-medium">Tel: 02-587-9990</p>
           </div>
 
           {/* Actions */}
