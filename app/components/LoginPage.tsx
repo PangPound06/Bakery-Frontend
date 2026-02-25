@@ -195,12 +195,12 @@ export default function LoginPage() {
                   จดจำฉันไว้
                 </label>
               </div>
-              <Link
+              {/*<Link
                 href="/forgot-password"
                 className="text-sm text-amber-600 hover:text-amber-700 font-medium"
               >
                 ลืมรหัสผ่าน?
-              </Link>
+              </Link>*/}
             </div>
 
             <button

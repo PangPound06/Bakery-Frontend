@@ -213,12 +213,12 @@ function LoginContent() {
                 />
                 <span className="ml-2 text-sm text-gray-600">จดจำฉันไว้</span>
               </label>
-              <Link
+              {/*<Link
                 href="/forgotpassword"
                 className="text-sm text-amber-600 hover:text-amber-700 font-medium"
               >
                 ลืมรหัสผ่าน?
-              </Link>
+              </Link>*/}
             </div>
 
             <button

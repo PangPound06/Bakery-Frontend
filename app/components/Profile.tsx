@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Swal from "sweetalert2";
 
 interface Profile {
   id: number;
@@ -14,9 +15,17 @@ interface Profile {
   profileImage: string;
 }
 
+interface UserData {
+  id?: number;
+  userId?: number;
+  email: string;
+  fullname?: string;
+  profileImage?: string;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,6 +39,11 @@ export default function ProfilePage() {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  const getUserId = (u: UserData | null): number | null => {
+    if (!u) return null;
+    return u.id || u.userId || null;
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -38,7 +52,8 @@ export default function ProfilePage() {
     }
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     setUser(userData);
-    fetchProfile(userData.id || userData.userId);
+    const uid = userData.id || userData.userId;
+    if (uid) fetchProfile(uid);
   }, [router]);
 
   const fetchProfile = async (userId: number) => {
@@ -64,21 +79,13 @@ export default function ProfilePage() {
     }
   };
 
-  // ✅ Helper: sync profileImage ไป localStorage แล้ว dispatch event ให้ Header รับรู้
-  const syncProfileImageToHeader = (imageUrl: string) => {
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const updatedUser = { ...currentUser, profileImage: imageUrl };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    window.dispatchEvent(new Event("storage"));
-    window.dispatchEvent(new Event("userStatusChanged"));
-  };
-
   const handleSave = async () => {
+    const userId = getUserId(user);
+    if (!userId) return;
+
     setSaving(true);
     setError("");
     try {
-      const userId = user.id || user.userId;
       const response = await fetch(
         `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
         {
@@ -90,7 +97,8 @@ export default function ProfilePage() {
       const data = await response.json();
       if (data.success) {
         setProfile(data.profile);
-        const updatedUser = { ...user, fullname: formData.fullname };
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const updatedUser = { ...currentUser, fullname: formData.fullname };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
         window.dispatchEvent(new Event("storage"));
@@ -111,37 +119,75 @@ export default function ProfilePage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const userId = getUserId(user);
+    if (!userId) return;
 
     setUploadingImage(true);
-    const formDataUpload = new FormData();
-    formDataUpload.append("file", file);
+    const fd = new FormData();
+    fd.append("file", file);
 
     try {
-      const userId = user.id || user.userId;
       const res = await fetch(
         `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
-        { method: "POST", body: formDataUpload },
+        { method: "POST", body: fd },
       );
       const data = await res.json();
       if (data.success) {
         setProfile((prev) =>
           prev ? { ...prev, profileImage: data.url } : prev,
         );
-        // ✅ Sync ไป Header ด้วย
-        syncProfileImageToHeader(data.url);
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const updatedUser = { ...currentUser, profileImage: data.url };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("userStatusChanged"));
+
+        // ✅ SweetAlert แทน alert
+        Swal.fire({
+          icon: "success",
+          title: "อัพโหลดรูปภาพสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "อัพโหลดไม่สำเร็จ",
+          text: data.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (err) {
-      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถอัพโหลดรูปภาพได้",
+        confirmButtonColor: "#f97316",
+      });
     } finally {
       setUploadingImage(false);
     }
   };
 
   const handleDeleteImage = async () => {
-    if (!confirm("ต้องการลบรูปภาพโปรไฟล์หรือไม่?")) return;
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "ลบรูปภาพโปรไฟล์?",
+      text: "ต้องการลบรูปภาพโปรไฟล์หรือไม่?",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
+
+    const userId = getUserId(user);
+    if (!userId) return;
 
     try {
-      const userId = user.id || user.userId;
       const res = await fetch(
         `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
         { method: "DELETE" },
@@ -149,11 +195,35 @@ export default function ProfilePage() {
       const data = await res.json();
       if (data.success) {
         setProfile((prev) => (prev ? { ...prev, profileImage: "" } : prev));
-        // ✅ Sync ไป Header ด้วย (ลบรูป → เคลียร์)
-        syncProfileImageToHeader("");
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const updatedUser = { ...currentUser, profileImage: "" };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("userStatusChanged"));
+
+        // ✅ SweetAlert แทน alert
+        Swal.fire({
+          icon: "success",
+          title: "ลบรูปภาพสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: data.message || "ไม่สามารถลบรูปภาพได้",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (err) {
-      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถลบรูปภาพได้",
+        confirmButtonColor: "#f97316",
+      });
     }
   };
 
@@ -179,7 +249,6 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="md:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <nav className="space-y-2">
@@ -217,7 +286,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Main */}
           <div className="md:col-span-3">
             <div className="bg-white rounded-2xl shadow-lg p-6">
               {success && (
@@ -231,7 +299,6 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Profile Header */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b">
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
@@ -295,7 +362,6 @@ export default function ProfilePage() {
                 </button>
               </div>
 
-              {/* Form */}
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

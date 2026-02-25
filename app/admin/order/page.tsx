@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface OrderItem {
   id: number;
@@ -35,7 +36,6 @@ export default function AdminOrdersPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Modal states
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -56,8 +56,12 @@ export default function AdminOrdersPage() {
     try {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
-        alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
-        router.replace("/");
+        Swal.fire({
+          icon: "error",
+          title: "ไม่มีสิทธิ์เข้าถึง",
+          text: "คุณไม่มีสิทธิ์เข้าถึงหน้านี้",
+          confirmButtonColor: "#f97316",
+        }).then(() => router.replace("/"));
         return;
       }
     } catch {
@@ -68,7 +72,7 @@ export default function AdminOrdersPage() {
     fetchOrders();
 
     const interval = setInterval(() => {
-      fetchOrders(true); // true = silent (ไม่แสดง loading)
+      fetchOrders(true);
     }, 2000);
 
     return () => clearInterval(interval);
@@ -83,9 +87,7 @@ export default function AdminOrdersPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // ═══ แจ้งเตือนเมื่อมี order ใหม่ ═══
         if (silent && data.length > prevOrderCount && prevOrderCount > 0) {
-          // เล่นเสียง
           try {
             const audio = new Audio(
               "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjlkp9/LpnQyHEBvruHLn2kvGT5wse7TpWcqFTpxsvLWpWUnEzlxtPfaqmMkETd0t/3grGAgDDR3u8U",
@@ -94,7 +96,6 @@ export default function AdminOrdersPage() {
             audio.play().catch(() => {});
           } catch {}
 
-          // แสดง notification (ถ้า browser อนุญาต)
           if (Notification.permission === "granted") {
             new Notification("🛒 คำสั่งซื้อใหม่!", {
               body: `มีคำสั่งซื้อใหม่เข้ามา (ทั้งหมด ${data.length} รายการ)`,
@@ -134,7 +135,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // ✅ เปลี่ยนสถานะ Order
   const updateOrderStatus = async (
     orderId: number,
     orderStatus: string,
@@ -156,28 +156,49 @@ export default function AdminOrdersPage() {
 
       const data = await response.json();
       if (data.success) {
-        alert("อัพเดทสถานะสำเร็จ");
+        await Swal.fire({
+          icon: "success",
+          title: "อัพเดทสถานะสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
         fetchOrders();
-        // อัพเดท modal ถ้าเปิดอยู่
         if (selectedOrder?.id === orderId) {
           fetchOrderDetail(orderId);
         }
       } else {
-        alert(data.message || "เกิดข้อผิดพลาด");
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: data.message || "ไม่สามารถอัพเดทสถานะได้",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (error) {
-      alert("ไม่สามารถอัพเดทสถานะได้");
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถอัพเดทสถานะได้",
+        confirmButtonColor: "#f97316",
+      });
     } finally {
       setUpdating(false);
     }
   };
 
-  // ✅ ยกเลิก Order
   const cancelOrder = async (orderId: number) => {
-    if (
-      !confirm("ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่? (Stock จะถูกคืนอัตโนมัติ)")
-    )
-      return;
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "ยกเลิกคำสั่งซื้อ?",
+      text: "Stock จะถูกคืนอัตโนมัติ ต้องการยกเลิกหรือไม่?",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ยกเลิกคำสั่งซื้อ",
+      cancelButtonText: "ไม่ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(
@@ -186,16 +207,32 @@ export default function AdminOrdersPage() {
       );
       const data = await response.json();
       if (data.success) {
-        alert("ยกเลิกคำสั่งซื้อสำเร็จ (Stock คืนแล้ว)");
+        await Swal.fire({
+          icon: "success",
+          title: "ยกเลิกสำเร็จ",
+          text: "ยกเลิกคำสั่งซื้อสำเร็จ (Stock คืนแล้ว)",
+          timer: 1500,
+          showConfirmButton: false,
+        });
         fetchOrders();
         if (selectedOrder?.id === orderId) {
           fetchOrderDetail(orderId);
         }
       } else {
-        alert(data.message || "เกิดข้อผิดพลาด");
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: data.message || "ไม่สามารถยกเลิกได้",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (error) {
-      alert("ไม่สามารถยกเลิกได้");
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถยกเลิกได้",
+        confirmButtonColor: "#f97316",
+      });
     }
   };
 
@@ -259,11 +296,10 @@ export default function AdminOrdersPage() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Asia/Bangkok", // ← เพิ่มบรรทัดนี้
+      timeZone: "Asia/Bangkok",
     });
   };
 
-  // ✅ Flow สถานะถัดไป
   const getNextStatusActions = (order: Order) => {
     const actions: {
       label: string;
@@ -271,7 +307,6 @@ export default function AdminOrdersPage() {
       paymentStatus?: string;
       color: string;
     }[] = [];
-
     switch (order.orderStatus) {
       case "pending":
         actions.push({
@@ -308,7 +343,6 @@ export default function AdminOrdersPage() {
         });
         break;
     }
-
     return actions;
   };
 
@@ -325,7 +359,6 @@ export default function AdminOrdersPage() {
     return matchStatus && matchSearch;
   });
 
-  // นับจำนวนตามสถานะ
   const statusCounts = {
     all: orders.length,
     pending: orders.filter((o) => o.orderStatus === "pending").length,
@@ -354,8 +387,7 @@ export default function AdminOrdersPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📦</span>
-              จัดการคำสั่งซื้อ
+              <span className="text-4xl">📦</span>จัดการคำสั่งซื้อ
             </h1>
             <p className="text-amber-600 mt-1">
               คำสั่งซื้อทั้งหมด {orders.length} รายการ
@@ -407,11 +439,7 @@ export default function AdminOrdersPage() {
             <button
               key={item.key}
               onClick={() => setFilterStatus(item.key)}
-              className={`p-3 rounded-xl text-center transition-all ${
-                filterStatus === item.key
-                  ? "ring-2 ring-amber-500 shadow-md"
-                  : "hover:shadow-md"
-              } ${item.color}`}
+              className={`p-3 rounded-xl text-center transition-all ${filterStatus === item.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"} ${item.color}`}
             >
               <div className="text-2xl">{item.icon}</div>
               <div className="text-xs font-medium mt-1">{item.label}</div>
@@ -486,9 +514,7 @@ export default function AdminOrdersPage() {
                   return (
                     <tr
                       key={order.id}
-                      className={`border-b border-amber-100 hover:bg-amber-50 ${
-                        index % 2 === 0 ? "bg-white" : "bg-amber-50/50"
-                      }`}
+                      className={`border-b border-amber-100 hover:bg-amber-50 ${index % 2 === 0 ? "bg-white" : "bg-amber-50/50"}`}
                     >
                       <td className="px-4 py-4 font-bold text-amber-800">
                         #{order.id}
@@ -513,8 +539,8 @@ export default function AdminOrdersPage() {
                             <button
                               onClick={() => {
                                 const url = order.slipImage.startsWith("http")
-                                  ? order.slipImage // Cloudinary URL ใหม่
-                                  : `https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`; // Path เก่า
+                                  ? order.slipImage
+                                  : `https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`;
                                 setSlipModal(url);
                               }}
                               className="block text-xs text-blue-600 hover:underline"
@@ -578,7 +604,7 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* ==================== Order Detail Modal ==================== */}
+      {/* Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -617,16 +643,12 @@ export default function AdminOrdersPage() {
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm text-gray-500">สถานะปัจจุบัน</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        getStatusBadge(selectedOrder.orderStatus).bg
-                      }`}
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(selectedOrder.orderStatus).bg}`}
                     >
                       {getStatusBadge(selectedOrder.orderStatus).icon}{" "}
                       {getStatusBadge(selectedOrder.orderStatus).text}
                     </span>
                   </div>
-
-                  {/* ✅ ปุ่มเปลี่ยนสถานะ */}
                   {getNextStatusActions(selectedOrder).length > 0 && (
                     <div className="flex gap-2">
                       {getNextStatusActions(selectedOrder).map((action, i) => (
@@ -686,7 +708,13 @@ export default function AdminOrdersPage() {
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>ค่าจัดส่ง</span>
-                    <span className="text-green-600">
+                    <span
+                      className={
+                        selectedOrder.shipping > 0
+                          ? "text-red-500"
+                          : "text-green-600"
+                      }
+                    >
                       {selectedOrder.shipping > 0
                         ? `฿${selectedOrder.shipping.toLocaleString()}`
                         : "ฟรี"}
@@ -717,9 +745,7 @@ export default function AdminOrdersPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-500">สถานะ</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          getPaymentBadge(selectedOrder.paymentStatus).bg
-                        }`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentBadge(selectedOrder.paymentStatus).bg}`}
                       >
                         {getPaymentBadge(selectedOrder.paymentStatus).text}
                       </span>
@@ -729,8 +755,8 @@ export default function AdminOrdersPage() {
                     <button
                       onClick={() => {
                         const url = selectedOrder.slipImage.startsWith("http")
-                          ? selectedOrder.slipImage // Cloudinary URL ใหม่
-                          : `https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`; // Path เก่า
+                          ? selectedOrder.slipImage
+                          : `https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`;
                         setSlipModal(url);
                       }}
                       className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium w-full"
@@ -787,7 +813,7 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {/* ==================== Slip Image Modal ==================== */}
+      {/* Slip Image Modal */}
       {slipModal && (
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
