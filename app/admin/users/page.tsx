@@ -81,6 +81,7 @@ export default function UserManagementPage() {
     e.preventDefault();
     setError("");
 
+    // แก้จาก
     if (!formData.fullname || !formData.email) {
       setError("กรุณากรอกข้อมูลให้ครบถ้วน");
       return;
@@ -89,17 +90,22 @@ export default function UserManagementPage() {
       setError("อีเมลต้องลงท้ายด้วย @empbakery.com");
       return;
     }
-    if (!editingAdmin && !formData.password) {
-      setError("กรุณากรอกรหัสผ่าน");
+
+    // เป็น
+    if (!formData.fullname) {
+      setError("กรุณากรอกชื่อ-นามสกุล");
       return;
     }
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      setError("รหัสผ่านไม่ตรงกัน");
-      return;
-    }
-    if (formData.password && formData.password.length < 6) {
-      setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
-      return;
+    if (!editingAdmin) {
+      // เช็ค email เฉพาะตอนเพิ่มใหม่
+      if (!formData.email) {
+        setError("กรุณากรอกอีเมล");
+        return;
+      }
+      if (!formData.email.endsWith("@empbakery.com")) {
+        setError("อีเมลต้องลงท้ายด้วย @empbakery.com");
+        return;
+      }
     }
 
     try {

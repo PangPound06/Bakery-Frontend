@@ -344,10 +344,15 @@ export default function AccountPage() {
                         type="tel"
                         value={profile.phone}
                         onChange={(e) =>
-                          setProfile({ ...profile, phone: e.target.value })
+                          setProfile({
+                            ...profile,
+                            phone: e.target.value.replace(/[^0-9]/g, ""),
+                          })
                         }
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
                         placeholder="0xx-xxx-xxxx"
+                        inputMode="numeric"
+                        maxLength={10}
                       />
                     </div>
 
