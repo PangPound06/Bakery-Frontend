@@ -113,8 +113,8 @@ export default function FavoritesPage() {
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-gray-800">❤️ รายการโปรด</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-amber-800">❤️ รายการโปรด</h1>
+          <p className="text-amber-600 mt-1">
             สินค้าที่คุณชอบ {favorites.length} รายการ
           </p>
         </div>

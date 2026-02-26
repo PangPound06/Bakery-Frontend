@@ -211,10 +211,10 @@ export default function OrdersPage() {
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-amber-800">
             📋 รายการสั่งซื้อ
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-amber-600 mt-1">
             คำสั่งซื้อทั้งหมด {orders.length} รายการ
           </p>
         </div>

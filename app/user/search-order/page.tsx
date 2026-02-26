@@ -100,7 +100,7 @@ export default function SearchOrderPage() {
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-amber-800">
             🔍 ค้นหาคำสั่งซื้อ
           </h1>
         </div>

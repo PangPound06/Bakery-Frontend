@@ -278,7 +278,7 @@ export default function ProductDetail({
 
             {/* Info */}
             <div className="p-8 lg:p-10 flex flex-col">
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
+              <h1 className="text-3xl lg:text-4xl font-bold text-amber-800 mb-3">
                 {product.name}
               </h1>
 
@@ -326,13 +326,13 @@ export default function ProductDetail({
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-amber-50 rounded-xl p-4 text-center">
                   <p className="text-sm text-gray-500 mb-1">หมวดหมู่</p>
-                  <p className="font-semibold text-gray-800 capitalize">
+                  <p className="font-semibold text-amber-600 capitalize">
                     {categoryIcon} {product.category}
                   </p>
                 </div>
                 <div className="bg-amber-50 rounded-xl p-4 text-center">
                   <p className="text-sm text-gray-500 mb-1">ประเภท</p>
-                  <p className="font-semibold text-gray-800">{product.type}</p>
+                  <p className="font-semibold text-amber-600">{product.type}</p>
                 </div>
                 <div className="bg-amber-50 rounded-xl p-4 text-center">
                   <p className="text-sm text-gray-500 mb-1">คงเหลือ</p>
