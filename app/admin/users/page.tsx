@@ -25,7 +25,7 @@ export default function UserManagementPage() {
     role: "admin",
   });
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchAdmins();
@@ -81,24 +81,15 @@ export default function UserManagementPage() {
     e.preventDefault();
     setError("");
 
-    // แก้จาก
-    if (!formData.fullname || !formData.email) {
-      setError("กรุณากรอกข้อมูลให้ครบถ้วน");
-      return;
-    }
-    if (!formData.email.endsWith("@empbakery.com")) {
-      setError("อีเมลต้องลงท้ายด้วย @empbakery.com");
-      return;
-    }
-
-    // เป็น
-    if (!formData.fullname) {
+    // ═══ Validation ═══
+    if (!formData.fullname.trim()) {
       setError("กรุณากรอกชื่อ-นามสกุล");
       return;
     }
+
     if (!editingAdmin) {
-      // เช็ค email เฉพาะตอนเพิ่มใหม่
-      if (!formData.email) {
+      // เพิ่มใหม่ — ต้องกรอก email + password
+      if (!formData.email.trim()) {
         setError("กรุณากรอกอีเมล");
         return;
       }
@@ -106,32 +97,67 @@ export default function UserManagementPage() {
         setError("อีเมลต้องลงท้ายด้วย @empbakery.com");
         return;
       }
+      if (!formData.password) {
+        setError("กรุณากรอกรหัสผ่าน");
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("รหัสผ่านไม่ตรงกัน");
+        return;
+      }
+    } else {
+      // แก้ไข — ถ้ากรอกรหัสผ่านใหม่ ต้องตรงกัน
+      if (formData.password) {
+        if (formData.password.length < 6) {
+          setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+          return;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          setError("รหัสผ่านไม่ตรงกัน");
+          return;
+        }
+      }
     }
+
+    setSaving(true);
 
     try {
       let response;
+
       if (editingAdmin) {
+        // ═══ แก้ไข Admin ═══
+        const body: any = {
+          fullname: formData.fullname.trim(),
+          role: formData.role,
+        };
+        if (formData.password) {
+          body.password = formData.password;
+        }
+
+        console.log("📤 Sending update:", body); // debug
+
         response = await fetch(
           `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${editingAdmin.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fullname: formData.fullname,
-              role: formData.role,
-              ...(formData.password && { password: formData.password }),
-            }),
+            body: JSON.stringify(body),
           },
         );
       } else {
+        // ═══ เพิ่ม Admin ใหม่ ═══
         response = await fetch(
           "https://bakery-backend-production-6fc9.up.railway.app/api/admin/register",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              fullname: formData.fullname,
-              email: formData.email,
+              fullname: formData.fullname.trim(),
+              email: formData.email.trim(),
               password: formData.password,
               role: formData.role,
             }),
@@ -140,6 +166,8 @@ export default function UserManagementPage() {
       }
 
       const data = await response.json();
+      console.log("📥 Response:", data); // debug
+
       if (data.success) {
         setShowModal(false);
         fetchAdmins();
@@ -156,6 +184,8 @@ export default function UserManagementPage() {
       }
     } catch (err) {
       setError("ไม่สามารถเชื่อมต่อ server ได้");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -263,12 +293,6 @@ export default function UserManagementPage() {
           </button>
         </div>
 
-        {success && (
-          <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            ✅ {success}
-          </div>
-        )}
-
         <div className="mb-6">
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -369,17 +393,17 @@ export default function UserManagementPage() {
         </div>
       </div>
 
+      {/* ═══ Modal ═══ */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-full max-w-md mx-4">
             <div className="flex justify-between items-center px-6 py-4 border-b bg-amber-500 text-white rounded-t-xl">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <span>+</span>
-                {editingAdmin ? "แก้ไข Admin" : "เพิ่ม Admin ใหม่"}
+                {editingAdmin ? "✏️ แก้ไข Admin" : "➕ เพิ่ม Admin ใหม่"}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-white hover:text-gray-200"
+                className="text-white hover:text-gray-200 text-xl"
               >
                 ✕
               </button>
@@ -390,6 +414,8 @@ export default function UserManagementPage() {
                   ⚠️ {error}
                 </div>
               )}
+
+              {/* ชื่อ */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ชื่อ-นามสกุล *
@@ -400,11 +426,12 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, fullname: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   placeholder="ชื่อ นามสกุล"
-                  required
                 />
               </div>
+
+              {/* อีเมล */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   อีเมล *
@@ -415,15 +442,18 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none ${editingAdmin ? "bg-gray-100 text-gray-500" : ""}`}
                   placeholder="example@empbakery.com"
                   disabled={!!editingAdmin}
-                  required
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  * ต้องลงท้ายด้วย @empbakery.com
-                </p>
+                {!editingAdmin && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    * ต้องลงท้ายด้วย @empbakery.com
+                  </p>
+                )}
               </div>
+
+              {/* รหัสผ่าน */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   รหัสผ่าน{" "}
@@ -435,10 +465,12 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   placeholder="อย่างน้อย 6 ตัวอักษร"
                 />
               </div>
+
+              {/* ยืนยันรหัสผ่าน */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ยืนยันรหัสผ่าน
@@ -452,10 +484,12 @@ export default function UserManagementPage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   placeholder="กรอกรหัสผ่านอีกครั้ง"
                 />
               </div>
+
+              {/* บทบาท */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   บทบาท *
@@ -465,7 +499,7 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 >
                   <option value="staff">Staff (พนักงาน)</option>
                   <option value="admin">Admin (ผู้ดูแล)</option>
@@ -473,7 +507,15 @@ export default function UserManagementPage() {
                     Super Admin (ผู้ดูแลสูงสุด)
                   </option>
                 </select>
+                {/* แสดง role ที่เลือก */}
+                <p className="text-xs text-gray-500 mt-1">
+                  เลือกแล้ว:{" "}
+                  <span className="font-medium">
+                    {getRoleDisplayName(formData.role)}
+                  </span>
+                </p>
               </div>
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
@@ -484,9 +526,14 @@ export default function UserManagementPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50"
                 >
-                  {editingAdmin ? "💾 บันทึก" : "+ เพิ่มผู้ใช้"}
+                  {saving
+                    ? "กำลังบันทึก..."
+                    : editingAdmin
+                      ? "💾 บันทึก"
+                      : "➕ เพิ่มผู้ใช้"}
                 </button>
               </div>
             </form>
