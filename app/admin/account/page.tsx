@@ -19,9 +19,7 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<
-    "profile" | "password" | "settings"
-  >("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "settings">("profile");
 
   const [profile, setProfile] = useState<AdminProfile>({
     id: 0,
@@ -31,12 +29,6 @@ export default function AccountPage() {
     phone: "",
     address: "",
     createdAt: "",
-  });
-
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
   });
 
   const [settings, setSettings] = useState({
@@ -127,60 +119,14 @@ export default function AccountPage() {
 
       const data = await response.json();
       if (data.success) {
-        // อัพเดท localStorage
         const userData = localStorage.getItem("user");
         if (userData) {
           const user = JSON.parse(userData);
           user.fullname = profile.fullname;
           localStorage.setItem("user", JSON.stringify(user));
+          window.dispatchEvent(new Event("userStatusChanged"));
         }
         showMessage("success", "บันทึกข้อมูลสำเร็จ");
-      } else {
-        showMessage("error", data.message || "เกิดข้อผิดพลาด");
-      }
-    } catch (err) {
-      showMessage("error", "ไม่สามารถเชื่อมต่อ server ได้");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      showMessage("error", "รหัสผ่านใหม่ไม่ตรงกัน");
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 6) {
-      showMessage("error", "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/admin/profile/${profile.email}/password`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            currentPassword: passwordForm.currentPassword,
-            newPassword: passwordForm.newPassword,
-          }),
-        },
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        showMessage("success", "เปลี่ยนรหัสผ่านสำเร็จ");
-        setPasswordForm({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
       } else {
         showMessage("error", data.message || "เกิดข้อผิดพลาด");
       }
@@ -214,7 +160,6 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-amber-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="text-4xl">⚙️</span>
@@ -245,31 +190,13 @@ export default function AccountPage() {
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                    activeTab === "profile"
-                      ? "bg-slate-700 text-white"
-                      : "hover:bg-slate-100 text-slate-600"
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === "profile" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </button>
                 <button
-                  onClick={() => setActiveTab("password")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                    activeTab === "password"
-                      ? "bg-slate-700 text-white"
-                      : "hover:bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  <span>🔒</span> เปลี่ยนรหัสผ่าน
-                </button>
-                <button
                   onClick={() => setActiveTab("settings")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                    activeTab === "settings"
-                      ? "bg-slate-700 text-white"
-                      : "hover:bg-slate-100 text-slate-600"
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === "settings" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
                 >
                   <span>⚙️</span> การตั้งค่า
                 </button>
@@ -287,7 +214,6 @@ export default function AccountPage() {
           {/* Content */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-2xl shadow-md p-6">
-              {/* Messages */}
               {success && (
                 <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
                   ✅ {success}
@@ -305,7 +231,6 @@ export default function AccountPage() {
                   <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                     <span>👤</span> ข้อมูลส่วนตัว
                   </h2>
-
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -320,7 +245,6 @@ export default function AccountPage() {
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         อีเมล
@@ -335,7 +259,6 @@ export default function AccountPage() {
                         ไม่สามารถเปลี่ยนอีเมลได้
                       </p>
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         เบอร์โทรศัพท์
@@ -355,7 +278,6 @@ export default function AccountPage() {
                         maxLength={10}
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         ที่อยู่
@@ -370,7 +292,6 @@ export default function AccountPage() {
                         placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         วันที่สร้างบัญชี
@@ -383,7 +304,6 @@ export default function AccountPage() {
                       />
                     </div>
                   </div>
-
                   <div className="mt-6">
                     <button
                       type="submit"
@@ -405,99 +325,12 @@ export default function AccountPage() {
                 </form>
               )}
 
-              {/* Password Tab */}
-              {activeTab === "password" && (
-                <form onSubmit={handlePasswordSubmit}>
-                  <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <span>🔒</span> เปลี่ยนรหัสผ่าน
-                  </h2>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        รหัสผ่านปัจจุบัน
-                      </label>
-                      <input
-                        type="password"
-                        value={passwordForm.currentPassword}
-                        onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            currentPassword: e.target.value,
-                          })
-                        }
-                        required
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        รหัสผ่านใหม่
-                      </label>
-                      <input
-                        type="password"
-                        value={passwordForm.newPassword}
-                        onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            newPassword: e.target.value,
-                          })
-                        }
-                        required
-                        minLength={6}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
-                        placeholder="อย่างน้อย 6 ตัวอักษร"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        ยืนยันรหัสผ่านใหม่
-                      </label>
-                      <input
-                        type="password"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            confirmPassword: e.target.value,
-                          })
-                        }
-                        required
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="px-6 py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {saving ? (
-                        <>
-                          <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{" "}
-                          กำลังบันทึก...
-                        </>
-                      ) : (
-                        <>
-                          <span>🔐</span> เปลี่ยนรหัสผ่าน
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
-
               {/* Settings Tab */}
               {activeTab === "settings" && (
                 <div>
                   <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                     <span>⚙️</span> การตั้งค่า
                   </h2>
-
                   <div className="space-y-4">
                     {[
                       {
