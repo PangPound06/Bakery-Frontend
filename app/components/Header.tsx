@@ -252,7 +252,6 @@ export default function Header() {
             data.success && data.profile?.profileImage
               ? data.profile.profileImage
               : "";
-          // อัพเดทเฉพาะเมื่อรูปเปลี่ยน
           if (newImage !== user.profileImage) {
             const updated = { ...userData, profileImage: newImage };
             localStorage.setItem("user", JSON.stringify(updated));
