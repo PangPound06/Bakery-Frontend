@@ -289,7 +289,9 @@ export default function AdminOrdersPage() {
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(
+      dateStr + (dateStr.endsWith("Z") || dateStr.includes("+") ? "" : "Z"),
+    );
     return date.toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",

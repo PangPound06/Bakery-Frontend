@@ -156,14 +156,16 @@ export default function AdminDashboard() {
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(
+      dateStr + (dateStr.endsWith("Z") || dateStr.includes("+") ? "" : "Z"),
+    );
     return date.toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Asia/Bangkok", // ← เพิ่มบรรทัดนี้
+      timeZone: "Asia/Bangkok",
     });
   };
 
