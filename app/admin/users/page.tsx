@@ -278,7 +278,7 @@ export default function UserManagementPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-black flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-2">
               👥 User Management
             </h1>
             <p className="text-amber-600 mt-1">

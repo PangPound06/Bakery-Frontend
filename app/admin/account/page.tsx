@@ -182,11 +182,11 @@ export default function AccountPage() {
     <div className="min-h-screen bg-amber-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
             <span className="text-4xl">⚙️</span>
             My Account
           </h1>
-          <p className="text-slate-600 mt-1">
+          <p className="text-amber-600 mt-1">
             จัดการข้อมูลส่วนตัวและการตั้งค่า
           </p>
         </div>

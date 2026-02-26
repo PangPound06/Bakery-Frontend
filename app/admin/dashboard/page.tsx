@@ -185,11 +185,11 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
             <span className="text-4xl">📊</span>
             Dashboard
           </h1>
-          <p className="text-slate-600 mt-1">ภาพรวมของร้าน My Bakery</p>
+          <p className="text-amber-600 mt-1">ภาพรวมของร้าน My Bakery</p>
         </div>
 
         {/* Stats Cards */}
