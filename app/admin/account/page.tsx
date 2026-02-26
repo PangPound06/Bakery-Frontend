@@ -184,7 +184,7 @@ export default function AccountPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="text-4xl">⚙️</span>
-            บัญชีของฉัน
+            My Account
           </h1>
           <p className="text-slate-600 mt-1">
             จัดการข้อมูลส่วนตัวและการตั้งค่า

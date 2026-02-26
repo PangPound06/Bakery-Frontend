@@ -543,7 +543,7 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-              <span className="text-4xl">📋</span> รายงาน
+              <span className="text-4xl">📋</span> Report
             </h1>
             <p className="text-slate-600 mt-1">ดูสถิติและรายงานการขาย</p>
           </div>

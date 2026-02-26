@@ -389,7 +389,7 @@ export default function AdminOrdersPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📦</span>จัดการคำสั่งซื้อ
+              <span className="text-4xl">📦</span>Manage orders
             </h1>
             <p className="text-amber-600 mt-1">
               คำสั่งซื้อทั้งหมด {orders.length} รายการ
