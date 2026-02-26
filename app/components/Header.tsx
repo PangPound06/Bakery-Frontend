@@ -233,13 +233,11 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ดึง profileImage จาก API ถ้ายังไม่มีใน localStorage 
+  // ดึง profileImage จาก API ถ้ายังไม่มีใน localStorage
   useEffect(() => {
     if (!user || isAdmin) return;
 
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    if (userData.profileImage) return; // มีแล้วไม่ต้อง fetch
-
     const userId = userData.id || userData.userId;
     if (!userId) return;
 
@@ -250,16 +248,16 @@ export default function Header() {
         );
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.profile?.profileImage) {
-            const updated = {
-              ...userData,
-              profileImage: data.profile.profileImage,
-            };
+          const newImage =
+            data.success && data.profile?.profileImage
+              ? data.profile.profileImage
+              : "";
+          // อัพเดทเฉพาะเมื่อรูปเปลี่ยน
+          if (newImage !== user.profileImage) {
+            const updated = { ...userData, profileImage: newImage };
             localStorage.setItem("user", JSON.stringify(updated));
             setUser((prev) =>
-              prev
-                ? { ...prev, profileImage: data.profile.profileImage }
-                : prev,
+              prev ? { ...prev, profileImage: newImage } : prev,
             );
           }
         }
@@ -269,7 +267,7 @@ export default function Header() {
     };
 
     fetchProfileImage();
-  }, [user, isAdmin]);
+  }, [user?.email, isAdmin]);
 
   const handleSearchSelect = (product: SearchResult) => {
     setSearchQuery("");
