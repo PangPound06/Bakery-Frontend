@@ -422,7 +422,7 @@ export default function CheckoutPage() {
         formattedValue = `${validMonth}/${yearPart}`;
       }
     } else if (name === "cvc") {
-      formattedValue = value.replace(/\D/g, "").slice(0, 4);
+      formattedValue = value.replace(/\D/g, "").slice(0, 3);
     }
 
     setCardData({ ...cardData, [name]: formattedValue });
@@ -928,6 +928,8 @@ export default function CheckoutPage() {
                           name="expiry"
                           value={cardData.expiry}
                           onChange={handleCardInput}
+                          inputMode="numeric"
+                          maxLength={5}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="MM/YY"
                         />
@@ -941,6 +943,8 @@ export default function CheckoutPage() {
                           name="cvc"
                           value={cardData.cvc}
                           onChange={handleCardInput}
+                          inputMode="numeric"
+                          maxLength={3}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="123"
                         />

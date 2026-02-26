@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import Swal from "sweetalert2";
+
 interface AdminProfile {
   id: number;
   email: string;
@@ -137,11 +139,30 @@ export default function AccountPage() {
     }
   };
 
-  const handleLogout = () => {
-    const confirmed = window.confirm("คุณต้องการออกจากระบบหรือไม่?");
-    if (confirmed) {
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: "ออกจากระบบ?",
+      text: "คุณต้องการออกจากระบบหรือไม่?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ออกจากระบบ",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (result.isConfirmed) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+
+      await Swal.fire({
+        title: "ออกจากระบบสำเร็จ!",
+        text: "ขอบคุณที่ใช้บริการ 👋",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
       window.location.href = "/login";
     }
   };
