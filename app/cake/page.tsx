@@ -49,12 +49,13 @@ export default function CakePage() {
   };
 
   useEffect(() => {
-    fetchProducts(); // เรียกใช้ได้เลย
-  }, []);
+    fetchProducts();
 
-  useEffect(() => {
-    window.addEventListener("storage", fetchProducts);
-    return () => window.removeEventListener("storage", fetchProducts);
+    const interval = setInterval(() => {
+      fetchProducts();
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const types = [
