@@ -156,6 +156,8 @@ export default function AdminOrdersPage() {
 
       const data = await response.json();
       if (data.success) {
+        localStorage.setItem("stockUpdated", Date.now().toString());
+        window.dispatchEvent(new Event("storage"));
         await Swal.fire({
           icon: "success",
           title: "อัพเดทสถานะสำเร็จ",
@@ -207,6 +209,8 @@ export default function AdminOrdersPage() {
       );
       const data = await response.json();
       if (data.success) {
+        localStorage.setItem("stockUpdated", Date.now().toString());
+        window.dispatchEvent(new Event("storage"));
         await Swal.fire({
           icon: "success",
           title: "ยกเลิกสำเร็จ",
