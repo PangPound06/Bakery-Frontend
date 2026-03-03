@@ -213,14 +213,20 @@ export default function UserManagementPage() {
   };
 
   const deleteAdmin = async (admin: Admin) => {
+    // เช็คว่าลบตัวเองหรือเปล่า
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const isDeletingSelf = currentUser.email === admin.email;
+
     const result = await Swal.fire({
-      title: "ลบ Admin?",
-      text: `ต้องการลบ "${admin.fullname || admin.email}" ใช่หรือไม่?`,
+      title: isDeletingSelf ? "ลบบัญชีของคุณ?" : "ลบ Admin?",
+      text: isDeletingSelf
+        ? "คุณกำลังลบบัญชีของตัวเอง จะถูกออกจากระบบทันที"
+        : `ต้องการลบ "${admin.fullname || admin.email}" ใช่หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "ลบ",
+      confirmButtonText: isDeletingSelf ? "ลบบัญชีและออกจากระบบ" : "ลบ",
       cancelButtonText: "ยกเลิก",
     });
 
@@ -233,14 +239,31 @@ export default function UserManagementPage() {
       );
       const data = await response.json();
       if (data.success) {
-        fetchAdmins();
-        await Swal.fire({
-          title: "ลบสำเร็จ!",
-          icon: "success",
-          confirmButtonColor: "#f97316",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        if (isDeletingSelf) {
+          // ลบตัวเอง → ล้าง localStorage แล้วไปหน้า Login
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("userType");
+
+          await Swal.fire({
+            title: "ลบบัญชีสำเร็จ!",
+            text: "กำลังออกจากระบบ...",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+
+          window.location.href = "/login";
+        } else {
+          fetchAdmins();
+          await Swal.fire({
+            title: "ลบสำเร็จ!",
+            icon: "success",
+            confirmButtonColor: "#f97316",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        }
       }
     } catch (err) {
       console.error("Error deleting admin:", err);
