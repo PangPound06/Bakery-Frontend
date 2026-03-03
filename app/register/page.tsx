@@ -59,6 +59,17 @@ export default function RegisterPage() {
       return;
     }
 
+    if (formData.email.toLowerCase().endsWith("@empbakery.com")) {
+      Swal.fire({
+        icon: "error",
+        title: "ไม่สามารถสมัครได้",
+        text: "อีเมล @empbakery.com สงวนไว้สำหรับพนักงานเท่านั้น",
+        confirmButtonColor: "#f97316",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(
         "https://bakery-backend-production-6fc9.up.railway.app/api/auth/register",
