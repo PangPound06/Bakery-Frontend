@@ -613,7 +613,7 @@ export default function CheckoutPage() {
           >
             ← กลับไปตะกร้าสินค้า
           </Link>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-amber-800">
             💳 ดำเนินการชำระเงิน
           </h1>
         </div>
@@ -628,7 +628,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* ข้อมูลการจัดส่ง */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold text-amber-800 mb-4">
                 📦 ข้อมูลการจัดส่ง
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -703,7 +703,7 @@ export default function CheckoutPage() {
 
             {/* วิธีชำระเงิน */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold text-amber-800 mb-4">
                 💰 เลือกวิธีชำระเงิน
               </h2>
 
@@ -959,7 +959,7 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-4">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold text-amber-800 mb-4">
                 📋 สรุปคำสั่งซื้อ
               </h2>
 
@@ -967,7 +967,7 @@ export default function CheckoutPage() {
                 {orderSummary?.items.map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
+                      <p className="text-sm font-medium text-amber-700 truncate">
                         {item.productName}
                       </p>
                       <p className="text-xs text-gray-500">x{item.quantity}</p>
@@ -1014,7 +1014,7 @@ export default function CheckoutPage() {
                 )}
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-800">
+                    <span className="text-lg font-semibold text-amber-800">
                       ยอดรวมทั้งหมด
                     </span>
                     <span className="text-2xl font-bold text-amber-600">
