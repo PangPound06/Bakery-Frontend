@@ -19,6 +19,7 @@ const adminNavLinks = [
   { href: "/admin/order", label: "Orders", icon: "🛒" },
   { href: "/admin/reports", label: "Reports", icon: "📋" },
   { href: "/admin/users", label: "User Management", icon: "👥" },
+  { href: "/admin/settings", label: "Shop Settings", icon: "📍" },
   { href: "/admin/account", label: "Account Settings", icon: "⚙️" },
 ];
 
@@ -98,6 +99,13 @@ const userPages = [
     keywords: ["drink", "เครื่องดื่ม", "กาแฟ", "ชา"],
   },
   { href: "/cake", label: "หน้า Cake", icon: "🎂", keywords: ["cake", "เค้ก"] },
+  
+  {
+    href: "/admin/settings",
+    label: "ตั้งค่าร้าน",
+    icon: "📍",
+    keywords: ["shop settings", "ตั้งค่าร้าน", "พิกัด", "แผนที่", "จัดส่ง", "delivery", "โซนจัดส่ง"],
+  },
 ];
 
 interface SearchResult {
