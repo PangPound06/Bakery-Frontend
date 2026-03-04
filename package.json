@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@react-google-maps/api": "^2.20.8",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.2",
     "jspdf": "^4.1.0",
