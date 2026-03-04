@@ -9,8 +9,20 @@ export default function CheckoutSuccessPage() {
   useEffect(() => {
     const lastOrderId = localStorage.getItem("lastOrderId");
     if (lastOrderId) {
-      const id = "ORD" + String(lastOrderId).padStart(8, "0");
-      setOrderId(id);
+      fetch(`https://bakery-backend-production-6fc9.up.railway.app/api/orders/${lastOrderId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.order?.ordCode) {
+            setOrderId(data.order.ordCode);
+          } else {
+            const id = lastOrderId;
+            setOrderId(`ORD${String((Number(id) * 104729) % 1000000).padStart(6, "0")}${id}`);
+          }
+        })
+        .catch(() => {
+          const id = lastOrderId;
+          setOrderId(`ORD${String((Number(id) * 104729) % 1000000).padStart(6, "0")}${id}`);
+        });
     }
   }, []);
 
