@@ -355,9 +355,12 @@ export default function AdminOrdersPage() {
   const filteredOrders = orders.filter((order) => {
     const matchStatus =
       filterStatus === "all" || order.orderStatus === filterStatus;
+    const ordCode = `ORD${String(order.id).padStart(8, "0")}`;
+    const searchUpper = searchTerm.toUpperCase().trim();
     const matchSearch =
       searchTerm === "" ||
       order.id.toString().includes(searchTerm) ||
+      ordCode.includes(searchUpper) ||
       order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.receiverName || "")
         .toLowerCase()
