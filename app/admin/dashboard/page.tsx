@@ -40,7 +40,6 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // ดึงข้อมูลสินค้า
       const productsRes = await fetch(
         "https://bakery-backend-production-6fc9.up.railway.app/api/products",
       );
@@ -52,7 +51,6 @@ export default function AdminDashboard() {
         );
       }
 
-      // ดึงข้อมูล Orders จริง
       const ordersRes = await fetch(
         "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
       );
@@ -61,7 +59,6 @@ export default function AdminDashboard() {
         setOrders(ordersData);
       }
 
-      // ดึงข้อมูล Users จริง
       const usersRes = await fetch(
         "https://bakery-backend-production-6fc9.up.railway.app/api/auth/users",
       );
@@ -76,7 +73,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // คำนวณสถิติจากข้อมูลจริง
   const totalOrders = orders.length;
   const totalRevenue = orders
     .filter((o) => o.orderStatus !== "cancelled")
@@ -86,10 +82,8 @@ export default function AdminDashboard() {
     (o) => o.orderStatus === "pending",
   ).length;
 
-  // orders ล่าสุด 5 รายการ
   const recentOrders = orders.slice(0, 5);
 
-  // คำนวณ % เทียบกับสัปดาห์ก่อน
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
@@ -181,92 +175,94 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 py-8 px-4">
+    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-            <span className="text-4xl">📊</span>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+            <span className="text-3xl md:text-4xl">📊</span>
             Dashboard
           </h1>
           <p className="text-amber-600 mt-1">ภาพรวมของร้าน My Bakery</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* ✅ Stats Cards — ปรับ grid ให้ 2 คอลัมน์บน tablet, 4 คอลัมน์บน desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Total Products */}
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-blue-500">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-500 text-sm font-medium">
+                <p className="text-slate-500 text-xs md:text-sm font-medium">
                   สินค้าทั้งหมด
                 </p>
-                <p className="text-3xl font-bold text-slate-800 mt-1">
+                <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
                   {totalProducts}
                 </p>
               </div>
-              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📦</span>
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-lg md:text-2xl">📦</span>
               </div>
             </div>
-            <p className="text-xs text-red-500 mt-3">
+            <p className="text-xs text-red-500 mt-2 md:mt-3">
               ⚠️ {lowStockProducts} รายการใกล้หมด
             </p>
           </div>
 
           {/* Total Orders */}
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-green-500">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-500 text-sm font-medium">
+                <p className="text-slate-500 text-xs md:text-sm font-medium">
                   คำสั่งซื้อทั้งหมด
                 </p>
-                <p className="text-3xl font-bold text-slate-800 mt-1">
+                <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
                   {totalOrders}
                 </p>
               </div>
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🛒</span>
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-lg md:text-2xl">🛒</span>
               </div>
             </div>
-            <p className="text-xs text-amber-600 mt-3">
+            <p className="text-xs text-amber-600 mt-2 md:mt-3">
               ⏳ {pendingOrders} รอดำเนินการ
             </p>
           </div>
 
           {/* Total Users */}
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-purple-500">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-500 text-sm font-medium">
+                <p className="text-slate-500 text-xs md:text-sm font-medium">
                   สมาชิกทั้งหมด
                 </p>
-                <p className="text-3xl font-bold text-slate-800 mt-1">
+                <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
                   {totalUsers}
                 </p>
               </div>
-              <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">👥</span>
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-lg md:text-2xl">👥</span>
               </div>
             </div>
           </div>
 
           {/* Total Revenue */}
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-amber-500">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-amber-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-500 text-sm font-medium">รายได้รวม</p>
-                <p className="text-3xl font-bold text-slate-800 mt-1">
+                <p className="text-slate-500 text-xs md:text-sm font-medium">
+                  รายได้รวม
+                </p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
                   ฿{totalRevenue.toLocaleString()}
                 </p>
               </div>
-              <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">💰</span>
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-amber-100 rounded-full flex items-center justify-center">
+                <span className="text-lg md:text-2xl">💰</span>
               </div>
             </div>
             {revenueChange !== 0 && (
               <p
-                className={`text-xs mt-3 ${
+                className={`text-xs mt-2 md:mt-3 ${
                   revenueChange > 0 ? "text-green-600" : "text-red-500"
                 }`}
               >
@@ -277,20 +273,22 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions & Recent Orders */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ✅ Quick Actions & Recent Orders — ปรับ grid ให้ทำงานดีบน tablet */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
               <span>⚡</span> การดำเนินการด่วน
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               <button
                 onClick={() => router.push("/admin/crudproduct")}
                 className="w-full flex items-center gap-3 p-3 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors text-left"
               >
                 <span className="text-xl">📦</span>
-                <span className="font-medium text-slate-700">จัดการสินค้า</span>
+                <span className="font-medium text-slate-700 text-sm md:text-base">
+                  จัดการสินค้า
+                </span>
               </button>
               <button
                 onClick={() => router.push("/admin/order")}
@@ -298,7 +296,7 @@ export default function AdminDashboard() {
               >
                 <span className="text-xl">🛒</span>
                 <div>
-                  <span className="font-medium text-slate-700">
+                  <span className="font-medium text-slate-700 text-sm md:text-base">
                     จัดการคำสั่งซื้อ
                   </span>
                   {pendingOrders > 0 && (
@@ -313,28 +311,34 @@ export default function AdminDashboard() {
                 className="w-full flex items-center gap-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors text-left"
               >
                 <span className="text-xl">👥</span>
-                <span className="font-medium text-slate-700">จัดการผู้ใช้</span>
+                <span className="font-medium text-slate-700 text-sm md:text-base">
+                  จัดการผู้ใช้
+                </span>
               </button>
               <button
                 onClick={() => router.push("/admin/reports")}
                 className="w-full flex items-center gap-3 p-3 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors text-left"
               >
                 <span className="text-xl">📋</span>
-                <span className="font-medium text-slate-700">ดูรายงาน</span>
+                <span className="font-medium text-slate-700 text-sm md:text-base">
+                  ดูรายงาน
+                </span>
               </button>
               <button
                 onClick={() => router.push("/admin/account")}
                 className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left"
               >
                 <span className="text-xl">⚙️</span>
-                <span className="font-medium text-slate-700">ตั้งค่าบัญชี</span>
+                <span className="font-medium text-slate-700 text-sm md:text-base">
+                  ตั้งค่าบัญชี
+                </span>
               </button>
             </div>
           </div>
 
           {/* Recent Orders */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <div className="md:col-span-2 bg-white rounded-2xl shadow-md p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
               <span>📋</span> คำสั่งซื้อล่าสุด
             </h2>
 
@@ -348,19 +352,19 @@ export default function AdminDashboard() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-600">
+                      <th className="text-left py-3 px-2 text-xs md:text-sm font-semibold text-slate-600">
                         รหัส
                       </th>
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-600">
+                      <th className="text-left py-3 px-2 text-xs md:text-sm font-semibold text-slate-600">
                         ลูกค้า
                       </th>
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-600">
+                      <th className="text-left py-3 px-2 text-xs md:text-sm font-semibold text-slate-600">
                         ยอดรวม
                       </th>
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-600">
+                      <th className="text-left py-3 px-2 text-xs md:text-sm font-semibold text-slate-600">
                         สถานะ
                       </th>
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-600">
+                      <th className="text-left py-3 px-2 text-xs md:text-sm font-semibold text-slate-600 hidden md:table-cell">
                         วันที่
                       </th>
                     </tr>
@@ -372,18 +376,18 @@ export default function AdminDashboard() {
                         className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
                         onClick={() => router.push("/admin/order")}
                       >
-                        <td className="py-3 px-2 text-sm font-medium text-slate-800">
+                        <td className="py-3 px-2 text-xs md:text-sm font-medium text-slate-800">
                           #{order.id}
                         </td>
                         <td className="py-3 px-2">
-                          <p className="text-sm text-slate-800 font-medium">
+                          <p className="text-xs md:text-sm text-slate-800 font-medium">
                             {order.receiverName || "-"}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 hidden lg:block">
                             {order.email}
                           </p>
                         </td>
-                        <td className="py-3 px-2 text-sm font-semibold text-amber-600">
+                        <td className="py-3 px-2 text-xs md:text-sm font-semibold text-amber-600">
                           ฿{order.total.toLocaleString()}
                         </td>
                         <td className="py-3 px-2">
@@ -395,7 +399,7 @@ export default function AdminDashboard() {
                             {getStatusText(order.orderStatus)}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-xs text-slate-500">
+                        <td className="py-3 px-2 text-xs text-slate-500 hidden md:table-cell">
                           {formatDate(order.createdAt)}
                         </td>
                       </tr>

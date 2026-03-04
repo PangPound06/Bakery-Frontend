@@ -84,7 +84,6 @@ export default function ReportsPage() {
     }
   };
 
-  // ═══ Helpers ═══
   const getStatusText = (status: string) => {
     switch (status) {
       case "delivered":
@@ -148,7 +147,6 @@ export default function ReportsPage() {
     });
   };
 
-  // ═══ Filter & Stats ═══
   const filteredOrders = orders.filter((order) => {
     if (filterStatus === "all") return true;
     return order.orderStatus === filterStatus;
@@ -160,7 +158,6 @@ export default function ReportsPage() {
   const avgOrderValue =
     validOrders.length > 0 ? Math.round(totalRevenue / validOrders.length) : 0;
 
-  // ═══ Sales Data ═══
   const buildSalesData = () => {
     const grouped: { [key: string]: { revenue: number; orders: number } } = {};
     validOrders.forEach((order) => {
@@ -202,7 +199,6 @@ export default function ReportsPage() {
     }
   };
 
-  // ═══ English-only labels for PDF (no Thai chars) ═══
   const formatSalesLabelEN = (key: string): string => {
     if (salesView === "daily") {
       const d = new Date(key);
@@ -268,13 +264,10 @@ export default function ReportsPage() {
     }
   };
 
-  // ═══════════════════════════════════════════
-  // PDF EXPORT — ใช้ jsPDF + jspdf-autotable
   const exportPDF = async () => {
     setExporting(true);
 
     try {
-      // Dynamic import
       const jsPDFModule = await import("jspdf");
       const jsPDF = jsPDFModule.default;
       const autoTable = (await import("jspdf-autotable")).default;
@@ -284,11 +277,6 @@ export default function ReportsPage() {
       const margin = 14;
       let y = 20;
 
-      // ═══ ใช้ฟอนต์ Helvetica (built-in, รองรับตัวเลข/อังกฤษ) ═══
-      // สำหรับภาษาไทยจะแสดงได้ในบางเครื่อง หากต้องการรองรับ 100%
-      // ต้องเพิ่ม Thai font แต่ตอนนี้ใช้ผสมได้
-
-      // ═══ Header ═══
       doc.setFillColor(45, 45, 45);
       doc.rect(0, 0, pageWidth, 35, "F");
       doc.setTextColor(255, 255, 255);
@@ -314,7 +302,6 @@ export default function ReportsPage() {
 
       y = 45;
 
-      // ═══ Summary Cards ═══
       doc.setTextColor(100, 100, 100);
       doc.setFontSize(9);
       doc.text("SUMMARY", margin, y);
@@ -346,7 +333,6 @@ export default function ReportsPage() {
         doc.setDrawColor(card.color[0], card.color[1], card.color[2]);
         doc.setLineWidth(0.8);
         doc.line(x, y + 2, x, y + 20);
-
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(8);
         doc.text(card.label, x + 4, y + 7);
@@ -358,7 +344,6 @@ export default function ReportsPage() {
       y += 32;
 
       if (activeTab === "sales") {
-        // ═══ Sales Table ═══
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(9);
         doc.text(`SALES BY ${salesView.toUpperCase()}`, margin, y);
@@ -369,8 +354,6 @@ export default function ReportsPage() {
           `${data.revenue.toLocaleString()} THB`,
           `${data.orders}`,
         ]);
-
-        // Total row
         salesTableBody.push([
           "Total",
           `${totalSalesRevenue.toLocaleString()} THB`,
@@ -395,10 +378,7 @@ export default function ReportsPage() {
             cellPadding: 3.5,
             textColor: [50, 50, 50],
           },
-          alternateRowStyles: {
-            fillColor: [248, 248, 248],
-          },
-          // Bold total row
+          alternateRowStyles: { fillColor: [248, 248, 248] },
           didParseCell: (data: any) => {
             if (
               data.section === "body" &&
@@ -417,7 +397,6 @@ export default function ReportsPage() {
 
         y = (doc as any).lastAutoTable.finalY + 10;
 
-        // Summary box
         if (y > 260) {
           doc.addPage();
           y = 20;
@@ -437,7 +416,6 @@ export default function ReportsPage() {
           doc.text(item, x, y + 12);
         });
       } else {
-        // ═══ Orders Table ═══
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(9);
         const filterLabel =
@@ -485,9 +463,7 @@ export default function ReportsPage() {
             cellPadding: 2.5,
             textColor: [50, 50, 50],
           },
-          alternateRowStyles: {
-            fillColor: [248, 248, 248],
-          },
+          alternateRowStyles: { fillColor: [248, 248, 248] },
           columnStyles: {
             0: { cellWidth: 12 },
             1: { cellWidth: 25 },
@@ -500,7 +476,6 @@ export default function ReportsPage() {
         });
       }
 
-      // ═══ Footer ═══
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
@@ -514,7 +489,6 @@ export default function ReportsPage() {
         );
       }
 
-      // ═══ Save ═══
       const fileName = `MyBakery_${activeTab === "sales" ? "Sales" : "Orders"}_${salesView}_${now.toISOString().split("T")[0]}.pdf`;
       doc.save(fileName);
     } catch (error) {
@@ -537,22 +511,21 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 py-8 px-4">
+    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📋</span> Report
+            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+              <span className="text-3xl md:text-4xl">📋</span> Report
             </h1>
             <p className="text-amber-600 mt-1">ดูสถิติและรายงานการขาย</p>
           </div>
 
-          {/* ═══ PDF Export Button ═══ */}
           <button
             onClick={exportPDF}
             disabled={exporting}
-            className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md hover:shadow-lg"
+            className="flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md hover:shadow-lg text-sm md:text-base"
           >
             {exporting ? (
               <>
@@ -580,20 +553,22 @@ export default function ReportsPage() {
           </button>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-green-500">
-            <p className="text-slate-500 text-sm">รายได้รวม</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1">
+        {/* ✅ Summary Cards — ปรับ grid-cols-1 sm:grid-cols-3 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-green-500">
+            <p className="text-slate-500 text-xs md:text-sm">รายได้รวม</p>
+            <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
               ฿{totalRevenue.toLocaleString()}
             </p>
             <p className="text-xs text-slate-400 mt-1">
               ไม่รวมคำสั่งซื้อที่ยกเลิก
             </p>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-blue-500">
-            <p className="text-slate-500 text-sm">คำสั่งซื้อทั้งหมด</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-blue-500">
+            <p className="text-slate-500 text-xs md:text-sm">
+              คำสั่งซื้อทั้งหมด
+            </p>
+            <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
               {totalOrderCount} รายการ
             </p>
             <p className="text-xs text-slate-400 mt-1">
@@ -602,9 +577,11 @@ export default function ReportsPage() {
               รายการ
             </p>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-amber-500">
-            <p className="text-slate-500 text-sm">ยอดเฉลี่ยต่อออเดอร์</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-amber-500">
+            <p className="text-slate-500 text-xs md:text-sm">
+              ยอดเฉลี่ยต่อออเดอร์
+            </p>
+            <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
               ฿{avgOrderValue.toLocaleString()}
             </p>
           </div>
@@ -614,13 +591,13 @@ export default function ReportsPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab("orders")}
-            className={`px-6 py-3 rounded-xl font-medium transition-all ${activeTab === "orders" ? "bg-amber-500 text-white" : "bg-white text-slate-600 hover:bg-slate-100"}`}
+            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${activeTab === "orders" ? "bg-amber-500 text-white" : "bg-white text-slate-600 hover:bg-slate-100"}`}
           >
             📦 คำสั่งซื้อ
           </button>
           <button
             onClick={() => setActiveTab("sales")}
-            className={`px-6 py-3 rounded-xl font-medium transition-all ${activeTab === "sales" ? "bg-amber-500 text-white" : "bg-white text-slate-600 hover:bg-slate-100"}`}
+            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${activeTab === "sales" ? "bg-amber-500 text-white" : "bg-white text-slate-600 hover:bg-slate-100"}`}
           >
             📊 ยอดขาย
           </button>
@@ -629,57 +606,64 @@ export default function ReportsPage() {
         {/* ═══════ Orders Tab ═══════ */}
         {activeTab === "orders" && (
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex flex-wrap gap-2 items-center">
-              <span className="text-slate-600 font-medium">กรองตามสถานะ:</span>
-              {[
-                { key: "all", label: "ทั้งหมด" },
-                { key: "pending", label: "รอดำเนินการ" },
-                { key: "confirmed", label: "ยืนยันแล้ว" },
-                { key: "preparing", label: "กำลังเตรียม" },
-                { key: "shipping", label: "กำลังจัดส่ง" },
-                { key: "delivered", label: "จัดส่งแล้ว" },
-                { key: "cancelled", label: "ยกเลิก" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setFilterStatus(item.key)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-                >
-                  {item.label}
-                  <span className="ml-1 opacity-70">
-                    (
-                    {item.key === "all"
-                      ? orders.length
-                      : orders.filter((o) => o.orderStatus === item.key).length}
-                    )
-                  </span>
-                </button>
-              ))}
+            {/* ✅ Filter — ใช้ overflow-x-auto สำหรับ tablet */}
+            <div className="p-3 md:p-4 border-b border-slate-100 overflow-x-auto">
+              <div className="flex gap-2 items-center min-w-max">
+                <span className="text-slate-600 font-medium text-sm shrink-0">
+                  กรอง:
+                </span>
+                {[
+                  { key: "all", label: "ทั้งหมด" },
+                  { key: "pending", label: "รอดำเนินการ" },
+                  { key: "confirmed", label: "ยืนยันแล้ว" },
+                  { key: "preparing", label: "กำลังเตรียม" },
+                  { key: "shipping", label: "กำลังจัดส่ง" },
+                  { key: "delivered", label: "จัดส่งแล้ว" },
+                  { key: "cancelled", label: "ยกเลิก" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => setFilterStatus(item.key)}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap ${filterStatus === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  >
+                    {item.label}
+                    <span className="ml-1 opacity-70">
+                      (
+                      {item.key === "all"
+                        ? orders.length
+                        : orders.filter((o) => o.orderStatus === item.key)
+                            .length}
+                      )
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* ✅ Table — ซ่อนคอลัมน์บาง column บน tablet */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50">
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
                       รหัส
                     </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
                       ลูกค้า
                     </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600 hidden lg:table-cell">
                       รายการ
                     </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
                       ยอดรวม
                     </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600 hidden md:table-cell">
                       ชำระเงิน
                     </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
                       สถานะ
                     </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600 hidden md:table-cell">
                       วันที่
                     </th>
                   </tr>
@@ -690,17 +674,19 @@ export default function ReportsPage() {
                       key={order.id}
                       className="border-b border-slate-100 hover:bg-slate-50"
                     >
-                      <td className="px-4 py-4 font-medium text-slate-800">
+                      <td className="px-3 md:px-4 py-3 md:py-4 font-medium text-slate-800 text-sm">
                         #{order.id}
                       </td>
-                      <td className="px-4 py-4">
-                        <p className="text-sm font-medium text-slate-800">
+                      <td className="px-3 md:px-4 py-3 md:py-4">
+                        <p className="text-xs md:text-sm font-medium text-slate-800">
                           {order.receiverName || "-"}
                         </p>
-                        <p className="text-xs text-slate-500">{order.email}</p>
+                        <p className="text-xs text-slate-500 hidden lg:block">
+                          {order.email}
+                        </p>
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-slate-600">
+                      <td className="px-3 md:px-4 py-3 md:py-4 hidden lg:table-cell">
+                        <div className="text-xs md:text-sm text-slate-600">
                           {order.items.length > 0 ? (
                             order.items.map((item, i) => (
                               <div key={i}>
@@ -712,20 +698,20 @@ export default function ReportsPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4 font-semibold text-amber-600">
+                      <td className="px-3 md:px-4 py-3 md:py-4 font-semibold text-amber-600 text-sm">
                         ฿{order.total.toLocaleString()}
                       </td>
-                      <td className="px-4 py-4 text-sm text-slate-600">
+                      <td className="px-3 md:px-4 py-3 md:py-4 text-xs md:text-sm text-slate-600 hidden md:table-cell">
                         {getPaymentMethodText(order.paymentMethod)}
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-3 md:px-4 py-3 md:py-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}
+                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}
                         >
                           {getStatusText(order.orderStatus)}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-slate-500 text-xs">
+                      <td className="px-3 md:px-4 py-3 md:py-4 text-slate-500 text-xs hidden md:table-cell">
                         {formatDate(order.createdAt)}
                       </td>
                     </tr>
@@ -746,9 +732,9 @@ export default function ReportsPage() {
         {/* ═══════ Sales Tab ═══════ */}
         {activeTab === "sales" && (
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
-                <h3 className="text-lg font-bold text-slate-800">
+                <h3 className="text-base md:text-lg font-bold text-slate-800">
                   📊 ยอดขาย
                   {salesView === "daily"
                     ? "รายวัน"
@@ -765,7 +751,7 @@ export default function ReportsPage() {
                     <button
                       key={mode.key}
                       onClick={() => setSalesView(mode.key)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${salesView === mode.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${salesView === mode.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                     >
                       {mode.label}
                     </button>
@@ -773,7 +759,9 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <p className="text-sm text-slate-500 mb-6">{formatDateRange()}</p>
+              <p className="text-xs md:text-sm text-slate-500 mb-6">
+                {formatDateRange()}
+              </p>
 
               {salesData.length === 0 ? (
                 <div className="text-center py-12">
@@ -782,54 +770,61 @@ export default function ReportsPage() {
                 </div>
               ) : (
                 <>
-                  <div className="max-h-[500px] overflow-y-auto space-y-3 pr-2">
+                  <div className="max-h-[500px] overflow-y-auto space-y-2 md:space-y-3 pr-2">
                     {salesData.map((data) => (
-                      <div key={data.key} className="flex items-center gap-3">
-                        <div className="w-32 sm:w-36 text-sm text-slate-600 font-medium shrink-0 text-right">
+                      <div
+                        key={data.key}
+                        className="flex items-center gap-2 md:gap-3"
+                      >
+                        <div className="w-24 md:w-32 lg:w-36 text-xs md:text-sm text-slate-600 font-medium shrink-0 text-right">
                           {formatSalesLabel(data.key)}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <div
-                              className="h-7 bg-gradient-to-r from-amber-500 to-amber-400 rounded-lg transition-all duration-500"
+                              className="h-6 md:h-7 bg-gradient-to-r from-amber-500 to-amber-400 rounded-lg transition-all duration-500"
                               style={{
                                 width: `${data.revenue > 0 ? (data.revenue / maxRevenue) * 100 : 0}%`,
                                 minWidth: data.revenue > 0 ? "4px" : "0",
                               }}
                             ></div>
-                            <span className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                            <span className="text-xs md:text-sm font-medium text-slate-700 whitespace-nowrap">
                               ฿{data.revenue.toLocaleString()}
                             </span>
                           </div>
                         </div>
-                        <div className="w-24 text-right text-sm text-slate-500 shrink-0">
-                          {data.orders} ออเดอร์
+                        <div className="w-16 md:w-24 text-right text-xs md:text-sm text-slate-500 shrink-0">
+                          {data.orders}{" "}
+                          <span className="hidden md:inline">ออเดอร์</span>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-8 p-4 bg-amber-50 rounded-xl">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                  {/* ✅ Summary — ปรับ grid-cols-2 sm:grid-cols-4 */}
+                  <div className="mt-6 md:mt-8 p-3 md:p-4 bg-amber-50 rounded-xl">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 text-center">
                       <div>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-slate-500">
                           รายได้รวมทั้งหมด
                         </p>
-                        <p className="text-xl font-bold text-amber-600">
+                        <p className="text-lg md:text-xl font-bold text-amber-600">
                           ฿{totalSalesRevenue.toLocaleString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">ออเดอร์รวม</p>
-                        <p className="text-xl font-bold text-slate-800">
+                        <p className="text-xs md:text-sm text-slate-500">
+                          ออเดอร์รวม
+                        </p>
+                        <p className="text-lg md:text-xl font-bold text-slate-800">
                           {totalSalesOrders}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-slate-500">
                           เฉลี่ย/{getPeriodLabel()}
                         </p>
-                        <p className="text-xl font-bold text-green-600">
+                        <p className="text-lg md:text-xl font-bold text-green-600">
                           ฿
                           {Math.round(
                             totalSalesRevenue / totalPeriods,
@@ -837,10 +832,10 @@ export default function ReportsPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-slate-500">
                           จำนวน{getPeriodLabel()}ที่มียอดขาย
                         </p>
-                        <p className="text-xl font-bold text-blue-600">
+                        <p className="text-lg md:text-xl font-bold text-blue-600">
                           {totalPeriods} {getPeriodLabel()}
                         </p>
                       </div>

@@ -375,10 +375,10 @@ export default function CrudProductPage() {
 
   const getAvailabilityStatus = (product: Product) => {
     if (product.stockQuantity === 0)
-      return { text: "✗ สินค้าหมด", className: "bg-red-100 text-red-700" };
+      return { text: "✗ หมด", className: "bg-red-100 text-red-700" };
     if (product.isAvailable)
       return { text: "✓ พร้อมขาย", className: "bg-green-100 text-green-700" };
-    return { text: "⏸ ปิดการขาย", className: "bg-gray-100 text-gray-700" };
+    return { text: "⏸ ปิดขาย", className: "bg-gray-100 text-gray-700" };
   };
 
   if (loading) {
@@ -393,20 +393,21 @@ export default function CrudProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 py-8 px-4">
+    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📦</span> Manage products
+            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+              <span className="text-3xl md:text-4xl">📦</span> Manage products
             </h1>
-            <p className="text-amber-600 mt-1">
+            <p className="text-amber-600 mt-1 text-sm md:text-base">
               สินค้าทั้งหมด {products.length} รายการ
             </p>
           </div>
           <button
             onClick={() => openModal("create")}
-            className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+            className="px-4 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm md:text-base shrink-0"
           >
             <svg
               className="w-5 h-5"
@@ -425,17 +426,18 @@ export default function CrudProductPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 mb-6 shadow-md flex flex-col md:flex-row gap-4">
+        {/* Search & Filter */}
+        <div className="bg-white rounded-2xl p-3 md:p-4 mb-6 shadow-md flex flex-col md:flex-row gap-3 md:gap-4">
           <div className="flex-1 relative">
             <input
               type="text"
               placeholder="ค้นหาสินค้า..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-4 py-2.5 md:py-3 pl-10 md:pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base"
             />
             <svg
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-400"
+              className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-amber-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -451,7 +453,7 @@ export default function CrudProductPage() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base"
           >
             <option value="all">ทุกหมวดหมู่</option>
             <option value="bakery">🥐 Bakery</option>
@@ -460,30 +462,31 @@ export default function CrudProductPage() {
           </select>
         </div>
 
+        {/* ✅ Product Table — ปรับ responsive สำหรับ iPad */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-amber-500">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
                     รูปภาพ
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
                     ชื่อสินค้า
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white hidden md:table-cell">
                     หมวดหมู่
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
                     ราคา
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
                     Stock
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white hidden lg:table-cell">
                     สถานะ
                   </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm font-semibold text-white">
                     จัดการ
                   </th>
                 </tr>
@@ -496,56 +499,62 @@ export default function CrudProductPage() {
                       key={product.id}
                       className={`border-b border-amber-100 hover:bg-amber-50 ${index % 2 === 0 ? "bg-white" : "bg-amber-50/50"}`}
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
+                          className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg"
                         />
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <div>
-                          <p className="font-medium text-amber-800">
+                          <p className="font-medium text-amber-800 text-sm md:text-base">
                             {product.name}
                           </p>
                           <p className="text-xs text-gray-500">
                             {product.type}
                           </p>
+                          {/* ✅ แสดง category ใต้ชื่อบน mobile */}
+                          <span
+                            className={`md:hidden inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${getCategoryBadge(product.category)}`}
+                          >
+                            {product.category}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4 hidden md:table-cell">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadge(product.category)}`}
                         >
                           {product.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-semibold text-amber-600">
+                      <td className="px-3 md:px-6 py-3 md:py-4 font-semibold text-amber-600 text-sm">
                         ฿{product.price}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStockColor(product.stockQuantity)}`}
+                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getStockColor(product.stockQuantity)}`}
                         >
                           {product.stockQuantity}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4 hidden lg:table-cell">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${status.className}`}
                         >
                           {status.text}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
+                        <div className="flex items-center justify-center gap-1 md:gap-2">
                           <button
                             onClick={() => openModal("view", product)}
-                            className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                            className="p-1.5 md:p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
                             title="ดูรายละเอียด"
                           >
                             <svg
-                              className="w-4 h-4"
+                              className="w-3.5 h-3.5 md:w-4 md:h-4"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -566,11 +575,11 @@ export default function CrudProductPage() {
                           </button>
                           <button
                             onClick={() => openModal("edit", product)}
-                            className="p-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-colors"
+                            className="p-1.5 md:p-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-colors"
                             title="แก้ไข"
                           >
                             <svg
-                              className="w-4 h-4"
+                              className="w-3.5 h-3.5 md:w-4 md:h-4"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -585,11 +594,11 @@ export default function CrudProductPage() {
                           </button>
                           <button
                             onClick={() => handleDelete(product.id)}
-                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                            className="p-1.5 md:p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                             title="ลบ"
                           >
                             <svg
-                              className="w-4 h-4"
+                              className="w-3.5 h-3.5 md:w-4 md:h-4"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -619,11 +628,12 @@ export default function CrudProductPage() {
         </div>
       </div>
 
+      {/* Modal */}
       {modalMode && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b bg-amber-500 rounded-t-2xl">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b bg-amber-500 rounded-t-2xl">
+              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                 {modalMode === "create" && (
                   <>
                     <span>➕</span> เพิ่มสินค้าใหม่
@@ -660,16 +670,16 @@ export default function CrudProductPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
               <div className="flex justify-center">
                 {imagePreview ? (
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-32 h-32 object-cover rounded-xl border-2 border-amber-200"
+                    className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-xl border-2 border-amber-200"
                   />
                 ) : (
-                  <div className="w-32 h-32 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300 flex items-center justify-center">
+                  <div className="w-28 h-28 md:w-32 md:h-32 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300 flex items-center justify-center">
                     <span className="text-4xl">📷</span>
                   </div>
                 )}
@@ -694,11 +704,11 @@ export default function CrudProductPage() {
                   }
                   disabled={modalMode === "view"}
                   required
-                  className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                  className="w-full px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     หมวดหมู่ *
@@ -709,7 +719,7 @@ export default function CrudProductPage() {
                       setFormData({ ...formData, category: e.target.value })
                     }
                     disabled={modalMode === "view"}
-                    className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
                   >
                     <option value="bakery">Bakery</option>
                     <option value="cake">Cake</option>
@@ -726,9 +736,9 @@ export default function CrudProductPage() {
                       setFormData({ ...formData, type: e.target.value })
                     }
                     disabled={modalMode === "view"}
-                    className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
                   >
-                    <option value="">-- เลือกประเภท --</option>
+                    <option value="">-- เลือก --</option>
                     {formData.category === "bakery" && (
                       <>
                         <option value="Brownie">Brownie</option>
@@ -761,7 +771,7 @@ export default function CrudProductPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     ราคา (บาท) *
@@ -778,7 +788,7 @@ export default function CrudProductPage() {
                     disabled={modalMode === "view"}
                     required
                     min="0"
-                    className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
                   />
                 </div>
                 <div>
@@ -792,7 +802,7 @@ export default function CrudProductPage() {
                     disabled={modalMode === "view"}
                     required
                     min="0"
-                    className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
                   />
                   {formData.stockQuantity === 0 && (
                     <p className="text-xs text-red-500 mt-1">
@@ -811,16 +821,16 @@ export default function CrudProductPage() {
                     <button
                       type="button"
                       onClick={() => setImageInputType("url")}
-                      className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${imageInputType === "url" ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
+                      className={`flex-1 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${imageInputType === "url" ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
                     >
-                      🔗 URL รูปภาพ
+                      🔗 URL
                     </button>
                     <button
                       type="button"
                       onClick={() => setImageInputType("file")}
-                      className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${imageInputType === "file" ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
+                      className={`flex-1 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${imageInputType === "file" ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
                     >
-                      📁 อัพโหลดไฟล์
+                      📁 อัพโหลด
                     </button>
                   </div>
                 )}
@@ -831,7 +841,7 @@ export default function CrudProductPage() {
                     onChange={(e) => handleUrlChange(e.target.value)}
                     disabled={modalMode === "view"}
                     placeholder="https://example.com/image.jpg"
-                    className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                    className="w-full px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
                   />
                 )}
                 {imageInputType === "file" && modalMode !== "view" && (
@@ -846,10 +856,10 @@ export default function CrudProductPage() {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="w-full flex flex-col items-center justify-center px-4 py-6 bg-amber-50 border-2 border-dashed border-amber-300 rounded-xl cursor-pointer hover:bg-amber-100 hover:border-amber-400 transition-all"
+                      className="w-full flex flex-col items-center justify-center px-4 py-5 md:py-6 bg-amber-50 border-2 border-dashed border-amber-300 rounded-xl cursor-pointer hover:bg-amber-100 hover:border-amber-400 transition-all"
                     >
                       <svg
-                        className="w-10 h-10 text-amber-400 mb-2"
+                        className="w-8 md:w-10 h-8 md:h-10 text-amber-400 mb-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -861,7 +871,7 @@ export default function CrudProductPage() {
                           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                         />
                       </svg>
-                      <span className="text-amber-600 font-medium">
+                      <span className="text-amber-600 font-medium text-sm">
                         คลิกเพื่อเลือกไฟล์
                       </span>
                       <span className="text-xs text-gray-500 mt-1">
@@ -888,7 +898,7 @@ export default function CrudProductPage() {
                   }
                   disabled={modalMode === "view"}
                   rows={3}
-                  className="w-full px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 resize-none"
+                  className="w-full px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 resize-none text-sm md:text-base"
                 />
               </div>
 
@@ -897,14 +907,14 @@ export default function CrudProductPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm md:text-base"
                   >
                     ยกเลิก
                   </button>
                   <button
                     type="submit"
                     disabled={saving || (!formData.image && !pendingFile)}
-                    className="flex-1 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm md:text-base"
                   >
                     {saving ? (
                       <>
@@ -929,14 +939,14 @@ export default function CrudProductPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm md:text-base"
                   >
                     ปิด
                   </button>
                   <button
                     type="button"
                     onClick={() => openModal("edit", selectedProduct!)}
-                    className="flex-1 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm md:text-base"
                   >
                     <span>✏️</span> แก้ไข
                   </button>

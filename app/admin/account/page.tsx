@@ -154,7 +154,6 @@ export default function AccountPage() {
     if (result.isConfirmed) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
       await Swal.fire({
         title: "ออกจากระบบสำเร็จ!",
         text: "ขอบคุณที่ใช้บริการ 👋",
@@ -162,7 +161,6 @@ export default function AccountPage() {
         timer: 1500,
         showConfirmButton: false,
       });
-
       window.location.href = "/login";
     }
   };
@@ -179,69 +177,77 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 py-8 px-4">
+    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-            <span className="text-4xl">⚙️</span>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+            <span className="text-3xl md:text-4xl">⚙️</span>
             My Account
           </h1>
-          <p className="text-amber-600 mt-1">
+          <p className="text-amber-600 mt-1 text-sm md:text-base">
             จัดการข้อมูลส่วนตัวและการตั้งค่า
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* ✅ Grid — ใช้ md:grid-cols-4 แทน lg:grid-cols-4 เพื่อรองรับ iPad */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="md:col-span-1">
             <div className="bg-white rounded-2xl shadow-md p-4">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+              <div className="text-center mb-4 md:mb-6">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-200 rounded-full flex items-center justify-center text-2xl md:text-3xl mx-auto mb-3">
                   {profile.fullname?.charAt(0)?.toUpperCase() || "A"}
                 </div>
-                <h3 className="font-bold text-slate-800">
+                <h3 className="font-bold text-slate-800 text-sm md:text-base">
                   {profile.fullname || "Admin"}
                 </h3>
-                <p className="text-sm text-slate-500">{profile.email}</p>
+                <p className="text-xs md:text-sm text-slate-500 break-all">
+                  {profile.email}
+                </p>
                 <span className="inline-block mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">
                   {profile.role || "Admin"}
                 </span>
               </div>
 
-              <nav className="space-y-2">
+              {/* ✅ Nav — แสดงแนวนอนบน mobile, แนวตั้งบน tablet+ */}
+              <nav className="flex md:flex-col gap-2">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === "profile" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
+                  className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl transition-all text-sm ${activeTab === "profile" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
                 >
-                  <span>👤</span> ข้อมูลส่วนตัว
+                  <span>👤</span>{" "}
+                  <span className="hidden sm:inline">ข้อมูลส่วนตัว</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("settings")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === "settings" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
+                  className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl transition-all text-sm ${activeTab === "settings" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
                 >
-                  <span>⚙️</span> การตั้งค่า
+                  <span>⚙️</span>{" "}
+                  <span className="hidden sm:inline">การตั้งค่า</span>
                 </button>
-                <hr className="my-2" />
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all"
-                >
-                  <span>🚪</span> ออกจากระบบ
-                </button>
+                <div className="hidden md:block">
+                  <hr className="my-2" />
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all text-sm"
+                  >
+                    <span>🚪</span> ออกจากระบบ
+                  </button>
+                </div>
               </nav>
             </div>
           </div>
 
           {/* Content */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl shadow-md p-6">
+          <div className="md:col-span-3">
+            <div className="bg-white rounded-2xl shadow-md p-4 md:p-6">
               {success && (
-                <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
                   ✅ {success}
                 </div>
               )}
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
@@ -249,7 +255,7 @@ export default function AccountPage() {
               {/* Profile Tab */}
               {activeTab === "profile" && (
                 <form onSubmit={handleProfileSubmit}>
-                  <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">
                     <span>👤</span> ข้อมูลส่วนตัว
                   </h2>
                   <div className="space-y-4">
@@ -263,7 +269,7 @@ export default function AccountPage() {
                         onChange={(e) =>
                           setProfile({ ...profile, fullname: e.target.value })
                         }
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        className="w-full px-4 py-2.5 md:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm md:text-base"
                       />
                     </div>
                     <div>
@@ -274,7 +280,7 @@ export default function AccountPage() {
                         type="email"
                         value={profile.email}
                         disabled
-                        className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500"
+                        className="w-full px-4 py-2.5 md:py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-sm md:text-base"
                       />
                       <p className="text-xs text-slate-500 mt-1">
                         ไม่สามารถเปลี่ยนอีเมลได้
@@ -293,7 +299,7 @@ export default function AccountPage() {
                             phone: e.target.value.replace(/[^0-9]/g, ""),
                           })
                         }
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        className="w-full px-4 py-2.5 md:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm md:text-base"
                         placeholder="0xx-xxx-xxxx"
                         inputMode="numeric"
                         maxLength={10}
@@ -309,7 +315,7 @@ export default function AccountPage() {
                           setProfile({ ...profile, address: e.target.value })
                         }
                         rows={3}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        className="w-full px-4 py-2.5 md:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm md:text-base"
                         placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
                       />
                     </div>
@@ -321,7 +327,7 @@ export default function AccountPage() {
                         type="text"
                         value={profile.createdAt}
                         disabled
-                        className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500"
+                        className="w-full px-4 py-2.5 md:py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-sm md:text-base"
                       />
                     </div>
                   </div>
@@ -329,7 +335,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="px-6 py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2"
+                      className="px-5 md:px-6 py-2.5 md:py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2 text-sm md:text-base"
                     >
                       {saving ? (
                         <>
@@ -349,10 +355,10 @@ export default function AccountPage() {
               {/* Settings Tab */}
               {activeTab === "settings" && (
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">
                     <span>⚙️</span> การตั้งค่า
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {[
                       {
                         key: "emailNotifications",
@@ -372,15 +378,17 @@ export default function AccountPage() {
                     ].map((item) => (
                       <div
                         key={item.key}
-                        className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                        className="flex items-center justify-between p-3 md:p-4 bg-slate-50 rounded-xl"
                       >
                         <div>
-                          <h4 className="font-medium text-slate-800">
+                          <h4 className="font-medium text-slate-800 text-sm md:text-base">
                             {item.title}
                           </h4>
-                          <p className="text-sm text-slate-500">{item.desc}</p>
+                          <p className="text-xs md:text-sm text-slate-500">
+                            {item.desc}
+                          </p>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
                           <input
                             type="checkbox"
                             checked={
@@ -398,6 +406,16 @@ export default function AccountPage() {
                         </label>
                       </div>
                     ))}
+                  </div>
+
+                  {/* ✅ Logout button สำหรับ mobile (ที่ซ่อนในเมนู sidebar) */}
+                  <div className="mt-6 md:hidden">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-red-600 bg-red-50 hover:bg-red-100 transition-all font-medium"
+                    >
+                      <span>🚪</span> ออกจากระบบ
+                    </button>
                   </div>
                 </div>
               )}

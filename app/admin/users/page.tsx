@@ -81,14 +81,12 @@ export default function UserManagementPage() {
     e.preventDefault();
     setError("");
 
-    // ═══ Validation ═══
     if (!formData.fullname.trim()) {
       setError("กรุณากรอกชื่อ-นามสกุล");
       return;
     }
 
     if (!editingAdmin) {
-      // เพิ่มใหม่ — ต้องกรอก email + password
       if (!formData.email.trim()) {
         setError("กรุณากรอกอีเมล");
         return;
@@ -110,7 +108,6 @@ export default function UserManagementPage() {
         return;
       }
     } else {
-      // แก้ไข — ถ้ากรอกรหัสผ่านใหม่ ต้องตรงกัน
       if (formData.password) {
         if (formData.password.length < 6) {
           setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
@@ -129,16 +126,11 @@ export default function UserManagementPage() {
       let response;
 
       if (editingAdmin) {
-        // ═══ แก้ไข Admin ═══
         const body: any = {
           fullname: formData.fullname.trim(),
           role: formData.role,
         };
-        if (formData.password) {
-          body.password = formData.password;
-        }
-
-        console.log("📤 Sending update:", body); // debug
+        if (formData.password) body.password = formData.password;
 
         response = await fetch(
           `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${editingAdmin.id}`,
@@ -149,7 +141,6 @@ export default function UserManagementPage() {
           },
         );
       } else {
-        // ═══ เพิ่ม Admin ใหม่ ═══
         response = await fetch(
           "https://bakery-backend-production-6fc9.up.railway.app/api/admin/register",
           {
@@ -166,7 +157,6 @@ export default function UserManagementPage() {
       }
 
       const data = await response.json();
-      console.log("📥 Response:", data); // debug
 
       if (data.success) {
         setShowModal(false);
@@ -190,6 +180,21 @@ export default function UserManagementPage() {
   };
 
   const toggleStatus = async (admin: Admin) => {
+    const newStatus = admin.status === "active" ? "Inactive" : "Active";
+
+    const result = await Swal.fire({
+      title: `เปลี่ยนสถานะเป็น ${newStatus}?`,
+      text: `ต้องการเปลี่ยนสถานะของ "${admin.fullname || admin.email}" หรือไม่?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#f97316",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       const response = await fetch(
         `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${admin.id}/toggle-status`,
@@ -203,7 +208,7 @@ export default function UserManagementPage() {
           text: `เปลี่ยนสถานะเป็น ${data.status} สำเร็จ`,
           icon: "success",
           confirmButtonColor: "#f97316",
-          timer: 1500,
+          timer: 1000,
           showConfirmButton: false,
         });
       }
@@ -213,7 +218,6 @@ export default function UserManagementPage() {
   };
 
   const deleteAdmin = async (admin: Admin) => {
-    // เช็คว่าลบตัวเองหรือเปล่า
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     const isDeletingSelf = currentUser.email === admin.email;
 
@@ -240,11 +244,9 @@ export default function UserManagementPage() {
       const data = await response.json();
       if (data.success) {
         if (isDeletingSelf) {
-          // ลบตัวเอง → ล้าง localStorage แล้วไปหน้า Login
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           localStorage.removeItem("userType");
-
           await Swal.fire({
             title: "ลบบัญชีสำเร็จ!",
             text: "กำลังออกจากระบบ...",
@@ -252,7 +254,6 @@ export default function UserManagementPage() {
             timer: 1500,
             showConfirmButton: false,
           });
-
           window.location.href = "/login";
         } else {
           fetchAdmins();
@@ -297,25 +298,27 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-amber-50 p-6">
+    <div className="min-h-screen bg-amber-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        {/* ✅ Header — ปรับ flex ให้ wrap บน tablet */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-2">
               👥 User Management
             </h1>
-            <p className="text-amber-600 mt-1">
+            <p className="text-amber-600 mt-1 text-sm md:text-base">
               จัดการผู้ใช้งานระบบ Admin ({admins.length} คน)
             </p>
           </div>
           <button
             onClick={openAddModal}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm md:text-base shrink-0"
           >
             <span>+</span> เพิ่ม Admin ใหม่
           </button>
         </div>
 
+        {/* Search */}
         <div className="mb-6">
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -326,102 +329,125 @@ export default function UserManagementPage() {
               placeholder="ค้นหาผู้ใช้..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"
             />
           </div>
         </div>
 
+        {/* ✅ Table — ปรับ responsive ซ่อนบางคอลัมน์ */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-amber-600 text-white">
-              <tr>
-                <th className="px-6 py-4 text-left">ชื่อ</th>
-                <th className="px-6 py-4 text-left">อีเมล</th>
-                <th className="px-6 py-4 text-center">บทบาท</th>
-                <th className="px-6 py-4 text-center">สถานะ</th>
-                <th className="px-6 py-4 text-center">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-amber-600 text-white">
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    กำลังโหลด...
-                  </td>
+                  <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm">
+                    ชื่อ
+                  </th>
+                  <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm hidden md:table-cell">
+                    อีเมล
+                  </th>
+                  <th className="px-4 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm">
+                    บทบาท
+                  </th>
+                  <th className="px-4 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm">
+                    สถานะ
+                  </th>
+                  <th className="px-4 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm">
+                    จัดการ
+                  </th>
                 </tr>
-              ) : filteredAdmins.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    ไม่พบข้อมูล
-                  </td>
-                </tr>
-              ) : (
-                filteredAdmins.map((admin) => (
-                  <tr key={admin.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
-                          {admin.fullname?.charAt(0)?.toUpperCase() || "A"}
-                        </div>
-                        <span className="font-medium">
-                          {admin.fullname || "ไม่ระบุชื่อ"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{admin.email}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadge(admin.role)}`}
-                      >
-                        {getRoleDisplayName(admin.role)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => toggleStatus(admin)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${admin.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                      >
-                        {admin.status === "active" ? "✓ Active" : "✗ Inactive"}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => openEditModal(admin)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="แก้ไข"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => deleteAdmin(admin)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="ลบ"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      กำลังโหลด...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filteredAdmins.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      ไม่พบข้อมูล
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAdmins.map((admin) => (
+                    <tr key={admin.id} className="border-b hover:bg-gray-50">
+                      <td className="px-4 md:px-6 py-3 md:py-4">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm md:text-base">
+                            {admin.fullname?.charAt(0)?.toUpperCase() || "A"}
+                          </div>
+                          <div>
+                            <span className="font-medium text-sm md:text-base block">
+                              {admin.fullname || "ไม่ระบุชื่อ"}
+                            </span>
+                            {/* ✅ แสดง email ใต้ชื่อบน mobile/tablet */}
+                            <span className="text-xs text-gray-500 md:hidden block">
+                              {admin.email}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 md:px-6 py-3 md:py-4 text-gray-600 text-sm hidden md:table-cell">
+                        {admin.email}
+                      </td>
+                      <td className="px-4 md:px-6 py-3 md:py-4 text-center">
+                        <span
+                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getRoleBadge(admin.role)}`}
+                        >
+                          {getRoleDisplayName(admin.role)}
+                        </span>
+                      </td>
+                      <td className="px-4 md:px-6 py-3 md:py-4 text-center">
+                        <button
+                          onClick={() => toggleStatus(admin)}
+                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${admin.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                        >
+                          {admin.status === "active"
+                            ? "✓ Active"
+                            : "✗ Inactive"}
+                        </button>
+                      </td>
+                      <td className="px-4 md:px-6 py-3 md:py-4">
+                        <div className="flex justify-center gap-1 md:gap-2">
+                          <button
+                            onClick={() => openEditModal(admin)}
+                            className="p-1.5 md:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="แก้ไข"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => deleteAdmin(admin)}
+                            className="p-1.5 md:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="ลบ"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* ═══ Modal ═══ */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md mx-4">
-            <div className="flex justify-between items-center px-6 py-4 border-b bg-amber-500 text-white rounded-t-xl">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b bg-amber-500 text-white rounded-t-xl">
+              <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
                 {editingAdmin ? "✏️ แก้ไข Admin" : "➕ เพิ่ม Admin ใหม่"}
               </h2>
               <button
@@ -431,14 +457,13 @@ export default function UserManagementPage() {
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
 
-              {/* ชื่อ */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ชื่อ-นามสกุล *
@@ -449,12 +474,11 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, fullname: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
                   placeholder="ชื่อ นามสกุล"
                 />
               </div>
 
-              {/* อีเมล */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   อีเมล *
@@ -465,7 +489,7 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none ${editingAdmin ? "bg-gray-100 text-gray-500" : ""}`}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${editingAdmin ? "bg-gray-100 text-gray-500" : ""}`}
                   placeholder="example@empbakery.com"
                   disabled={!!editingAdmin}
                 />
@@ -476,7 +500,6 @@ export default function UserManagementPage() {
                 )}
               </div>
 
-              {/* รหัสผ่าน */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   รหัสผ่าน{" "}
@@ -488,12 +511,11 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
                   placeholder="อย่างน้อย 6 ตัวอักษร"
                 />
               </div>
 
-              {/* ยืนยันรหัสผ่าน */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ยืนยันรหัสผ่าน
@@ -507,12 +529,11 @@ export default function UserManagementPage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
                   placeholder="กรอกรหัสผ่านอีกครั้ง"
                 />
               </div>
 
-              {/* บทบาท */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   บทบาท *
@@ -522,7 +543,7 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
                 >
                   <option value="staff">Staff (พนักงาน)</option>
                   <option value="admin">Admin (ผู้ดูแล)</option>
@@ -530,7 +551,6 @@ export default function UserManagementPage() {
                     Super Admin (ผู้ดูแลสูงสุด)
                   </option>
                 </select>
-                {/* แสดง role ที่เลือก */}
                 <p className="text-xs text-gray-500 mt-1">
                   เลือกแล้ว:{" "}
                   <span className="font-medium">
@@ -543,14 +563,14 @@ export default function UserManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm md:text-base"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 text-sm md:text-base"
                 >
                   {saving
                     ? "กำลังบันทึก..."
