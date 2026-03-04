@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Swal from "sweetalert2";
 
 interface OrderItem {
   id: number;
@@ -87,7 +88,18 @@ export default function OrdersPage() {
   };
 
   const handleCancelOrder = async (orderId: number) => {
-    if (!confirm("ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?")) return;
+    const result = await Swal.fire({
+      title: "ยกเลิกคำสั่งซื้อ?",
+      text: "ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ยืนยันยกเลิก",
+      cancelButtonText: "ไม่ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(
@@ -96,14 +108,31 @@ export default function OrdersPage() {
       );
       const data = await response.json();
       if (data.success) {
-        alert("ยกเลิกคำสั่งซื้อสำเร็จ");
+        await Swal.fire({
+          title: "ยกเลิกสำเร็จ!",
+          text: "ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว",
+          icon: "success",
+          confirmButtonColor: "#f97316",
+          timer: 2000,
+          showConfirmButton: false,
+        });
         fetchOrders();
         setSelectedOrder(null);
       } else {
-        alert(data.message || "เกิดข้อผิดพลาด");
+        await Swal.fire({
+          title: "เกิดข้อผิดพลาด",
+          text: data.message || "ไม่สามารถยกเลิกได้",
+          icon: "error",
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (error) {
-      alert("ไม่สามารถยกเลิกได้");
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถยกเลิกได้",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
     }
   };
 

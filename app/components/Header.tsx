@@ -408,12 +408,12 @@ export default function Header() {
           </Link>
 
           {/* Desktop Menu */}
-          <ul className="hidden lg:flex gap-4 xl:gap-6 text-base font-medium flex-1 justify-center">
+          <ul className="hidden lg:flex gap-1 xl:gap-4 text-sm xl:text-base font-medium flex-1 justify-center">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
                     isActive(link.href)
                       ? isAdmin
                         ? "bg-slate-600 text-white"
@@ -423,8 +423,9 @@ export default function Header() {
                         : "hover:bg-amber-800 hover:text-amber-200"
                   }`}
                 >
-                  <span>{link.icon}</span>
-                  <span>{link.label}</span>
+                  <span className="text-sm xl:text-base">{link.icon}</span>
+                  <span className="hidden xl:inline">{link.label}</span>
+                  <span className="xl:hidden">{link.label.split(" ")[0]}</span>
                 </Link>
               </li>
             ))}
