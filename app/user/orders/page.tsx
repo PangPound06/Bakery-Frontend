@@ -15,6 +15,7 @@ interface OrderItem {
 
 interface Order {
   id: number;
+  ordCode: string;
   email: string;
   subtotal: number;
   shipping: number;
@@ -343,7 +344,7 @@ export default function OrdersPage() {
                         <span className="text-2xl">{status.icon}</span>
                         <div>
                           <p className="font-semibold text-gray-800">
-                            คำสั่งซื้อ #ORD{String(order.id * 104729 % 1000000).padStart(6, "0")}{order.id}
+                            คำสั่งซื้อ #{order.ordCode}
                           </p>
                           <p className="text-xs text-gray-500">
                             {formatDate(order.createdAt)}
@@ -416,7 +417,7 @@ export default function OrdersPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
-                📋 คำสั่งซื้อ #ORD{String(selectedOrder.id * 104729 % 1000000).padStart(6, "0")}{selectedOrder.id}
+                📋 คำสั่งซื้อ #{selectedOrder.ordCode}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}

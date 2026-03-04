@@ -39,10 +39,7 @@ export default function SearchOrderPage() {
     setOrder(null);
 
     try {
-      const numericPart = searchInput
-        .trim()
-        .replace("ORD", "")
-        .replace(/^0+/, "");
+      const numericPart = searchInput.trim();
 
       const res = await fetch(
         `https://bakery-backend-production-6fc9.up.railway.app/api/orders/search/${numericPart}`,
@@ -157,7 +154,7 @@ export default function SearchOrderPage() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="เช่น ORD00000029"
+                  placeholder="เช่น ORD123456789"
                   className="flex-1 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-amber-800 placeholder-amber-300"
                 />
                 <button
@@ -176,7 +173,7 @@ export default function SearchOrderPage() {
               <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold text-amber-800">
-                    ORD{String(order.id).padStart(8, "0")}
+                    ORD{String(order.id * 104729 % 1000000).padStart(6, "0")}{order.id}
                   </h2>
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusText(order.orderStatus).color}`}

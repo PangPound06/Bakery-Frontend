@@ -27,6 +27,7 @@ interface Order {
   note: string;
   slipImage: string;
   createdAt: string;
+  ordCode: string;
 }
 
 export default function AdminOrdersPage() {
@@ -215,7 +216,7 @@ export default function AdminOrdersPage() {
           icon: "success",
           title: "ยกเลิกสำเร็จ",
           text: "ยกเลิกคำสั่งซื้อสำเร็จ (Stock คืนแล้ว)",
-          timer: 1500,
+          timer: 1000,
           showConfirmButton: false,
         });
         fetchOrders();
@@ -359,6 +360,7 @@ export default function AdminOrdersPage() {
     const matchSearch =
       searchTerm === "" ||
       order.id.toString().includes(searchTerm) ||
+      (order.ordCode || "").toUpperCase().includes(searchTerm.toUpperCase()) ||
       ordCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.receiverName || "")
@@ -525,7 +527,7 @@ export default function AdminOrdersPage() {
                       className={`border-b border-amber-100 hover:bg-amber-50 ${index % 2 === 0 ? "bg-white" : "bg-amber-50/50"}`}
                     >
                       <td className="px-4 py-4 font-bold text-amber-800">
-                        #{order.id}
+                        #{order.ordCode || `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}
                       </td>
                       <td className="px-4 py-4">
                         <p className="font-medium text-gray-800 text-sm">
@@ -618,9 +620,7 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
-                📋 คำสั่งซื้อ #ORD
-                {String((selectedOrder.id * 104729) % 1000000).padStart(6, "0")}
-                {selectedOrder.id}
+                📋 คำสั่งซื้อ #{selectedOrder.ordCode || `ORD${String((selectedOrder.id * 104729) % 1000000).padStart(6, "0")}${selectedOrder.id}`}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}
