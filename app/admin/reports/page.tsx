@@ -428,7 +428,7 @@ export default function ReportsPage() {
         y += 3;
 
         const ordersTableBody = filteredOrders.map((order) => [
-          `#${order.id}`,
+          `#ORD${String(order.id * 104729 % 1000000).padStart(6, "0")}${order.id}`,
           order.receiverName || "-",
           order.items
             .map((item) => `${item.productName} x${item.quantity}`)
@@ -675,7 +675,7 @@ export default function ReportsPage() {
                       className="border-b border-slate-100 hover:bg-slate-50"
                     >
                       <td className="px-3 md:px-4 py-3 md:py-4 font-medium text-slate-800 text-sm">
-                        #{order.id}
+                        #ORD{String(order.id * 104729 % 1000000).padStart(6, "0")}{order.id}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
                         <p className="text-xs md:text-sm font-medium text-slate-800">

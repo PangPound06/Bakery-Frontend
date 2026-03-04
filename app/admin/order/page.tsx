@@ -355,9 +355,11 @@ export default function AdminOrdersPage() {
   const filteredOrders = orders.filter((order) => {
     const matchStatus =
       filterStatus === "all" || order.orderStatus === filterStatus;
+    const ordCode = `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
     const matchSearch =
       searchTerm === "" ||
       order.id.toString().includes(searchTerm) ||
+      ordCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.receiverName || "")
         .toLowerCase()
