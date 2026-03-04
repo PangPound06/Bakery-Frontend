@@ -355,12 +355,9 @@ export default function AdminOrdersPage() {
   const filteredOrders = orders.filter((order) => {
     const matchStatus =
       filterStatus === "all" || order.orderStatus === filterStatus;
-    const ordCode = `ORD${String(order.id).padStart(8, "0")}`;
-    const searchUpper = searchTerm.toUpperCase().trim();
     const matchSearch =
       searchTerm === "" ||
       order.id.toString().includes(searchTerm) ||
-      ordCode.includes(searchUpper) ||
       order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.receiverName || "")
         .toLowerCase()
@@ -619,7 +616,9 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
-                📋 คำสั่งซื้อ #ORD{String(selectedOrder.id).padStart(8, "0")}
+                📋 คำสั่งซื้อ #ORD
+                {String((selectedOrder.id * 104729) % 1000000).padStart(6, "0")}
+                {selectedOrder.id}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}
