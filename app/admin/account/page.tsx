@@ -189,10 +189,9 @@ export default function AccountPage() {
           </p>
         </div>
 
-        {/* ✅ Grid — ใช้ md:grid-cols-4 แทน lg:grid-cols-4 เพื่อรองรับ iPad */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Sidebar */}
-          <div className="md:col-span-1">
+          <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-md p-4">
               <div className="text-center mb-4 md:mb-6">
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-200 rounded-full flex items-center justify-center text-2xl md:text-3xl mx-auto mb-3">
@@ -239,7 +238,7 @@ export default function AccountPage() {
           </div>
 
           {/* Content */}
-          <div className="md:col-span-3">
+          <div className="lg:col-span-3">
             <div className="bg-white rounded-2xl shadow-md p-4 md:p-6">
               {success && (
                 <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">

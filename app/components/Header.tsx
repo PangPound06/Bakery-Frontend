@@ -142,6 +142,7 @@ export default function Header() {
           const parsedUser = JSON.parse(userData);
           const email = parsedUser.email;
           const fullname = parsedUser.fullname || parsedUser.fullName;
+          // ✅ อ่าน profileImage จาก localStorage ด้วย
           const profileImage = parsedUser.profileImage || "";
           if (email) {
             setUser({ email, fullname, profileImage });
@@ -232,6 +233,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ดึง profileImage จาก API ถ้ายังไม่มีใน localStorage
   useEffect(() => {
     if (!user || isAdmin) return;
 
@@ -393,26 +395,25 @@ export default function Header() {
           {/* Logo */}
           <Link
             href={isAdmin ? "/admin/dashboard" : "/"}
-            className="text-xl sm:text-2xl font-bold text-amber-100 hover:text-white transition-colors flex items-center gap-2 shrink-0"
+            className="text-xl sm:text-2xl font-bold text-amber-100 hover:text-white transition-colors flex items-center gap-2"
           >
             {isAdmin ? (
               <>
                 <span>🏪</span>
-                <span className="hidden sm:inline">My Bakery</span>
-                <span className="sm:hidden">MB</span>
+                <span>My Bakery</span>
               </>
             ) : (
               <>🧁 My Bakery</>
             )}
           </Link>
 
-          {/* ✅ Desktop Menu — เปลี่ยนจาก lg:flex เป็น md:flex + ปรับขนาด font/gap สำหรับ tablet */}
-          <ul className="hidden md:flex gap-1 lg:gap-2 xl:gap-4 text-sm lg:text-base font-medium flex-1 justify-center">
+          {/* Desktop Menu */}
+          <ul className="hidden lg:flex gap-4 xl:gap-6 text-base font-medium flex-1 justify-center">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className={`flex items-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
                     isActive(link.href)
                       ? isAdmin
                         ? "bg-slate-600 text-white"
@@ -422,22 +423,15 @@ export default function Header() {
                         : "hover:bg-amber-800 hover:text-amber-200"
                   }`}
                 >
-                  <span className="text-sm lg:text-base">{link.icon}</span>
-                  {/* ✅ ซ่อน label บาง link บน tablet เพื่อประหยัดพื้นที่ */}
-                  <span className="hidden lg:inline">{link.label}</span>
-                  {/* ✅ แสดง label ย่อบน md (iPad) */}
-                  <span className="lg:hidden text-xs">
-                    {link.label.length > 10
-                      ? link.label.split(" ")[0]
-                      : link.label}
-                  </span>
+                  <span>{link.icon}</span>
+                  <span>{link.label}</span>
                 </Link>
               </li>
             ))}
           </ul>
 
           {/* Right Section */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3">
             {!isAdmin && (
               <div ref={searchRef} className="relative">
                 {/* Desktop */}
@@ -449,7 +443,7 @@ export default function Header() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => searchQuery.trim() && setShowResults(true)}
                       placeholder="ค้นหา"
-                      className="w-32 md:w-40 lg:w-56 px-4 py-2 pl-9 rounded-lg bg-amber-800/60 border border-amber-700/50 text-white placeholder-amber-300/60 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-amber-800 transition-all"
+                      className="w-44 lg:w-56 px-4 py-2 pl-9 rounded-lg bg-amber-800/60 border border-amber-700/50 text-white placeholder-amber-300/60 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-amber-800 transition-all"
                     />
                     <svg
                       className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400/70"
@@ -503,6 +497,7 @@ export default function Header() {
                   </span>
                 )}
                 <div className="hidden sm:block">
+                  {/* ✅ ส่ง profileImage ไปให้ UserMenu ด้วย */}
                   <UserMenu user={user} />
                 </div>
               </>
@@ -515,10 +510,10 @@ export default function Header() {
               </Link>
             )}
 
-            {/* ✅ Mobile Hamburger — เปลี่ยนจาก lg:hidden เป็น md:hidden */}
+            {/* Mobile Hamburger */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`md:hidden p-2 rounded-lg transition-colors ${isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-800"}`}
+              className={`lg:hidden p-2 rounded-lg transition-colors ${isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-800"}`}
             >
               {isMenuOpen ? (
                 <svg
@@ -588,10 +583,10 @@ export default function Header() {
           </div>
         )}
 
-        {/* ✅ Mobile Menu — เปลี่ยนจาก lg:hidden เป็น md:hidden */}
+        {/* Mobile Menu */}
         {isMenuOpen && (
           <div
-            className={`md:hidden pb-4 border-t ${isAdmin ? "border-slate-700" : "border-amber-800"}`}
+            className={`lg:hidden pb-4 border-t ${isAdmin ? "border-slate-700" : "border-amber-800"}`}
           >
             <ul className="flex flex-col gap-2 mt-4">
               {navLinks.map((link) => (

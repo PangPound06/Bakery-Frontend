@@ -316,7 +316,7 @@ export default function AdminOrdersPage() {
     switch (order.orderStatus) {
       case "pending":
         actions.push({
-          label: "✅ ยืนยัน",
+          label: "✅ ยืนยันคำสั่งซื้อ",
           orderStatus: "confirmed",
           paymentStatus: "paid",
           color: "bg-blue-500 hover:bg-blue-600 text-white",
@@ -329,7 +329,7 @@ export default function AdminOrdersPage() {
         break;
       case "confirmed":
         actions.push({
-          label: "👨‍🍳 เตรียม",
+          label: "👨‍🍳 เตรียมสินค้า",
           orderStatus: "preparing",
           color: "bg-indigo-500 hover:bg-indigo-600 text-white",
         });
@@ -343,7 +343,7 @@ export default function AdminOrdersPage() {
         break;
       case "shipping":
         actions.push({
-          label: "📦 สำเร็จ",
+          label: "📦 จัดส่งสำเร็จ",
           orderStatus: "delivered",
           color: "bg-green-500 hover:bg-green-600 text-white",
         });
@@ -387,13 +387,13 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
+    <div className="min-h-screen bg-amber-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-3xl md:text-4xl">📦</span>Manage orders
+            <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
+              <span className="text-4xl">📦</span>Manage orders
             </h1>
             <p className="text-amber-600 mt-1">
               คำสั่งซื้อทั้งหมด {orders.length} รายการ
@@ -401,8 +401,8 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* ✅ Summary Cards — ปรับ grid ให้ 4 คอลัมน์บน tablet แทน 7 */}
-        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
           {[
             { key: "all", label: "ทั้งหมด", icon: "📋", color: "bg-gray-100" },
             {
@@ -445,13 +445,11 @@ export default function AdminOrdersPage() {
             <button
               key={item.key}
               onClick={() => setFilterStatus(item.key)}
-              className={`p-2 md:p-3 rounded-xl text-center transition-all ${filterStatus === item.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"} ${item.color}`}
+              className={`p-3 rounded-xl text-center transition-all ${filterStatus === item.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"} ${item.color}`}
             >
-              <div className="text-lg md:text-2xl">{item.icon}</div>
-              <div className="text-[10px] md:text-xs font-medium mt-1 truncate">
-                {item.label}
-              </div>
-              <div className="text-sm md:text-lg font-bold">
+              <div className="text-2xl">{item.icon}</div>
+              <div className="text-xs font-medium mt-1">{item.label}</div>
+              <div className="text-lg font-bold">
                 {statusCounts[item.key as keyof typeof statusCounts]}
               </div>
             </button>
@@ -484,31 +482,31 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* ✅ Orders Table — ปรับให้ซ่อนบางคอลัมน์บน tablet */}
+        {/* Orders Table */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-amber-500">
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     #ID
                   </th>
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     ลูกค้า
                   </th>
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     ยอดรวม
                   </th>
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white hidden lg:table-cell">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     ชำระเงิน
                   </th>
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     สถานะ
                   </th>
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-white hidden md:table-cell">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     วันที่
                   </th>
-                  <th className="px-3 md:px-4 py-3 md:py-4 text-center text-xs md:text-sm font-semibold text-white">
+                  <th className="px-4 py-4 text-center text-sm font-semibold text-white">
                     จัดการ
                   </th>
                 </tr>
@@ -524,21 +522,19 @@ export default function AdminOrdersPage() {
                       key={order.id}
                       className={`border-b border-amber-100 hover:bg-amber-50 ${index % 2 === 0 ? "bg-white" : "bg-amber-50/50"}`}
                     >
-                      <td className="px-3 md:px-4 py-3 md:py-4 font-bold text-amber-800 text-sm">
+                      <td className="px-4 py-4 font-bold text-amber-800">
                         #{order.id}
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4">
-                        <p className="font-medium text-gray-800 text-xs md:text-sm">
+                      <td className="px-4 py-4">
+                        <p className="font-medium text-gray-800 text-sm">
                           {order.receiverName || "-"}
                         </p>
-                        <p className="text-xs text-gray-500 hidden md:block">
-                          {order.email}
-                        </p>
+                        <p className="text-xs text-gray-500">{order.email}</p>
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4 font-semibold text-amber-600 text-sm">
+                      <td className="px-4 py-4 font-semibold text-amber-600">
                         ฿{order.total.toLocaleString()}
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4 hidden lg:table-cell">
+                      <td className="px-4 py-4">
                         <div className="space-y-1">
                           <span
                             className={`px-2 py-0.5 rounded-full text-xs font-medium ${payment.bg}`}
@@ -560,23 +556,23 @@ export default function AdminOrdersPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4">
+                      <td className="px-4 py-4">
                         <span
-                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${status.bg}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${status.bg}`}
                         >
                           {status.icon} {status.text}
                         </span>
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4 text-xs text-gray-500 hidden md:table-cell">
+                      <td className="px-4 py-4 text-xs text-gray-500">
                         {formatDate(order.createdAt)}
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4">
+                      <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
                           <button
                             onClick={() => fetchOrderDetail(order.id)}
-                            className="px-2 md:px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 text-xs font-medium"
+                            className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 text-xs font-medium"
                           >
-                            🔍 ดู
+                            🔍 รายละเอียด
                           </button>
                           {nextActions.map((action, i) => (
                             <button
@@ -591,7 +587,7 @@ export default function AdminOrdersPage() {
                                     )
                               }
                               disabled={updating}
-                              className={`px-2 md:px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${action.color}`}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${action.color}`}
                             >
                               {action.label}
                             </button>
@@ -618,8 +614,8 @@ export default function AdminOrdersPage() {
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 md:p-6 bg-amber-500 rounded-t-2xl">
-              <h2 className="text-lg md:text-xl font-bold text-white">
+            <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-white">
                 📋 คำสั่งซื้อ #ORD{String(selectedOrder.id).padStart(8, "0")}
               </h2>
               <button
@@ -647,7 +643,7 @@ export default function AdminOrdersPage() {
                 <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               </div>
             ) : (
-              <div className="p-4 md:p-6 space-y-5">
+              <div className="p-6 space-y-5">
                 {/* Status + Actions */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
