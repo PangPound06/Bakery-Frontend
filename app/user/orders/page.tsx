@@ -47,6 +47,12 @@ export default function OrdersPage() {
       return;
     }
     fetchOrders();
+
+    const interval = setInterval(() => {
+      fetchOrdersSilent();
+    }, 1500);
+
+    return () => clearInterval(interval);
   }, [router]);
 
   const fetchOrders = async () => {
@@ -66,6 +72,21 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchOrdersSilent = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.email) return;
+
+      const response = await fetch(
+        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/user/${user.email}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+      }
+    } catch (error) {}
   };
 
   const fetchOrderDetail = async (orderId: number) => {

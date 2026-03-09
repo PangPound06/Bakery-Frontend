@@ -511,7 +511,12 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
+                  disabled={
+                    editingAdmin !== null &&
+                    editingAdmin?.email !==
+                    JSON.parse(localStorage.getItem("user") || "{}").email
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${editingAdmin?.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder="อย่างน้อย 6 ตัวอักษร"
                 />
               </div>
@@ -529,7 +534,12 @@ export default function UserManagementPage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
+                  disabled={
+                    editingAdmin !== null &&
+                    editingAdmin?.email !==
+                    JSON.parse(localStorage.getItem("user") || "{}").email
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${editingAdmin?.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder="กรอกรหัสผ่านอีกครั้ง"
                 />
               </div>
