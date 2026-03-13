@@ -342,9 +342,21 @@ export default function CheckoutPage() {
                 return;
               }
             }
-            // ถ้า OCR อ่านยอดไม่ได้ → ผ่าน ให้ Admin ตรวจ
+            if (amounts.length === 0) {
+              resolve({
+                valid: false,
+                reason:
+                  "ไม่สามารถอ่านยอดเงินในสลิปได้ กรุณาอัพโหลดสลิปที่ชัดเจน",
+              });
+              return;
+            }
           } catch (ocrErr) {
-            console.warn("OCR failed, skipping amount check:", ocrErr);
+            console.warn("OCR failed:", ocrErr);
+            resolve({
+              valid: false,
+              reason: "ไม่สามารถตรวจสอบสลิปได้ กรุณาลองใหม่",
+            });
+            return;
           }
 
           resolve({ valid: true });
