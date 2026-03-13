@@ -318,8 +318,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("ขนาดไฟล์ต้องไม่เกิน 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      setError("ขนาดไฟล์ต้องไม่เกิน 10MB");
       return;
     }
 
@@ -330,16 +330,37 @@ export default function CheckoutPage() {
     reader.readAsDataURL(file);
 
     setSlipFile(file);
-
     setSlipValidating(true);
-    const validation = await validateSlipImage(file);
-    setSlipValidating(false);
 
-    if (!validation.valid) {
-      setError(validation.reason || "รูปภาพไม่ถูกต้อง");
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("expectedAmount", orderSummary!.total.toString());
+
+      const response = await fetch(
+        "https://bakery-backend-production-6fc9.up.railway.app/api/slip/verify-amount",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.valid) {
+        setSlipValid(true);
+        setError("");
+      } else {
+        setSlipValid(false);
+        setError(data.message || "สลิปไม่ถูกต้อง");
+      }
+    } catch (err) {
       setSlipValid(false);
-    } else {
-      setSlipValid(true);
+      setError("ไม่สามารถตรวจสอบสลิปได้ กรุณาลองใหม่");
+    } finally {
+      setSlipValidating(false);
     }
   };
 
@@ -806,7 +827,7 @@ export default function CheckoutPage() {
                           คลิกเพื่อเลือกรูปสลิป
                         </p>
                         <p className="text-sm text-gray-500">
-                          รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 5MB
+                          รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 10MB
                         </p>
                         <p className="text-xs text-amber-600 mt-2">
                           📌 ต้องเป็นสลิปโอนเงินจากแอปธนาคารเท่านั้น
