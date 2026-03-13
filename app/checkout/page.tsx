@@ -288,7 +288,7 @@ export default function CheckoutPage() {
             }
           }
 
-          // ✅ เช็คยอดเงินผ่าน Backend → SlipOK API
+          // ✅ เช็คยอดเงินผ่าน Backend → QR Code Reader (ZXing)
           try {
             const slipFormData = new FormData();
             slipFormData.append("file", file);
@@ -302,7 +302,7 @@ export default function CheckoutPage() {
             );
 
             const slipData = await slipRes.json();
-            console.log("SlipOK response:", slipData);
+            console.log("Slip verify response:", slipData);
 
             if (slipData.success && slipData.amount != null) {
               const detectedAmount = slipData.amount;
@@ -319,7 +319,7 @@ export default function CheckoutPage() {
             }
             // ถ้าอ่านยอดไม่ได้ → ผ่าน ให้ Admin ตรวจ
           } catch (slipErr) {
-            console.warn("Slip verify failed, skipping amount check:", slipErr);
+            console.warn("QR verify failed, skipping amount check:", slipErr);
           }
 
           resolve({ valid: true });
