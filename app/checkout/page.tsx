@@ -258,8 +258,8 @@ export default function CheckoutPage() {
 
       if (detectedAmount === null) {
         // OCR อ่านไม่ได้ → ผ่านไปเลย (ให้ Admin ตรวจเอง)
-        setSlipValid(true);
-        setError("");
+        setSlipValid(false);
+        setError("ไม่สามารถอ่านยอดเงินในสลิปได้ กรุณาอัพโหลดสลิปที่ชัดเจน");
       } else {
         const diff = Math.abs(detectedAmount - expectedAmount);
         if (diff <= 1) {
@@ -274,9 +274,9 @@ export default function CheckoutPage() {
         }
       }
     } catch (err) {
-      // ถ้า OCR error → ผ่านไปเลย
       console.warn("Slip validation error:", err);
-      setSlipValid(true);
+      setSlipValid(false);
+      setError("ไม่สามารถตรวจสอบสลิปได้ กรุณาลองใหม่");
     } finally {
       setSlipValidating(false);
     }
