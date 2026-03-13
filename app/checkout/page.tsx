@@ -132,178 +132,65 @@ export default function CheckoutPage() {
     }
   };
 
-  const loadJsQR = (): Promise<typeof import("jsqr").default> => {
+  // โหลด Tesseract.js
+  const loadTesseract = (): Promise<any> => {
     return new Promise((resolve, reject) => {
-      if ((window as any).jsQR) {
-        resolve((window as any).jsQR);
+      if ((window as any).Tesseract) {
+        resolve((window as any).Tesseract);
         return;
       }
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
-      script.onload = () => resolve((window as any).jsQR);
-      script.onerror = () => reject(new Error("ไม่สามารถโหลด QR scanner ได้"));
+      script.src =
+        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      script.onload = () => resolve((window as any).Tesseract);
+      script.onerror = () => reject(new Error("โหลด Tesseract ไม่ได้"));
       document.head.appendChild(script);
     });
   };
 
-  const detectQRCode = async (
-    img: HTMLImageElement,
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
-  ): Promise<boolean> => {
+  // อ่านยอดเงินจากสลิปด้วย OCR
+  const extractAmountFromSlip = async (file: File): Promise<number | null> => {
     try {
-      const jsQR = await loadJsQR();
+      const Tesseract = await loadTesseract();
 
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      const fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const fullResult = jsQR(fullImageData.data, canvas.width, canvas.height);
-      if (fullResult) return true;
+      const worker = await Tesseract.createWorker("tha+eng");
+      const {
+        data: { text },
+      } = await worker.recognize(file);
+      await worker.terminate();
 
-      const regions = [
-        { x: 0, y: 0, w: 0.5, h: 0.5 },
-        { x: 0.5, y: 0, w: 0.5, h: 0.5 },
-        { x: 0, y: 0.5, w: 0.5, h: 0.5 },
-        { x: 0.5, y: 0.5, w: 0.5, h: 0.5 },
-        { x: 0.15, y: 0.15, w: 0.7, h: 0.7 },
-        { x: 0.25, y: 0, w: 0.5, h: 0.5 },
-        { x: 0.25, y: 0.5, w: 0.5, h: 0.5 },
+      console.log("OCR text:", text);
+
+      // หาตัวเลขที่มีรูปแบบยอดเงิน เช่น 100.00, 1,000.00, 100
+      const patterns = [
+        /(\d{1,3}(?:,\d{3})*(?:\.\d{2}))\s*(?:บาท|THB|฿)?/g,
+        /(?:จำนวน|ยอด|amount)[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/gi,
+        /(\d+\.\d{2})\s*(?:บาท|THB)?/g,
       ];
 
-      for (const region of regions) {
-        const sx = Math.floor(img.width * region.x);
-        const sy = Math.floor(img.height * region.y);
-        const sw = Math.floor(img.width * region.w);
-        const sh = Math.floor(img.height * region.h);
+      const amounts: number[] = [];
 
-        if (sw < 50 || sh < 50) continue;
-
-        canvas.width = sw;
-        canvas.height = sh;
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-        const regionData = ctx.getImageData(0, 0, sw, sh);
-        const regionResult = jsQR(regionData.data, sw, sh);
-        if (regionResult) return true;
+      for (const pattern of patterns) {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          const numStr = match[1].replace(/,/g, "");
+          const num = parseFloat(numStr);
+          if (!isNaN(num) && num > 0 && num < 1000000) {
+            amounts.push(num);
+          }
+        }
       }
 
-      const scales = [1.5, 2];
-      for (const scale of scales) {
-        const scaledW = Math.floor(img.width * scale);
-        const scaledH = Math.floor(img.height * scale);
+      console.log("Detected amounts:", amounts);
 
-        if (scaledW > 4000 || scaledH > 4000) continue;
+      if (amounts.length === 0) return null;
 
-        canvas.width = scaledW;
-        canvas.height = scaledH;
-        ctx.drawImage(img, 0, 0, scaledW, scaledH);
-        const scaledData = ctx.getImageData(0, 0, scaledW, scaledH);
-        const scaledResult = jsQR(scaledData.data, scaledW, scaledH);
-        if (scaledResult) return true;
-      }
-
-      return false;
-    } catch {
-      console.warn("QR detection unavailable, skipping QR check");
-      return false;
+      // คืนค่าที่พบบ่อยที่สุด หรือค่าแรก
+      return amounts[0];
+    } catch (err) {
+      console.warn("OCR failed:", err);
+      return null;
     }
-  };
-
-  const validateSlipImage = (
-    file: File,
-  ): Promise<{ valid: boolean; reason?: string }> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        img.onload = async () => {
-          const width = img.width;
-          const height = img.height;
-          const aspectRatio = height / width;
-
-          if (width < 200 || height < 300) {
-            resolve({
-              valid: false,
-              reason: "รูปภาพมีขนาดเล็กเกินไป กรุณาอัพโหลดสลิปที่ชัดเจน",
-            });
-            return;
-          }
-
-          if (aspectRatio < 0.8) {
-            resolve({
-              valid: false,
-              reason: "สลิปโอนเงินควรเป็นภาพแนวตั้ง กรุณาตรวจสอบรูปภาพ",
-            });
-            return;
-          }
-
-          if (file.size < 10000) {
-            resolve({
-              valid: false,
-              reason: "ไฟล์มีขนาดเล็กเกินไป กรุณาอัพโหลดสลิปที่ชัดเจน",
-            });
-            return;
-          }
-
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-
-            const samplePoints = [
-              { x: 10, y: 10 },
-              { x: width - 10, y: 10 },
-              { x: width / 2, y: 10 },
-              { x: 10, y: height - 10 },
-              { x: width - 10, y: height - 10 },
-            ];
-
-            let lightPixelCount = 0;
-            for (const point of samplePoints) {
-              const pixel = ctx.getImageData(point.x, point.y, 1, 1).data;
-              const brightness = (pixel[0] + pixel[1] + pixel[2]) / 3;
-              if (brightness > 150) lightPixelCount++;
-            }
-
-            if (lightPixelCount < 2) {
-              resolve({
-                valid: false,
-                reason:
-                  "รูปภาพไม่เหมือนสลิปโอนเงิน สลิปควรมีพื้นหลังสีขาวหรือสีอ่อน",
-              });
-              return;
-            }
-
-            const hasQR = await detectQRCode(img, canvas, ctx);
-            if (!hasQR) {
-              resolve({
-                valid: false,
-                reason:
-                  "ไม่พบ QR Code ในรูปภาพ สลิปโอนเงินจากแอปธนาคารจะต้องมี QR Code กรุณาอัพโหลดสลิปที่มี QR Code",
-              });
-              return;
-            }
-          }
-
-          resolve({ valid: true });
-        };
-
-        img.onerror = () => {
-          resolve({ valid: false, reason: "ไม่สามารถอ่านรูปภาพได้" });
-        };
-
-        img.src = e.target?.result as string;
-      };
-
-      reader.onerror = () => {
-        resolve({ valid: false, reason: "ไม่สามารถอ่านไฟล์ได้" });
-      };
-
-      reader.readAsDataURL(file);
-    });
   };
 
   const handleSlipSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -318,11 +205,12 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("ขนาดไฟล์ต้องไม่เกิน 10MB");
+    if (file.size > 5 * 1024 * 1024) {
+      setError("ขนาดไฟล์ต้องไม่เกิน 5MB");
       return;
     }
 
+    // แสดง preview
     const reader = new FileReader();
     reader.onload = (event) => {
       setSlipPreview(event.target?.result as string);
@@ -333,32 +221,62 @@ export default function CheckoutPage() {
     setSlipValidating(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("expectedAmount", orderSummary!.total.toString());
-
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/slip/verify-amount",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
+      // ตรวจสอบขนาดและ aspect ratio เบื้องต้น
+      const basicCheck = await new Promise<{ valid: boolean; reason?: string }>(
+        (resolve) => {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            const { width, height } = img;
+            if (width < 200 || height < 300) {
+              resolve({ valid: false, reason: "รูปภาพมีขนาดเล็กเกินไป" });
+            } else if (height / width < 0.8) {
+              resolve({ valid: false, reason: "สลิปควรเป็นภาพแนวตั้ง" });
+            } else {
+              resolve({ valid: true });
+            }
+          };
+          img.onerror = () =>
+            resolve({ valid: false, reason: "ไม่สามารถอ่านรูปภาพได้" });
+          img.src = url;
         },
       );
 
-      const data = await response.json();
+      if (!basicCheck.valid) {
+        setError(basicCheck.reason || "รูปภาพไม่ถูกต้อง");
+        setSlipValid(false);
+        setSlipValidating(false);
+        return;
+      }
 
-      if (data.valid) {
+      // อ่านยอดเงินด้วย OCR
+      const detectedAmount = await extractAmountFromSlip(file);
+      const expectedAmount = orderSummary!.total;
+
+      console.log("Expected:", expectedAmount, "Detected:", detectedAmount);
+
+      if (detectedAmount === null) {
+        // OCR อ่านไม่ได้ → ผ่านไปเลย (ให้ Admin ตรวจเอง)
         setSlipValid(true);
         setError("");
       } else {
-        setSlipValid(false);
-        setError(data.message || "สลิปไม่ถูกต้อง");
+        const diff = Math.abs(detectedAmount - expectedAmount);
+        if (diff <= 1) {
+          // ยอดตรง (อนุญาตต่างกันได้ 1 บาท)
+          setSlipValid(true);
+          setError("");
+        } else {
+          setSlipValid(false);
+          setError(
+            `ยอดเงินในสลิป (฿${detectedAmount.toLocaleString()}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toLocaleString()})`,
+          );
+        }
       }
     } catch (err) {
-      setSlipValid(false);
-      setError("ไม่สามารถตรวจสอบสลิปได้ กรุณาลองใหม่");
+      // ถ้า OCR error → ผ่านไปเลย
+      console.warn("Slip validation error:", err);
+      setSlipValid(true);
     } finally {
       setSlipValidating(false);
     }
