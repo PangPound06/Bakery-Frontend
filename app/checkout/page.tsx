@@ -209,21 +209,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const loadTesseract = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      if ((window as any).Tesseract) {
-        resolve((window as any).Tesseract);
-        return;
-      }
-      const script = document.createElement("script");
-      script.src =
-        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
-      script.onload = () => resolve((window as any).Tesseract);
-      script.onerror = () => reject(new Error("โหลด Tesseract ไม่ได้"));
-      document.head.appendChild(script);
-    });
-  };
-
   const validateSlipImage = (
     file: File,
   ): Promise<{ valid: boolean; reason?: string }> => {
@@ -303,60 +288,45 @@ export default function CheckoutPage() {
             }
           }
 
-          // ✅ เช็คยอดเงินด้วย OCR
+          // ✅ เช็คยอดเงินด้วย SlipOK API
           try {
-            const Tesseract = await loadTesseract();
-            const worker = await Tesseract.createWorker("tha+eng");
-            const {
-              data: { text },
-            } = await worker.recognize(file);
-            await worker.terminate();
+            const formData = new FormData();
+            formData.append("files", file);
 
-            console.log("OCR text:", text);
+            const slipRes = await fetch(
+              "https://api.slipok.com/api/line/apikey/27255",
+              {
+                method: "POST",
+                headers: {
+                  "x-authorization": "SLIPOKFF0YNF6",
+                },
+                body: formData,
+              },
+            );
 
-            const patterns = [/(\d{1,3}(?:,\d{3})*\.\d{2})/g, /(\d+\.\d{2})/g];
+            const slipData = await slipRes.json();
+            console.log("SlipOK response:", slipData);
 
-            const amounts: number[] = [];
-            for (const pattern of patterns) {
-              let match;
-              while ((match = pattern.exec(text)) !== null) {
-                const num = parseFloat(match[1].replace(/,/g, ""));
-                if (!isNaN(num) && num > 0 && num < 1000000) {
-                  amounts.push(num);
+            if (slipData.success && slipData.data) {
+              const detectedAmount = slipData.data.amount?.amount;
+
+              if (detectedAmount != null) {
+                const expectedAmount = orderSummary!.total;
+                const diff = Math.abs(detectedAmount - expectedAmount);
+
+                if (diff > 1) {
+                  resolve({
+                    valid: false,
+                    reason: `ยอดเงินในสลิป (฿${detectedAmount.toLocaleString()}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toLocaleString()})`,
+                  });
+                  return;
                 }
               }
+              // ถ้าอ่านยอดไม่ได้ → ผ่าน ให้ Admin ตรวจ
             }
-
-            console.log("Detected amounts:", amounts);
-
-            if (amounts.length > 0) {
-              const expectedAmount = orderSummary!.total;
-              const matched = amounts.some(
-                (a) => Math.abs(a - expectedAmount) <= 1,
-              );
-              if (!matched) {
-                resolve({
-                  valid: false,
-                  reason: `ยอดเงินในสลิป (฿${amounts[0].toLocaleString()}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toLocaleString()})`,
-                });
-                return;
-              }
-            }
-            if (amounts.length === 0) {
-              resolve({
-                valid: false,
-                reason:
-                  "ไม่สามารถอ่านยอดเงินในสลิปได้ กรุณาอัพโหลดสลิปที่ชัดเจน",
-              });
-              return;
-            }
-          } catch (ocrErr) {
-            console.warn("OCR failed:", ocrErr);
-            resolve({
-              valid: false,
-              reason: "ไม่สามารถตรวจสอบสลิปได้ กรุณาลองใหม่",
-            });
-            return;
+            // ถ้า API error → ผ่าน ให้ Admin ตรวจ
+          } catch (slipErr) {
+            console.warn("SlipOK failed, skipping amount check:", slipErr);
           }
 
           resolve({ valid: true });
