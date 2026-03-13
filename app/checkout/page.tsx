@@ -288,45 +288,38 @@ export default function CheckoutPage() {
             }
           }
 
-          // ✅ เช็คยอดเงินด้วย SlipOK API
+          // ✅ เช็คยอดเงินผ่าน Backend → SlipOK API
           try {
-            const formData = new FormData();
-            formData.append("files", file);
+            const slipFormData = new FormData();
+            slipFormData.append("file", file);
 
             const slipRes = await fetch(
-              "https://api.slipok.com/api/line/apikey/27255",
+              "https://bakery-backend-production-6fc9.up.railway.app/api/slip/verify",
               {
                 method: "POST",
-                headers: {
-                  "x-authorization": "SLIPOKFF0YNF6",
-                },
-                body: formData,
+                body: slipFormData,
               },
             );
 
             const slipData = await slipRes.json();
             console.log("SlipOK response:", slipData);
 
-            if (slipData.success && slipData.data) {
-              const detectedAmount = slipData.data.amount?.amount;
+            if (slipData.success && slipData.amount != null) {
+              const detectedAmount = slipData.amount;
+              const expectedAmount = orderSummary!.total;
+              const diff = Math.abs(detectedAmount - expectedAmount);
 
-              if (detectedAmount != null) {
-                const expectedAmount = orderSummary!.total;
-                const diff = Math.abs(detectedAmount - expectedAmount);
-
-                if (diff > 1) {
-                  resolve({
-                    valid: false,
-                    reason: `ยอดเงินในสลิป (฿${detectedAmount.toLocaleString()}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toLocaleString()})`,
-                  });
-                  return;
-                }
+              if (diff > 1) {
+                resolve({
+                  valid: false,
+                  reason: `ยอดเงินในสลิป (฿${detectedAmount.toLocaleString()}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toLocaleString()})`,
+                });
+                return;
               }
-              // ถ้าอ่านยอดไม่ได้ → ผ่าน ให้ Admin ตรวจ
             }
-            // ถ้า API error → ผ่าน ให้ Admin ตรวจ
+            // ถ้าอ่านยอดไม่ได้ → ผ่าน ให้ Admin ตรวจ
           } catch (slipErr) {
-            console.warn("SlipOK failed, skipping amount check:", slipErr);
+            console.warn("Slip verify failed, skipping amount check:", slipErr);
           }
 
           resolve({ valid: true });
