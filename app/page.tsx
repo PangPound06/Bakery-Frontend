@@ -251,7 +251,7 @@ export default function HomePage() {
           </p>
           <div className="flex items-center gap-8 text-center">
             {[
-              ["50+", "เมนู"],
+              [`${allProducts.length}+`, "เมนู"],
               ["100%", "สดใหม่"],
               ["7", "วัน/สัปดาห์"],
             ].map(([n, l]) => (
