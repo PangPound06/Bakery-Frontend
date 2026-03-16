@@ -44,7 +44,7 @@ export default function CakePage() {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        "https://cake-backend-production-6fc9.up.railway.app/api/products/category/cake",
+        "https://bakery-backend-production-6fc9.up.railway.app/api/products/category/cake",
       );
       if (response.ok) {
         const data = await response.json();
