@@ -21,11 +21,11 @@ export default function TermsPage() {
           {/* Header */}
           <div className="text-center mb-10">
             <div className="text-5xl mb-4">📜</div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="text-3xl font-bold text-amber-700 mb-2">
               ข้อกำหนดและเงื่อนไข
             </h1>
             <p className="text-gray-500 text-sm">
-              Terms and Conditions — My Bakery
+              Terms and Conditions — Pound Bakery
             </p>
             <p className="text-gray-400 text-xs mt-1">
               อัพเดทล่าสุด: 1 มีนาคม 2569
@@ -35,21 +35,21 @@ export default function TermsPage() {
           {/* Content */}
           <div className="space-y-8 text-gray-700 leading-relaxed">
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   1
                 </span>
                 การยอมรับเงื่อนไข
               </h2>
               <p className="text-sm">
-                เมื่อท่านสมัครสมาชิกและใช้งานเว็บไซต์ My Bakery
+                เมื่อท่านสมัครสมาชิกและใช้งานเว็บไซต์ Pound Bakery
                 ถือว่าท่านยอมรับข้อกำหนดและเงื่อนไขทั้งหมดที่ระบุในเอกสารนี้
                 หากท่านไม่ยอมรับเงื่อนไขเหล่านี้ กรุณาอย่าใช้บริการของเรา
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   2
                 </span>
@@ -82,7 +82,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   3
                 </span>
@@ -112,7 +112,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   4
                 </span>
@@ -140,7 +140,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   5
                 </span>
@@ -166,7 +166,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   6
                 </span>
@@ -194,7 +194,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   7
                 </span>
@@ -209,14 +209,14 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2">
                 <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-sm">
                   8
                 </span>
                 ข้อจำกัดความรับผิดชอบ
               </h2>
               <p className="text-sm">
-                ร้าน My Bakery จะไม่รับผิดชอบต่อความเสียหายใดๆ
+                ร้าน Pound Bakery จะไม่รับผิดชอบต่อความเสียหายใดๆ
                 ที่เกิดจากการใช้งานเว็บไซต์อย่างไม่ถูกต้อง
                 หรือจากเหตุสุดวิสัยที่อยู่นอกเหนือการควบคุมของร้านค้า
               </p>
@@ -226,7 +226,7 @@ export default function TermsPage() {
           {/* Footer */}
           <div className="mt-10 pt-6 border-t border-gray-100 text-center">
             <p className="text-gray-400 text-xs">
-              © 2569 My Bakery — สงวนลิขสิทธิ์
+              © 2569 Pound Bakery — สงวนลิขสิทธิ์
             </p>
             <div className="mt-3 flex justify-center gap-4">
               <Link

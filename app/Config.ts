@@ -1,6 +1,6 @@
 export const Config = {
   // ═══ Backend API URL ═══
-  apiUrl: "https://bakery-backend-production-6fc9.up.railway.app",
+  apiUrl: "http://localhost:8080",
 
   // ═══ API Key สำหรับยืนยัน request จาก Frontend ═══
   // ใช้ส่งใน header "x-api-key" ทุก request

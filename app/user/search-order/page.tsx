@@ -4,22 +4,38 @@ import { useState } from "react";
 import Link from "next/link";
 
 interface OrderItem {
+  id?: number;
   productName: string;
   price: number;
   quantity: number;
+  selectedOption?: string | null;
 }
 
 interface Order {
   id: number;
+  ordCode?: string;
   email: string;
+  subtotal: number;
+  shipping: number;
   total: number;
   orderStatus: string;
   paymentStatus: string;
+  paymentMethod: string;
   createdAt: string;
   receiverName: string;
   receiverPhone: string;
   receiverAddress: string;
+  note?: string;
 }
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+// ✅ ใช้แค่ isPoundOption เพื่อแสดง badge — Backend แปลง quantity ให้แล้ว
+const isPoundOption = (opt?: string | null) => opt?.includes("ปอนด์") ?? false;
 
 export default function SearchOrderPage() {
   const [searchInput, setSearchInput] = useState("");
@@ -33,25 +49,18 @@ export default function SearchOrderPage() {
       setError("กรุณากรอกหมายเลขคำสั่งซื้อ");
       return;
     }
-
     setLoading(true);
     setError("");
     setOrder(null);
-
     try {
-      const numericPart = searchInput.trim();
-
       const res = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/search/${numericPart}`,
+        `http://localhost:8080/api/orders/search/${searchInput.trim()}`,
       );
       const data = await res.json();
-
       if (data.success) {
         setOrder(data.order);
         setItems(data.items || []);
-      } else {
-        setError(data.message || "ไม่พบคำสั่งซื้อ");
-      }
+      } else setError(data.message || "ไม่พบคำสั่งซื้อ");
     } catch {
       setError("เกิดข้อผิดพลาด กรุณาลองใหม่");
     } finally {
@@ -59,33 +68,84 @@ export default function SearchOrderPage() {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
         return {
-          text: "⏳ รอดำเนินการ",
-          color: "text-yellow-600 bg-yellow-50",
+          text: "รอดำเนินการ",
+          bg: "bg-yellow-100 text-yellow-700",
+          icon: "⏳",
         };
       case "confirmed":
-        return { text: "✅ ยืนยันแล้ว", color: "text-blue-600 bg-blue-50" };
+        return {
+          text: "ยืนยันแล้ว",
+          bg: "bg-blue-100 text-blue-700",
+          icon: "✅",
+        };
       case "preparing":
         return {
-          text: "👨‍🍳 กำลังเตรียม",
-          color: "text-indigo-600 bg-indigo-50",
+          text: "กำลังเตรียม",
+          bg: "bg-indigo-100 text-indigo-700",
+          icon: "👨‍🍳",
         };
       case "shipping":
         return {
-          text: "🚚 กำลังจัดส่ง",
-          color: "text-purple-600 bg-purple-50",
+          text: "กำลังจัดส่ง",
+          bg: "bg-purple-100 text-purple-700",
+          icon: "🚚",
         };
       case "delivered":
-        return { text: "📦 จัดส่งแล้ว", color: "text-green-600 bg-green-50" };
+        return {
+          text: "จัดส่งแล้ว",
+          bg: "bg-green-100 text-green-700",
+          icon: "📦",
+        };
       case "cancelled":
-        return { text: "❌ ยกเลิก", color: "text-red-600 bg-red-50" };
+        return { text: "ยกเลิก", bg: "bg-red-100 text-red-700", icon: "❌" };
       default:
-        return { text: status, color: "text-gray-600 bg-gray-50" };
+        return { text: status, bg: "bg-gray-100 text-gray-700", icon: "📋" };
     }
   };
+
+  const getPaymentBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return { text: "ชำระแล้ว", bg: "bg-green-100 text-green-700" };
+      case "pending":
+        return { text: "รอตรวจสอบ", bg: "bg-yellow-100 text-yellow-700" };
+      case "failed":
+        return { text: "ล้มเหลว", bg: "bg-red-100 text-red-700" };
+      default:
+        return { text: status, bg: "bg-gray-100 text-gray-700" };
+    }
+  };
+
+  const getPaymentMethodText = (method: string) => {
+    switch (method) {
+      case "qr_promptpay":
+        return "📱 QR PromptPay";
+      case "card":
+        return "💳 บัตรเครดิต/เดบิต";
+      case "cash":
+        return "💵 เงินสด";
+      default:
+        return method;
+    }
+  };
+
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const ordCode = order
+    ? order.ordCode ||
+      `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`
+    : "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
@@ -103,7 +163,6 @@ export default function SearchOrderPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="hidden md:block md:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <nav className="space-y-2">
@@ -141,11 +200,9 @@ export default function SearchOrderPage() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="md:col-span-3 space-y-4">
-            {/* Search Box */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-amber-700 mb-2">
                 กรอกหมายเลขคำสั่งซื้อ
               </label>
               <div className="flex gap-3">
@@ -168,61 +225,139 @@ export default function SearchOrderPage() {
               {error && <p className="text-red-500 text-sm mt-2">⚠️ {error}</p>}
             </div>
 
-            {/* Result */}
             {order && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-amber-800">
-                    ORD{String(order.id * 104729 % 1000000).padStart(6, "0")}{order.id}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="flex items-center justify-between p-5 bg-amber-500">
+                  <h2 className="text-lg font-bold text-white">
+                    📋 คำสั่งซื้อ #{ordCode}
                   </h2>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusText(order.orderStatus).color}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(order.orderStatus).bg}`}
                   >
-                    {getStatusText(order.orderStatus).text}
+                    {getStatusBadge(order.orderStatus).icon}{" "}
+                    {getStatusBadge(order.orderStatus).text}
                   </span>
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-2">
-                    🛒 รายการสินค้า
-                  </p>
-                  <div className="space-y-2">
-                    {items.map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex justify-between p-3 bg-amber-50 rounded-lg text-sm"
-                      >
-                        <span>
-                          {item.productName} x{item.quantity}
-                        </span>
-                        <span className="font-medium text-amber-600">
-                          ฿{(item.price * item.quantity).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
+                <div className="p-6 space-y-5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">วันที่สั่งซื้อ</span>
+                    <span className="font-medium text-amber-700">
+                      {formatDate(order.createdAt)}
+                    </span>
                   </div>
-                </div>
 
-                <div className="border-t pt-3 flex justify-between font-bold">
-                  <span>ยอดรวม</span>
-                  <span className="text-amber-600">
-                    ฿{order.total.toLocaleString()}
-                  </span>
-                </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-3">
+                      🛒 รายการสินค้า
+                    </p>
+                    <div className="space-y-2">
+                      {items.map((item, i) => {
+                        const isPound = isPoundOption(item.selectedOption);
+                        // ✅ ใช้ item.quantity ตรงๆ — Backend แปลงให้แล้ว
+                        const displayTotal = item.price * item.quantity;
+                        return (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-3 bg-amber-50 rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium text-amber-700">
+                                {item.productName}
+                              </p>
+                              {item.selectedOption && (
+                                <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                                  {item.selectedOption}
+                                </span>
+                              )}
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                ฿{formatPrice(item.price)} × {item.quantity}{" "}
+                                {isPound ? "ออเดอร์" : "ชิ้น"}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-amber-600">
+                              ฿{formatPrice(displayTotal)}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-                <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1">
-                  <p>
-                    <span className="text-gray-500">ผู้รับ:</span>{" "}
-                    {order.receiverName}
-                  </p>
-                  <p>
-                    <span className="text-gray-500">โทร:</span>{" "}
-                    {order.receiverPhone}
-                  </p>
-                  <p>
-                    <span className="text-gray-500">ที่อยู่:</span>{" "}
-                    {order.receiverAddress}
-                  </p>
+                  <div className="border-t pt-4 space-y-2">
+                    <div className="flex justify-between text-sm text-amber-800">
+                      <span>ยอดรวมสินค้า</span>
+                      <span>฿{formatPrice(order.subtotal ?? order.total)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-amber-800">
+                      <span>ค่าจัดส่ง</span>
+                      <span
+                        className={
+                          order.shipping > 0 ? "text-red-500" : "text-green-600"
+                        }
+                      >
+                        {order.shipping > 0
+                          ? `฿${order.shipping.toLocaleString()}`
+                          : "ฟรี"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold border-t pt-2">
+                      <span className="text-amber-800">ยอดรวมทั้งหมด</span>
+                      <span className="text-amber-600">
+                        ฿{formatPrice(order.total)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                      💰 การชำระเงิน
+                    </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">วิธีชำระเงิน</span>
+                      <span>{getPaymentMethodText(order.paymentMethod)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-1">
+                      <span className="text-gray-500">สถานะ</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentBadge(order.paymentStatus).bg}`}
+                      >
+                        {getPaymentBadge(order.paymentStatus).text}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                      📦 ข้อมูลการจัดส่ง
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
+                      <p>
+                        <span className="text-gray-500">ชื่อผู้รับ:</span>{" "}
+                        <span className="font-medium">
+                          {order.receiverName}
+                        </span>
+                      </p>
+                      <p>
+                        <span className="text-gray-500">เบอร์โทร:</span>{" "}
+                        <span className="font-medium">
+                          {order.receiverPhone}
+                        </span>
+                      </p>
+                      <p>
+                        <span className="text-gray-500">ที่อยู่:</span>{" "}
+                        <span className="font-medium">
+                          {order.receiverAddress}
+                        </span>
+                      </p>
+                      {order.note && (
+                        <p>
+                          <span className="text-gray-500">หมายเหตุ:</span>{" "}
+                          <span className="font-medium">{order.note}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

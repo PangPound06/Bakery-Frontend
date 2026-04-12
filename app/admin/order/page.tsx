@@ -10,6 +10,7 @@ interface OrderItem {
   productName: string;
   price: number;
   quantity: number;
+  selectedOption?: string | null;
 }
 
 interface Order {
@@ -21,6 +22,7 @@ interface Order {
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
+  orderType?: string;
   receiverName: string;
   receiverPhone: string;
   receiverAddress: string;
@@ -30,30 +32,35 @@ interface Order {
   ordCode: string;
 }
 
+const formatPrice = (price: number) =>
+  price.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 export default function AdminOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterChannel, setFilterChannel] = useState<
+    "all" | "online" | "pos" | "dine-in" | "dine-in-alacarte" | "dine-in-buffet"
+  >("all");
   const [searchTerm, setSearchTerm] = useState("");
-
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [slipModal, setSlipModal] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
-
   const [prevOrderCount, setPrevOrderCount] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
-
     if (!token || !userData) {
       router.replace("/login");
       return;
     }
-
     try {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
@@ -71,23 +78,19 @@ export default function AdminOrdersPage() {
     }
 
     fetchOrders();
-
-    const interval = setInterval(() => {
-      fetchOrders(true);
-    }, 2000);
-
+    const interval = setInterval(() => fetchOrders(true), 2000);
     return () => clearInterval(interval);
   }, [router]);
 
   const fetchOrders = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
-      );
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:8080/api/orders/all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (response.ok) {
         const data = await response.json();
-
         if (silent && data.length > prevOrderCount && prevOrderCount > 0) {
           try {
             const audio = new Audio(
@@ -96,7 +99,6 @@ export default function AdminOrdersPage() {
             audio.volume = 0.5;
             audio.play().catch(() => {});
           } catch {}
-
           if (Notification.permission === "granted") {
             new Notification("🛒 คำสั่งซื้อใหม่!", {
               body: `มีคำสั่งซื้อใหม่เข้ามา (ทั้งหมด ${data.length} รายการ)`,
@@ -105,7 +107,6 @@ export default function AdminOrdersPage() {
             Notification.requestPermission();
           }
         }
-
         setPrevOrderCount(data.length);
         setOrders(data);
       }
@@ -119,8 +120,12 @@ export default function AdminOrdersPage() {
   const fetchOrderDetail = async (orderId: number) => {
     setLoadingDetail(true);
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}`,
+        `http://localhost:8080/api/orders/${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       if (response.ok) {
         const data = await response.json();
@@ -141,34 +146,74 @@ export default function AdminOrdersPage() {
     orderStatus: string,
     paymentStatus?: string,
   ) => {
+    if (orderStatus === "confirmed") {
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "ยืนยันคำสั่งซื้อ?",
+        text: "ต้องการยืนยันคำสั่งซื้อนี้หรือไม่?",
+        showCancelButton: true,
+        confirmButtonColor: "#f97316",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "✅ ยืนยัน",
+        cancelButtonText: "ปิด",
+      });
+      if (!result.isConfirmed) return;
+    }
+
+    if (orderStatus === "delivered") {
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "ยืนยันการชำระเงิน?",
+        text: "ยืนยันว่าลูกค้าชำระเงินเรียบร้อยแล้ว?",
+        showCancelButton: true,
+        confirmButtonColor: "#22c55e",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "✅ ยืนยัน",
+        cancelButtonText: "ปิด",
+      });
+      if (!result.isConfirmed) return;
+    }
+
     setUpdating(true);
     try {
+      const token = localStorage.getItem("token");
       const body: any = { orderStatus };
       if (paymentStatus) body.paymentStatus = paymentStatus;
-
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}/status`,
+        `http://localhost:8080/api/orders/${orderId}/status`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(body),
         },
       );
-
       const data = await response.json();
       if (data.success) {
         localStorage.setItem("stockUpdated", Date.now().toString());
         window.dispatchEvent(new Event("storage"));
-        await Swal.fire({
-          icon: "success",
-          title: "อัพเดทสถานะสำเร็จ",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        fetchOrders();
-        if (selectedOrder?.id === orderId) {
-          fetchOrderDetail(orderId);
+        if (orderStatus === "confirmed") {
+          await Swal.fire({
+            icon: "success",
+            title: "✅ ยืนยันคำสั่งซื้อสำเร็จ!",
+            text: "ขั้นตอนถัดไป: เริ่มเตรียมสินค้า 👨‍🍳",
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "รับทราบ",
+          });
         }
+        if (orderStatus === "delivered") {
+          await Swal.fire({
+            icon: "success",
+            title: "✅ ยืนยันการชำระเงินสำเร็จ!",
+            text: "ขอบคุณที่ใช้บริการ Pound Bakery 🧁",
+            confirmButtonColor: "#22c55e",
+            confirmButtonText: "รับทราบ",
+          });
+        }
+        fetchOrders();
+        if (selectedOrder?.id === orderId) fetchOrderDetail(orderId);
       } else {
         Swal.fire({
           icon: "error",
@@ -177,7 +222,7 @@ export default function AdminOrdersPage() {
           confirmButtonColor: "#f97316",
         });
       }
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
@@ -200,13 +245,15 @@ export default function AdminOrdersPage() {
       confirmButtonText: "ยกเลิกคำสั่งซื้อ",
       cancelButtonText: "ไม่ยกเลิก",
     });
-
     if (!result.isConfirmed) return;
-
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}/cancel`,
-        { method: "PUT" },
+        `http://localhost:8080/api/orders/${orderId}/cancel`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       const data = await response.json();
       if (data.success) {
@@ -220,9 +267,7 @@ export default function AdminOrdersPage() {
           showConfirmButton: false,
         });
         fetchOrders();
-        if (selectedOrder?.id === orderId) {
-          fetchOrderDetail(orderId);
-        }
+        if (selectedOrder?.id === orderId) fetchOrderDetail(orderId);
       } else {
         Swal.fire({
           icon: "error",
@@ -231,7 +276,7 @@ export default function AdminOrdersPage() {
           confirmButtonColor: "#f97316",
         });
       }
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
@@ -241,7 +286,138 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const removeOrderItem = async (
+    orderId: number,
+    itemId: number,
+    itemName: string,
+  ) => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "ลบสินค้า?",
+      text: `ต้องการลบ "${itemName}" ออกจากคำสั่งซื้อ? Stock จะถูกคืนอัตโนมัติ`,
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ลบสินค้า",
+      cancelButtonText: "ยกเลิก",
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:8080/api/orders/${orderId}/items/${itemId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const data = await response.json();
+      if (data.success) {
+        localStorage.setItem("stockUpdated", Date.now().toString());
+        window.dispatchEvent(new Event("storage"));
+        if (data.cancelled) {
+          await Swal.fire({
+            icon: "info",
+            title: "ยกเลิกอัตโนมัติ",
+            text: "ไม่มีสินค้าเหลือ คำสั่งซื้อถูกยกเลิกอัตโนมัติ",
+            confirmButtonColor: "#f97316",
+          });
+          setSelectedOrder(null);
+        } else {
+          // Update local state immediately
+          setOrderItems((prev) => prev.filter((i) => i.id !== itemId));
+          setSelectedOrder((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  subtotal: data.newSubtotal,
+                  total: data.newTotal,
+                }
+              : prev,
+          );
+        }
+        fetchOrders();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: data.message || "ไม่สามารถลบสินค้าได้",
+          confirmButtonColor: "#f97316",
+        });
+      }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถลบสินค้าได้",
+        confirmButtonColor: "#f97316",
+      });
+    }
+  };
+
+  const printReceipt = (order: Order, items: OrderItem[]) => {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    const itemsHtml = items
+      .map(
+        (item) =>
+          `<div class="row"><span>${item.productName}${item.selectedOption ? ` (${item.selectedOption})` : ""}</span><span>x${item.quantity}</span><span>฿${(item.price * item.quantity).toLocaleString()}</span></div>`,
+      )
+      .join("");
+    const paymentText =
+      order.paymentMethod === "qr_promptpay"
+        ? "QR PromptPay"
+        : order.paymentMethod === "cash"
+          ? "เงินสด"
+          : "บัตร";
+    const orderCode =
+      order.ordCode ||
+      `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
+    const date = new Date(order.createdAt).toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    win.document.write(`<html><head><title>ใบเสร็จ ${orderCode}</title>
+      <style>
+        body{font-family:'Courier New',monospace;font-size:12px;width:280px;margin:0 auto;padding:15px;}
+        .center{text-align:center;}
+        .bold{font-weight:bold;}
+        .line{border-top:1px dashed #000;margin:8px 0;}
+        .row{display:flex;justify-content:space-between;margin:3px 0;gap:8px;}
+        .row span:first-child{flex:1;}
+        .big{font-size:16px;font-weight:bold;}
+        .total-row{display:flex;justify-content:space-between;font-weight:bold;font-size:14px;margin:4px 0;}
+        @media print{body{margin:0;}}
+      </style></head><body>
+      <div class="center bold" style="font-size:16px;">Pound Bakery</div>
+      <div class="center" style="font-size:10px;color:#666;">ใบเสร็จรับเงิน</div>
+      <div class="line"></div>
+      <div class="row"><span>เลขที่: ${orderCode}</span></div>
+      <div class="row"><span>วันที่: ${date}</span></div>
+      <div class="row"><span>ลูกค้า: ${order.receiverName || "-"}</span></div>
+      <div class="row"><span>ช่องทาง: ${order.orderType === "pos" ? "หน้าร้าน" : "ออนไลน์"}</span></div>
+      <div class="line"></div>
+      ${itemsHtml}
+      <div class="line"></div>
+      <div class="total-row"><span>ยอดรวมสินค้า</span><span>฿${formatPrice(order.subtotal)}</span></div>
+      ${order.shipping > 0 ? `<div class="row"><span>ค่าจัดส่ง</span><span>฿${formatPrice(order.shipping)}</span></div>` : ""}
+      <div class="line"></div>
+      <div class="total-row" style="font-size:16px;"><span>รวมทั้งหมด</span><span>฿${formatPrice(order.total)}</span></div>
+      <div class="line"></div>
+      <div class="row"><span>ชำระโดย: ${paymentText}</span></div>
+      <div class="center" style="margin-top:15px;color:#666;font-size:10px;">ขอบคุณที่ใช้บริการ 🙏</div>
+    </body></html>`);
+    win.document.close();
+    win.print();
+  };
+
+  // ✅ แก้จุดที่ 2 — รับ orderType เพื่อแยก delivered
+  const getStatusBadge = (status: string, orderType?: string) => {
     switch (status) {
       case "pending":
         return {
@@ -268,11 +444,23 @@ export default function AdminOrdersPage() {
           icon: "🚚",
         };
       case "delivered":
-        return {
-          text: "จัดส่งแล้ว",
-          bg: "bg-green-100 text-green-700",
-          icon: "📦",
-        };
+        return orderType === "pos"
+          ? {
+              text: "สั่งซื้อสำเร็จ (หน้าร้าน)",
+              bg: "bg-emerald-100 text-emerald-700",
+              icon: "🎉",
+            }
+          : orderType === "dine-in"
+            ? {
+                text: "ชำระเงินแล้ว",
+                bg: "bg-emerald-100 text-emerald-700",
+                icon: "✅",
+              }
+            : {
+                text: "จัดส่งแล้ว",
+                bg: "bg-green-100 text-green-700",
+                icon: "📦",
+              };
       case "cancelled":
         return { text: "ยกเลิก", bg: "bg-red-100 text-red-700", icon: "❌" };
       default:
@@ -293,17 +481,22 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const getChannelBadge = (orderType?: string) => {
+    if (orderType === "pos")
+      return { text: "🏪 หน้าร้าน", bg: "bg-amber-100 text-amber-700" };
+    if (orderType === "dine-in")
+      return { text: "🪑 ในร้าน", bg: "bg-green-100 text-green-700" };
+    return { text: "🌐 ออนไลน์", bg: "bg-blue-50 text-blue-600" };
+  };
+
   const formatDate = (dateStr: string) => {
-    const date = new Date(
-      dateStr + (dateStr.endsWith("Z") || dateStr.includes("+") ? "" : "Z"),
-    );
+    const date = new Date(dateStr);
     return date.toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Asia/Bangkok",
     });
   };
 
@@ -314,6 +507,25 @@ export default function AdminOrdersPage() {
       paymentStatus?: string;
       color: string;
     }[] = [];
+
+    if (order.orderType === "pos") return actions;
+
+    // ✅ dine-in มีแค่ปุ่มยืนยันชำระเงิน
+    if (order.orderType === "dine-in") {
+      if (
+        order.orderStatus === "pending" ||
+        order.orderStatus === "confirmed"
+      ) {
+        actions.push({
+          label: "✅ ยืนยันการชำระเงิน",
+          orderStatus: "delivered",
+          paymentStatus: "paid",
+          color: "bg-green-500 hover:bg-green-600 text-white",
+        });
+      }
+      return actions;
+    }
+
     switch (order.orderStatus) {
       case "pending":
         actions.push({
@@ -356,6 +568,19 @@ export default function AdminOrdersPage() {
   const filteredOrders = orders.filter((order) => {
     const matchStatus =
       filterStatus === "all" || order.orderStatus === filterStatus;
+    const matchChannel =
+      filterChannel === "all" ||
+      (filterChannel === "pos" && order.orderType === "pos") ||
+      (filterChannel === "online" &&
+        order.orderType !== "pos" &&
+        order.orderType !== "dine-in") ||
+      (filterChannel === "dine-in" && order.orderType === "dine-in") ||
+      (filterChannel === "dine-in-alacarte" &&
+        order.orderType === "dine-in" &&
+        !order.note?.includes("Buffet")) ||
+      (filterChannel === "dine-in-buffet" &&
+        order.orderType === "dine-in" &&
+        order.note?.includes("Buffet"));
     const ordCode = `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
     const matchSearch =
       searchTerm === "" ||
@@ -366,7 +591,7 @@ export default function AdminOrdersPage() {
       (order.receiverName || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-    return matchStatus && matchSearch;
+    return matchStatus && matchChannel && matchSearch;
   });
 
   const statusCounts = {
@@ -406,7 +631,7 @@ export default function AdminOrdersPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-6">
           {[
             { key: "all", label: "ทั้งหมด", icon: "📋", color: "bg-gray-100" },
             {
@@ -435,8 +660,8 @@ export default function AdminOrdersPage() {
             },
             {
               key: "delivered",
-              label: "จัดส่งแล้ว",
-              icon: "📦",
+              label: "สั่งซื้อสำเร็จ",
+              icon: "🎉",
               color: "bg-green-100",
             },
             {
@@ -449,13 +674,88 @@ export default function AdminOrdersPage() {
             <button
               key={item.key}
               onClick={() => setFilterStatus(item.key)}
-              className={`p-3 rounded-xl text-center transition-all ${filterStatus === item.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"} ${item.color}`}
+              className={`p-2 md:p-3 rounded-xl text-center transition-all ${filterStatus === item.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"} ${item.color}`}
             >
-              <div className="text-2xl">{item.icon}</div>
-              <div className="text-xs font-medium mt-1">{item.label}</div>
-              <div className="text-lg font-bold">
+              <div className="text-xl md:text-2xl">{item.icon}</div>
+              <div className="text-[10px] md:text-xs font-medium mt-1 leading-tight">
+                {item.label}
+              </div>
+              <div className="text-base md:text-lg font-bold">
                 {statusCounts[item.key as keyof typeof statusCounts]}
               </div>
+            </button>
+          ))}
+        </div>
+
+        {/* ✅ Channel Filter */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            {
+              key: "all" as const,
+              label: "ทั้งหมด",
+              icon: "📋",
+              count: orders.length,
+            },
+            {
+              key: "online" as const,
+              label: "ออนไลน์",
+              icon: "🌐",
+              count: orders.filter(
+                (o) => o.orderType !== "pos" && o.orderType !== "dine-in",
+              ).length,
+            },
+            {
+              key: "pos" as const,
+              label: "หน้าร้าน",
+              icon: "🏪",
+              count: orders.filter((o) => o.orderType === "pos").length,
+            },
+            {
+              key: "dine-in" as const,
+              label: "ในร้าน",
+              icon: "🪑",
+              count: orders.filter((o) => o.orderType === "dine-in").length,
+            },
+            {
+              key: "dine-in-alacarte" as const,
+              label: "A la carte",
+              icon: "🍜",
+              count: orders.filter(
+                (o) =>
+                  o.orderType === "dine-in" &&
+                  o.note &&
+                  !o.note.includes("Buffet"),
+              ).length,
+            },
+            {
+              key: "dine-in-buffet" as const,
+              label: "Buffet",
+              icon: "🍱",
+              count: orders.filter(
+                (o) => o.orderType === "dine-in" && o.note?.includes("Buffet"),
+              ).length,
+            },
+          ].map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setFilterChannel(item.key)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                filterChannel === item.key
+                  ? "bg-amber-500 text-white shadow-md"
+                  : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50"
+              }`}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs ${
+                  filterChannel === item.key
+                    ? "bg-amber-600 text-amber-100"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {item.count}
+              </span>
             </button>
           ))}
         </div>
@@ -517,7 +817,11 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody>
                 {filteredOrders.map((order, index) => {
-                  const status = getStatusBadge(order.orderStatus);
+                  // ✅ แก้จุดที่ 3.1 — ส่ง orderType
+                  const status = getStatusBadge(
+                    order.orderStatus,
+                    order.orderType,
+                  );
                   const payment = getPaymentBadge(order.paymentStatus);
                   const nextActions = getNextStatusActions(order);
 
@@ -527,16 +831,26 @@ export default function AdminOrdersPage() {
                       className={`border-b border-amber-100 hover:bg-amber-50 ${index % 2 === 0 ? "bg-white" : "bg-amber-50/50"}`}
                     >
                       <td className="px-4 py-4 font-bold text-amber-800">
-                        #{order.ordCode || `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}
+                        #
+                        {order.ordCode ||
+                          `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}
                       </td>
+
+                      {/* ✅ แก้จุดที่ 4 — เพิ่ม badge หน้าร้าน/ออนไลน์ */}
                       <td className="px-4 py-4">
-                        <p className="font-medium text-gray-800 text-sm">
+                        <p className="font-medium text-amber-700 text-sm">
                           {order.receiverName || "-"}
                         </p>
                         <p className="text-xs text-gray-500">{order.email}</p>
+                        <span
+                          className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${getChannelBadge(order.orderType).bg}`}
+                        >
+                          {getChannelBadge(order.orderType).text}
+                        </span>
                       </td>
+
                       <td className="px-4 py-4 font-semibold text-amber-600">
-                        ฿{order.total.toLocaleString()}
+                        ฿{formatPrice(order.total)}
                       </td>
                       <td className="px-4 py-4">
                         <div className="space-y-1">
@@ -547,12 +861,13 @@ export default function AdminOrdersPage() {
                           </span>
                           {order.slipImage && (
                             <button
-                              onClick={() => {
-                                const url = order.slipImage.startsWith("http")
-                                  ? order.slipImage
-                                  : `https://bakery-backend-production-6fc9.up.railway.app${order.slipImage}`;
-                                setSlipModal(url);
-                              }}
+                              onClick={() =>
+                                setSlipModal(
+                                  order.slipImage.startsWith("http")
+                                    ? order.slipImage
+                                    : `http://localhost:8080${order.slipImage}`,
+                                )
+                              }
                               className="block text-xs text-blue-600 hover:underline"
                             >
                               🧾 ดูสลิป
@@ -581,6 +896,7 @@ export default function AdminOrdersPage() {
                           {nextActions.map((action, i) => (
                             <button
                               key={i}
+                              disabled={updating}
                               onClick={() =>
                                 action.orderStatus === "cancelled"
                                   ? cancelOrder(order.id)
@@ -590,7 +906,6 @@ export default function AdminOrdersPage() {
                                       action.paymentStatus,
                                     )
                               }
-                              disabled={updating}
                               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${action.color}`}
                             >
                               {action.label}
@@ -604,7 +919,6 @@ export default function AdminOrdersPage() {
               </tbody>
             </table>
           </div>
-
           {filteredOrders.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📭</div>
@@ -620,7 +934,9 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
-                📋 คำสั่งซื้อ #{selectedOrder.ordCode || `ORD${String((selectedOrder.id * 104729) % 1000000).padStart(6, "0")}${selectedOrder.id}`}
+                📋 คำสั่งซื้อ #
+                {selectedOrder.ordCode ||
+                  `ORD${String((selectedOrder.id * 104729) % 1000000).padStart(6, "0")}${selectedOrder.id}`}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}
@@ -652,11 +968,22 @@ export default function AdminOrdersPage() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm text-gray-500">สถานะปัจจุบัน</span>
+                    {/* ✅ แก้จุดที่ 3.2 และ 3.3 */}
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(selectedOrder.orderStatus).bg}`}
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(selectedOrder.orderStatus, selectedOrder.orderType).bg}`}
                     >
-                      {getStatusBadge(selectedOrder.orderStatus).icon}{" "}
-                      {getStatusBadge(selectedOrder.orderStatus).text}
+                      {
+                        getStatusBadge(
+                          selectedOrder.orderStatus,
+                          selectedOrder.orderType,
+                        ).icon
+                      }{" "}
+                      {
+                        getStatusBadge(
+                          selectedOrder.orderStatus,
+                          selectedOrder.orderType,
+                        ).text
+                      }
                     </span>
                   </div>
                   {getNextStatusActions(selectedOrder).length > 0 && (
@@ -664,6 +991,7 @@ export default function AdminOrdersPage() {
                       {getNextStatusActions(selectedOrder).map((action, i) => (
                         <button
                           key={i}
+                          disabled={updating}
                           onClick={() =>
                             action.orderStatus === "cancelled"
                               ? cancelOrder(selectedOrder.id)
@@ -673,7 +1001,6 @@ export default function AdminOrdersPage() {
                                   action.paymentStatus,
                                 )
                           }
-                          disabled={updating}
                           className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 ${action.color}`}
                         >
                           {action.label}
@@ -689,34 +1016,76 @@ export default function AdminOrdersPage() {
                     🛒 รายการสินค้า
                   </p>
                   <div className="space-y-2">
-                    {orderItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-3 bg-amber-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">
-                            {item.productName}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            ฿{item.price.toLocaleString()} x {item.quantity}
-                          </p>
+                    {orderItems.map((item) => {
+                      const canRemove =
+                        selectedOrder &&
+                        !["delivered", "cancelled"].includes(
+                          selectedOrder.orderStatus,
+                        ) &&
+                        selectedOrder.orderType !== "pos";
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-3 bg-amber-50 rounded-lg gap-2"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-amber-700 truncate">
+                              {item.productName}
+                            </p>
+                            {item.selectedOption && (
+                              <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                                {item.selectedOption}
+                              </span>
+                            )}
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              ฿{formatPrice(item.price)} x {item.quantity}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <p className="font-semibold text-amber-600">
+                              ฿{formatPrice(item.price * item.quantity)}
+                            </p>
+                            {canRemove && (
+                              <button
+                                onClick={() =>
+                                  removeOrderItem(
+                                    selectedOrder.id,
+                                    item.id,
+                                    item.productName,
+                                  )
+                                }
+                                className="p-1.5 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition-colors"
+                                title="ลบสินค้านี้"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <p className="font-semibold text-amber-600">
-                          ฿{(item.price * item.quantity).toLocaleString()}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Price */}
                 <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm text-amber-800">
                     <span>ยอดรวมสินค้า</span>
-                    <span>฿{selectedOrder.subtotal.toLocaleString()}</span>
+                    <span>฿{formatPrice(selectedOrder.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm text-amber-800">
                     <span>ค่าจัดส่ง</span>
                     <span
                       className={
@@ -726,14 +1095,14 @@ export default function AdminOrdersPage() {
                       }
                     >
                       {selectedOrder.shipping > 0
-                        ? `฿${selectedOrder.shipping.toLocaleString()}`
+                        ? `฿${formatPrice(selectedOrder.shipping)}`
                         : "ฟรี"}
                     </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
                     <span>ยอดรวม</span>
                     <span className="text-amber-600">
-                      ฿{selectedOrder.total.toLocaleString()}
+                      ฿{formatPrice(selectedOrder.total)}
                     </span>
                   </div>
                 </div>
@@ -749,7 +1118,9 @@ export default function AdminOrdersPage() {
                       <span>
                         {selectedOrder.paymentMethod === "qr_promptpay"
                           ? "📱 QR PromptPay"
-                          : "💳 บัตร"}
+                          : selectedOrder.paymentMethod === "cash"
+                            ? "💵 เงินสด"
+                            : "💳 บัตร"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -763,12 +1134,13 @@ export default function AdminOrdersPage() {
                   </div>
                   {selectedOrder.slipImage && (
                     <button
-                      onClick={() => {
-                        const url = selectedOrder.slipImage.startsWith("http")
-                          ? selectedOrder.slipImage
-                          : `https://bakery-backend-production-6fc9.up.railway.app${selectedOrder.slipImage}`;
-                        setSlipModal(url);
-                      }}
+                      onClick={() =>
+                        setSlipModal(
+                          selectedOrder.slipImage.startsWith("http")
+                            ? selectedOrder.slipImage
+                            : `http://localhost:8080${selectedOrder.slipImage}`,
+                        )
+                      }
                       className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium w-full"
                     >
                       🧾 ดูสลิปการโอนเงิน
@@ -779,7 +1151,7 @@ export default function AdminOrdersPage() {
                 {/* Shipping */}
                 <div className="border-t pt-4">
                   <p className="text-sm font-semibold text-gray-700 mb-2">
-                    📦 ข้อมูลการจัดส่ง
+                    📦 ข้อมูลการสั่งซื้อ
                   </p>
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
                     <p>
@@ -811,12 +1183,33 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setSelectedOrder(null)}
-                  className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 font-medium"
-                >
-                  ปิด
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setSelectedOrder(null)}
+                    className="flex-1 py-3 bg-gray-100 text-amber-800 rounded-xl hover:bg-gray-200 font-medium"
+                  >
+                    ปิด
+                  </button>
+                  <button
+                    onClick={() => printReceipt(selectedOrder, orderItems)}
+                    className="flex-1 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    พิมพ์ใบเสร็จ
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -834,7 +1227,7 @@ export default function AdminOrdersPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-800">
+              <h3 className="text-lg font-bold text-amber-700">
                 🧾 สลิปการโอนเงิน
               </h3>
               <button

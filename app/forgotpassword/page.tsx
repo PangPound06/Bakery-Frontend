@@ -37,12 +37,12 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/forgot-password",
+        "http://localhost:8080/api/auth/forgot-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -123,12 +123,12 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/verify-otp",
+        "http://localhost:8080/api/auth/verify-otp",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, otp: otpCode }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -170,7 +170,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/reset-password",
+        "http://localhost:8080/api/auth/reset-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -179,7 +179,7 @@ export default function ForgotPasswordPage() {
             resetToken,
             newPassword,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -205,12 +205,12 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/resend-otp",
+        "http://localhost:8080/api/auth/resend-otp",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -247,7 +247,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-4xl font-bold text-amber-600 mb-2">
-                🧁 My Bakery
+                🧁 Pound Bakery
               </h1>
             </Link>
           </div>
@@ -259,10 +259,10 @@ export default function ForgotPasswordPage() {
                 <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl">🔑</span>
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                <h2 className="text-2xl font-semibold text-amber-700 mb-2">
                   ลืมรหัสผ่าน?
                 </h2>
-                <p className="text-gray-600 text-sm">
+                <p className="text-amber-800 text-sm">
                   กรอกอีเมลของคุณเพื่อรับรหัส OTP
                 </p>
               </div>
@@ -319,10 +319,10 @@ export default function ForgotPasswordPage() {
                 <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl">📱</span>
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                <h2 className="text-2xl font-semibold text-amber-700 mb-2">
                   ยืนยันรหัส OTP
                 </h2>
-                <p className="text-gray-600 text-sm">
+                <p className="text-amber-800 text-sm">
                   เราส่งรหัส 6 หลักไปที่
                   <br />
                   <span className="font-medium text-amber-600">{email}</span>
@@ -352,7 +352,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) =>
                         handleOtpChange(
                           index,
-                          e.target.value.replace(/\D/g, "")
+                          e.target.value.replace(/\D/g, ""),
                         )
                       }
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
@@ -384,7 +384,7 @@ export default function ForgotPasswordPage() {
 
                 {/* Resend OTP */}
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-2">ไม่ได้รับรหัส?</p>
+                  <p className="text-sm text-amber-800 mb-2">ไม่ได้รับรหัส?</p>
                   {countdown > 0 ? (
                     <p className="text-sm text-gray-500">
                       ส่งรหัสใหม่ได้ใน{" "}
@@ -412,7 +412,7 @@ export default function ForgotPasswordPage() {
                     setOtp(["", "", "", "", "", ""]);
                     setError("");
                   }}
-                  className="w-full text-gray-600 hover:text-gray-800 font-medium py-2 transition-colors"
+                  className="w-full text-amber-800 hover:text-amber-700 font-medium py-2 transition-colors"
                 >
                   ← เปลี่ยนอีเมล
                 </button>
@@ -427,10 +427,10 @@ export default function ForgotPasswordPage() {
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl">🔐</span>
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                <h2 className="text-2xl font-semibold text-amber-700 mb-2">
                   ตั้งรหัสผ่านใหม่
                 </h2>
-                <p className="text-gray-600 text-sm">
+                <p className="text-amber-800 text-sm">
                   กรุณากรอกรหัสผ่านใหม่ของคุณ
                 </p>
               </div>
@@ -524,10 +524,10 @@ export default function ForgotPasswordPage() {
                       {newPassword.length < 6
                         ? "⚠️ รหัสผ่านสั้นเกินไป"
                         : newPassword.length >= 8 &&
-                          /[A-Z]/.test(newPassword) &&
-                          /[0-9]/.test(newPassword)
-                        ? "✅ รหัสผ่านแข็งแรง"
-                        : "✓ รหัสผ่านใช้ได้"}
+                            /[A-Z]/.test(newPassword) &&
+                            /[0-9]/.test(newPassword)
+                          ? "✅ รหัสผ่านแข็งแรง"
+                          : "✓ รหัสผ่านใช้ได้"}
                     </p>
                   </div>
                 )}
@@ -573,10 +573,10 @@ export default function ForgotPasswordPage() {
               <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-5xl">✅</span>
               </div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+              <h2 className="text-2xl font-semibold text-amber-700 mb-2">
                 เปลี่ยนรหัสผ่านสำเร็จ!
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-amber-800 mb-8">
                 คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้แล้ว
               </p>
 
@@ -594,7 +594,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center">
               <Link
                 href="/login"
-                className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                className="text-amber-800 hover:text-amber-700 text-sm font-medium"
               >
                 ← กลับหน้าเข้าสู่ระบบ
               </Link>
@@ -606,7 +606,7 @@ export default function ForgotPasswordPage() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+            className="text-amber-800 hover:text-amber-700 text-sm font-medium"
           >
             ← กลับหน้าหลัก
           </Link>

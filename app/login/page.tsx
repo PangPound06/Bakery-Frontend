@@ -47,8 +47,7 @@ function LoginContent() {
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     setError("");
-    window.location.href =
-      "https://bakery-backend-production-6fc9.up.railway.app/api/auth/google";
+    window.location.href = "http://localhost:8080/api/auth/google";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,17 +62,14 @@ function LoginContent() {
     }
 
     try {
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        },
-      );
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
       const data = await response.json();
 
@@ -122,7 +118,7 @@ function LoginContent() {
 
       window.location.href =
         data.redirectUrl ||
-        (data.userType === "admin" ? "/admin/dashboard" : "/");
+        (data.userType === "admin" ? "/admin/dashboard" : "/order-mode");
     } catch (err: any) {
       setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
@@ -137,13 +133,13 @@ function LoginContent() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-4xl font-bold text-amber-600 mb-2">
-                🧁 My Bakery
+                🧁 Pound Bakery
               </h1>
             </Link>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+            <h2 className="text-2xl font-semibold text-amber-700 mb-2">
               เข้าสู่ระบบ
             </h2>
-            <p className="text-gray-600 text-sm">ยินดีต้อนรับกลับมา!</p>
+            <p className="text-amber-800 text-sm">ยินดีต้อนรับกลับมา!</p>
           </div>
 
           {error && (
@@ -211,7 +207,7 @@ function LoginContent() {
                   onChange={handleChange}
                   className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
                 />
-                <span className="ml-2 text-sm text-gray-600">จดจำฉันไว้</span>
+                <span className="ml-2 text-sm text-amber-800">จดจำฉันไว้</span>
               </label>
               {/*<Link
                 href="/forgotpassword"
@@ -273,7 +269,7 @@ function LoginContent() {
           </button>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-amber-800">
               ยังไม่มีบัญชี?{" "}
               <Link
                 href="/register"
@@ -288,7 +284,7 @@ function LoginContent() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+            className="text-amber-800 hover:text-amber-700 text-sm font-medium"
           >
             ← กลับหน้าหลัก
           </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
@@ -11,6 +11,7 @@ interface OrderItem {
   productName: string;
   price: number;
   quantity: number;
+  selectedOption?: string | null;
 }
 
 interface Order {
@@ -23,6 +24,7 @@ interface Order {
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
+  orderType: string;
   receiverName: string;
   receiverPhone: string;
   receiverAddress: string;
@@ -30,6 +32,15 @@ interface Order {
   slipImage: string;
   createdAt: string;
 }
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+// ✅ ใช้แค่ isPoundOption เพื่อแสดง badge — Backend แปลง quantity ให้แล้ว
+const isPoundOption = (opt?: string | null) => opt?.includes("ปอนด์") ?? false;
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -39,6 +50,11 @@ export default function OrdersPage() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
+  const selectedOrderRef = useRef<Order | null>(null);
+
+  useEffect(() => {
+    selectedOrderRef.current = selectedOrder;
+  }, [selectedOrder]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -47,26 +63,26 @@ export default function OrdersPage() {
       return;
     }
     fetchOrders();
-
     const interval = setInterval(() => {
       fetchOrdersSilent();
+      // ถ้ามีออเดอร์ที่เปิดดูอยู่ ให้รีเฟรชข้อมูลออเดอร์นั้นด้วย
+      if (selectedOrderRef.current) {
+        fetchOrderDetail(selectedOrderRef.current.id, true);
+      }
     }, 1500);
-
     return () => clearInterval(interval);
   }, [router]);
 
   const fetchOrders = async () => {
     try {
+      const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
-
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/user/${user.email}`,
+        `http://localhost:8080/api/orders/user/${user.email}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-      }
+      if (response.ok) setOrders(await response.json());
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -76,24 +92,24 @@ export default function OrdersPage() {
 
   const fetchOrdersSilent = async () => {
     try {
+      const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
-
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/user/${user.email}`,
+        `http://localhost:8080/api/orders/user/${user.email}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-      }
+      if (response.ok) setOrders(await response.json());
     } catch (error) {}
   };
 
-  const fetchOrderDetail = async (orderId: number) => {
-    setLoadingDetail(true);
+  const fetchOrderDetail = async (orderId: number, silent = false) => {
+    if (!silent) setLoadingDetail(true); // ✅ ถ้า silent จะไม่แสดง spinner
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}`,
+        `http://localhost:8080/api/orders/${orderId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.ok) {
         const data = await response.json();
@@ -105,7 +121,7 @@ export default function OrdersPage() {
     } catch (error) {
       console.error("Error fetching order detail:", error);
     } finally {
-      setLoadingDetail(false);
+      if (!silent) setLoadingDetail(false);
     }
   };
 
@@ -120,13 +136,15 @@ export default function OrdersPage() {
       confirmButtonText: "ยืนยันยกเลิก",
       cancelButtonText: "ไม่ยกเลิก",
     });
-
     if (!result.isConfirmed) return;
-
     try {
+      const token = localStorage.getItem("token"); // ✅ เพิ่ม
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${orderId}/cancel`,
-        { method: "PUT" },
+        `http://localhost:8080/api/orders/${orderId}/cancel`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` }, // ✅ เพิ่ม
+        },
       );
       const data = await response.json();
       if (data.success) {
@@ -221,26 +239,28 @@ export default function OrdersPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(
-      dateStr + (dateStr.endsWith("Z") || dateStr.includes("+") ? "" : "Z"),
-    );
-    return date.toLocaleDateString("th-TH", {
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Asia/Bangkok",
     });
-  };
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const filteredOrders = orders.filter((order) => {
+    const orderDate = new Date(order.createdAt);
+    if (orderDate < thirtyDaysAgo) return false;
+    if (order.orderType === "pos") return false;
+
     if (filterStatus === "all") return true;
     return order.orderStatus === filterStatus;
   });
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -249,12 +269,10 @@ export default function OrdersPage() {
         </div>
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
         <div className="mb-8">
           <Link
             href="/"
@@ -266,12 +284,11 @@ export default function OrdersPage() {
             📋 รายการสั่งซื้อ
           </h1>
           <p className="text-amber-600 mt-1">
-            คำสั่งซื้อทั้งหมด {orders.length} รายการ
+            คำสั่งซื้อทั้งหมด {filteredOrders.length} รายการ
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="hidden md:block md:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <nav className="space-y-2">
@@ -309,9 +326,7 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="md:col-span-3 space-y-4">
-            {/* Filter */}
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <div className="flex flex-wrap gap-2">
                 {[
@@ -319,17 +334,13 @@ export default function OrdersPage() {
                   { value: "pending", label: "⏳ รอดำเนินการ" },
                   { value: "confirmed", label: "✅ ยืนยันแล้ว" },
                   { value: "shipping", label: "🚚 กำลังจัดส่ง" },
-                  { value: "delivered", label: "📦 จัดส่งแล้ว" },
+                  { value: "delivered", label: "📦 คำสั่งซื้อเสร็จสิ้น" },
                   { value: "cancelled", label: "❌ ยกเลิก" },
                 ].map((filter) => (
                   <button
                     key={filter.value}
                     onClick={() => setFilterStatus(filter.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      filterStatus === filter.value
-                        ? "bg-amber-500 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === filter.value ? "bg-amber-500 text-white" : "bg-gray-100 text-amber-800 hover:bg-gray-200"}`}
                   >
                     {filter.label}
                   </button>
@@ -337,7 +348,6 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* Orders List */}
             {filteredOrders.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-6xl mb-4">📭</div>
@@ -353,18 +363,16 @@ export default function OrdersPage() {
               filteredOrders.map((order) => {
                 const status = getStatusBadge(order.orderStatus);
                 const payment = getPaymentBadge(order.paymentStatus);
-
                 return (
                   <div
                     key={order.id}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                   >
-                    {/* Order Header */}
                     <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{status.icon}</span>
                         <div>
-                          <p className="font-semibold text-gray-800">
+                          <p className="font-semibold text-amber-700">
                             คำสั่งซื้อ #{order.ordCode}
                           </p>
                           <p className="text-xs text-gray-500">
@@ -385,8 +393,6 @@ export default function OrdersPage() {
                         </span>
                       </div>
                     </div>
-
-                    {/* Order Body */}
                     <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -399,12 +405,10 @@ export default function OrdersPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-2xl font-bold text-amber-600">
-                            ฿{order.total.toLocaleString()}
+                            ฿{formatPrice(order.total)}
                           </p>
                         </div>
                       </div>
-
-                      {/* Actions */}
                       <div className="flex gap-2 mt-4 pt-4 border-t">
                         <button
                           onClick={() => fetchOrderDetail(order.id)}
@@ -431,11 +435,9 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
                 📋 คำสั่งซื้อ #{selectedOrder.ordCode}
@@ -467,77 +469,80 @@ export default function OrdersPage() {
               </div>
             ) : (
               <div className="p-6 space-y-5">
-                {/* Status */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">สถานะ</span>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      getStatusBadge(selectedOrder.orderStatus).bg
-                    }`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(selectedOrder.orderStatus).bg}`}
                   >
                     {getStatusBadge(selectedOrder.orderStatus).icon}{" "}
                     {getStatusBadge(selectedOrder.orderStatus).text}
                   </span>
                 </div>
-
-                {/* Date */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">วันที่สั่งซื้อ</span>
-                  <span className="text-sm font-medium text-gray-800">
+                  <span className="text-sm font-medium text-amber-700">
                     {formatDate(selectedOrder.createdAt)}
                   </span>
                 </div>
 
-                {/* Items */}
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-3">
                     🛒 รายการสินค้า
                   </p>
                   <div className="space-y-2">
-                    {orderItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-3 bg-amber-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">
-                            {item.productName}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            ฿{item.price.toLocaleString()} x {item.quantity}
+                    {orderItems.map((item) => {
+                      const isPound = isPoundOption(item.selectedOption);
+                      // ✅ ใช้ item.quantity ตรงๆ — Backend แปลงให้แล้ว (1 ออเดอร์, ไม่ใช่ 8 ชิ้น)
+                      const displayTotal = item.price * item.quantity;
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-3 bg-amber-50 rounded-lg"
+                        >
+                          <div>
+                            <p className="font-medium text-amber-700">
+                              {item.productName}
+                            </p>
+                            {item.selectedOption && (
+                              <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                                {item.selectedOption}
+                              </span>
+                            )}
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              ฿{formatPrice(item.price)} × {item.quantity}{" "}
+                              {isPound ? "ออเดอร์" : "ชิ้น"}
+                            </p>
+                          </div>
+                          <p className="font-semibold text-amber-600">
+                            ฿{formatPrice(displayTotal)}
                           </p>
                         </div>
-                        <p className="font-semibold text-amber-600">
-                          ฿{(item.price * item.quantity).toLocaleString()}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Price Summary */}
                 <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm text-amber-800">
                     <span>ยอดรวมสินค้า</span>
-                    <span>฿{selectedOrder.subtotal.toLocaleString()}</span>
+                    <span>฿{formatPrice(selectedOrder.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm text-amber-800">
                     <span>ค่าจัดส่ง</span>
                     <span className="text-green-600">
                       {selectedOrder.shipping > 0
-                        ? `฿${selectedOrder.shipping.toLocaleString()}`
+                        ? `฿${formatPrice(selectedOrder.shipping)}`
                         : "ฟรี"}
                     </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
-                    <span>ยอดรวมทั้งหมด</span>
+                    <span className="text-amber-800">ยอดรวมทั้งหมด</span>
                     <span className="text-amber-600">
-                      ฿{selectedOrder.total.toLocaleString()}
+                      ฿{formatPrice(selectedOrder.total)}
                     </span>
                   </div>
                 </div>
 
-                {/* Payment */}
                 <div className="border-t pt-4">
                   <p className="text-sm font-semibold text-gray-700 mb-2">
                     💰 การชำระเงิน
@@ -551,16 +556,13 @@ export default function OrdersPage() {
                   <div className="flex items-center justify-between text-sm mt-1">
                     <span className="text-gray-500">สถานะ</span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        getPaymentBadge(selectedOrder.paymentStatus).bg
-                      }`}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentBadge(selectedOrder.paymentStatus).bg}`}
                     >
                       {getPaymentBadge(selectedOrder.paymentStatus).text}
                     </span>
                   </div>
                 </div>
 
-                {/* Shipping Info */}
                 <div className="border-t pt-4">
                   <p className="text-sm font-semibold text-gray-700 mb-2">
                     📦 ข้อมูลการจัดส่ง
@@ -595,7 +597,6 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                {/* Cancel Button */}
                 {(selectedOrder.orderStatus === "pending" ||
                   selectedOrder.orderStatus === "confirmed") && (
                   <button
@@ -605,11 +606,9 @@ export default function OrdersPage() {
                     ❌ ยกเลิกคำสั่งซื้อ
                   </button>
                 )}
-
-                {/* Close Button */}
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  className="w-full py-3 bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 transition-colors font-medium"
                 >
                   ปิด
                 </button>

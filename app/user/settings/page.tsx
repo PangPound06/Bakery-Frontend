@@ -71,7 +71,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/auth/user/${user.userId}`,
+        `http://localhost:8080/api/auth/user/${user.userId}`,
         {
           method: "PUT",
           headers: {
@@ -177,7 +177,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/auth/user/${user.id || user.userId}`,
+        `http://localhost:8080/api/auth/user/${user.id || user.userId}`,
         { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
       );
       const data = await response.json();
@@ -284,7 +284,7 @@ export default function SettingsPage() {
 
             {/* Change Password */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-amber-700 mb-4 flex items-center gap-2">
                 🔐 เปลี่ยนรหัสผ่าน
               </h2>
               <div className="space-y-4">
@@ -361,7 +361,7 @@ export default function SettingsPage() {
 
             {/* Notification Settings */}
             {/*<div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-amber-700 mb-4 flex items-center gap-2">
                 🔔 การแจ้งเตือน
               </h2>
               <div className="space-y-4">
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer"
                   >
                     <div>
-                      <p className="font-medium text-gray-800">{label}</p>
+                      <p className="font-medium text-amber-700">{label}</p>
                       <p className="text-sm text-gray-500">{desc}</p>
                     </div>
                     <input
@@ -414,7 +414,7 @@ export default function SettingsPage() {
 
             {/* Account Actions */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-amber-700 mb-4 flex items-center gap-2">
                 👤 บัญชี
               </h2>
               <div className="space-y-3">

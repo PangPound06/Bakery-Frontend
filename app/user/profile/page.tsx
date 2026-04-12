@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Swal from "sweetalert2";
 
 interface Profile {
   id: number;
@@ -16,7 +17,6 @@ interface Profile {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,23 +30,28 @@ export default function ProfilePage() {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // ✅ Helper: ดึง token จาก localStorage
+  const getToken = () => localStorage.getItem("token") || "";
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       router.replace("/login");
       return;
     }
-
-    const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    setUser(userData);
-    fetchProfile(userData.id || userData.userId);
+    fetchProfile();
   }, [router]);
 
-  const fetchProfile = async (userId: number) => {
+  // ✅ ใช้ /me แทน /{userId} — ไม่ต้องส่ง userId ใน URL
+  const fetchProfile = async () => {
     try {
-      const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
-      );
+      const response = await fetch("http://localhost:8080/api/profile/me", {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.profile) {
@@ -69,26 +74,23 @@ export default function ProfilePage() {
     setSaving(true);
     setError("");
     try {
-      const userId = user.id || user.userId;
-      const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+      const response = await fetch("http://localhost:8080/api/profile/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
         },
-      );
-
+        body: JSON.stringify(formData),
+      });
       const data = await response.json();
       if (data.success) {
         setProfile(data.profile);
-
-        // อัพเดท localStorage
-        const updatedUser = { ...user, fullname: formData.fullname };
+        // sync localStorage
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const updatedUser = { ...currentUser, fullname: formData.fullname };
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        setUser(updatedUser);
+        window.dispatchEvent(new Event("storage"));
         window.dispatchEvent(new Event("userStatusChanged"));
-
         setIsEditing(false);
         setSuccess("บันทึกข้อมูลสำเร็จ");
         setTimeout(() => setSuccess(""), 3000);
@@ -102,49 +104,104 @@ export default function ProfilePage() {
     }
   };
 
-  // ฟังก์ชันอัปโหลด
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    const fd = new FormData();
+    fd.append("file", file);
 
     try {
-      const userId = user.id || user.userId;
-      const res = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
-        { method: "POST", body: formData },
-      );
+      const res = await fetch("http://localhost:8080/api/profile/me/image", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: fd,
+      });
       const data = await res.json();
       if (data.success) {
         setProfile((prev) =>
           prev ? { ...prev, profileImage: data.url } : prev,
         );
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const updatedUser = { ...currentUser, profileImage: data.url };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("userStatusChanged"));
+        Swal.fire({
+          icon: "success",
+          title: "อัพโหลดรูปภาพสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "อัพโหลดไม่สำเร็จ",
+          text: data.message,
+          confirmButtonColor: "#f97316",
+        });
       }
     } catch (err) {
-      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถอัพโหลดรูปภาพได้",
+        confirmButtonColor: "#f97316",
+      });
     } finally {
       setUploadingImage(false);
     }
   };
 
   const handleDeleteImage = async () => {
-    if (!confirm("ต้องการลบรูปภาพโปรไฟล์หรือไม่?")) return;
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "ลบรูปภาพโปรไฟล์?",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    });
+    if (!result.isConfirmed) return;
 
     try {
-      const userId = user.id || user.userId;
-      const res = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/profile/${userId}/image`,
-        { method: "DELETE" },
-      );
+      const res = await fetch("http://localhost:8080/api/profile/me/image", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
       const data = await res.json();
       if (data.success) {
         setProfile((prev) => (prev ? { ...prev, profileImage: "" } : prev));
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...currentUser, profileImage: "" }),
+        );
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("userStatusChanged"));
+        Swal.fire({
+          icon: "success",
+          title: "ลบรูปภาพสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: data.message,
+          confirmButtonColor: "#f97316",
+        });
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถลบรูปภาพได้",
+        confirmButtonColor: "#f97316",
+      });
     }
   };
 
@@ -166,12 +223,14 @@ export default function ProfilePage() {
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">👤 ข้อมูลส่วนตัว</h1>
+          <h1 className="text-3xl font-bold text-amber-800">
+            👤 ข้อมูลส่วนตัว
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Sidebar */}
-          <div className="hidden md:block md:col-span-1">
+          <div className="md:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <nav className="space-y-2">
                 <Link
@@ -222,9 +281,8 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Profile Header */}
+              {/* Avatar */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                {/* Avatar + ปุ่มอัปโหลด */}
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
                     {profile?.profileImage ? (
@@ -237,7 +295,6 @@ export default function ProfilePage() {
                       formData.fullname?.charAt(0)?.toUpperCase() || "U"
                     )}
                   </div>
-                  {/* ปุ่มอัปโหลดรูป */}
                   <label className="absolute bottom-0 right-0 w-7 h-7 bg-amber-500 hover:bg-amber-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors">
                     <span className="text-white text-xs">📷</span>
                     <input
@@ -247,7 +304,6 @@ export default function ProfilePage() {
                       className="hidden"
                     />
                   </label>
-                  {/* ✅ เพิ่มปุ่มลบ - แสดงเฉพาะตอนมีรูป */}
                   {profile?.profileImage && (
                     <button
                       onClick={handleDeleteImage}
@@ -256,32 +312,26 @@ export default function ProfilePage() {
                       <span className="text-white text-xs">✕</span>
                     </button>
                   )}
-                  {/* Loading overlay */}
                   {uploadingImage && (
                     <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   )}
                 </div>
-
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
+                  <h2 className="text-2xl font-bold text-amber-700">
                     {formData.fullname || "ผู้ใช้"}
                   </h2>
-                  <p className="text-gray-500">
-                    {profile?.email || user?.email}
-                  </p>
+                  <p className="text-gray-500">{profile?.email}</p>
                 </div>
-
                 <button
                   onClick={() => {
-                    if (isEditing) {
+                    if (isEditing)
                       setFormData({
                         fullname: profile?.fullname || "",
                         phone: profile?.phone || "",
                         address: profile?.address || "",
                       });
-                    }
                     setIsEditing(!isEditing);
                   }}
                   className="ml-auto px-4 py-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -303,21 +353,16 @@ export default function ProfilePage() {
                       setFormData({ ...formData, fullname: e.target.value })
                     }
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${
-                      isEditing
-                        ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                        : "border-gray-200 bg-gray-50"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     อีเมล
                   </label>
                   <input
                     type="email"
-                    value={profile?.email || user?.email || ""}
+                    value={profile?.email || ""}
                     disabled
                     className="w-full px-4 py-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-500"
                   />
@@ -325,7 +370,6 @@ export default function ProfilePage() {
                     ไม่สามารถเปลี่ยนอีเมลได้
                   </p>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     เบอร์โทรศัพท์
@@ -334,21 +378,18 @@ export default function ProfilePage() {
                     type="tel"
                     inputMode="numeric"
                     value={formData.phone}
-                    onChange={(e) => {
-                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
-                      setFormData({ ...formData, phone: onlyNumbers });
-                    }}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        phone: e.target.value.replace(/[^0-9]/g, ""),
+                      })
+                    }
                     disabled={!isEditing}
                     placeholder="0812345678"
                     maxLength={20}
-                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${
-                      isEditing
-                        ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                        : "border-gray-200 bg-gray-50"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     ที่อยู่
@@ -361,11 +402,7 @@ export default function ProfilePage() {
                     disabled={!isEditing}
                     rows={3}
                     placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
-                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${
-                      isEditing
-                        ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                        : "border-gray-200 bg-gray-50"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
                   />
                 </div>
 

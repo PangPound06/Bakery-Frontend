@@ -26,6 +26,7 @@ export default function UserManagementPage() {
   });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchAdmins();
@@ -33,11 +34,12 @@ export default function UserManagementPage() {
 
   const fetchAdmins = async () => {
     try {
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/admin/list",
-      );
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:8080/api/admin/list", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await response.json();
-      setAdmins(data);
+      setAdmins(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching admins:", err);
     } finally {
@@ -80,6 +82,7 @@ export default function UserManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const token = localStorage.getItem("token");
 
     if (!formData.fullname.trim()) {
       setError("กรุณากรอกชื่อ-นามสกุล");
@@ -121,43 +124,41 @@ export default function UserManagementPage() {
     }
 
     setSaving(true);
-
     try {
       let response;
-
       if (editingAdmin) {
         const body: any = {
           fullname: formData.fullname.trim(),
           role: formData.role,
         };
         if (formData.password) body.password = formData.password;
-
         response = await fetch(
-          `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${editingAdmin.id}`,
+          `http://localhost:8080/api/admin/${editingAdmin.id}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(body),
           },
         );
       } else {
-        response = await fetch(
-          "https://bakery-backend-production-6fc9.up.railway.app/api/admin/register",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fullname: formData.fullname.trim(),
-              email: formData.email.trim(),
-              password: formData.password,
-              role: formData.role,
-            }),
+        response = await fetch("http://localhost:8080/api/admin/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-        );
+          body: JSON.stringify({
+            fullname: formData.fullname.trim(),
+            email: formData.email.trim(),
+            password: formData.password,
+            role: formData.role,
+          }),
+        });
       }
-
       const data = await response.json();
-
       if (data.success) {
         setShowModal(false);
         fetchAdmins();
@@ -180,8 +181,8 @@ export default function UserManagementPage() {
   };
 
   const toggleStatus = async (admin: Admin) => {
+    const token = localStorage.getItem("token");
     const newStatus = admin.status === "active" ? "Inactive" : "Active";
-
     const result = await Swal.fire({
       title: `เปลี่ยนสถานะเป็น ${newStatus}?`,
       text: `ต้องการเปลี่ยนสถานะของ "${admin.fullname || admin.email}" หรือไม่?`,
@@ -192,13 +193,14 @@ export default function UserManagementPage() {
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
     });
-
     if (!result.isConfirmed) return;
-
     try {
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${admin.id}/toggle-status`,
-        { method: "PUT" },
+        `http://localhost:8080/api/admin/${admin.id}/toggle-status`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       const data = await response.json();
       if (data.success) {
@@ -219,7 +221,18 @@ export default function UserManagementPage() {
 
   const deleteAdmin = async (admin: Admin) => {
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const token = localStorage.getItem("token");
     const isDeletingSelf = currentUser.email === admin.email;
+
+    if (admin.role?.toLowerCase() === "owner") {
+      await Swal.fire({
+        title: "ไม่สามารถลบได้",
+        text: "ไม่สามารถลบบัญชี Owner ได้",
+        icon: "warning",
+        confirmButtonColor: "#f97316",
+      });
+      return;
+    }
 
     const result = await Swal.fire({
       title: isDeletingSelf ? "ลบบัญชีของคุณ?" : "ลบ Admin?",
@@ -233,13 +246,15 @@ export default function UserManagementPage() {
       confirmButtonText: isDeletingSelf ? "ลบบัญชีและออกจากระบบ" : "ลบ",
       cancelButtonText: "ยกเลิก",
     });
-
     if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/admin/${admin.id}`,
-        { method: "DELETE" },
+        `http://localhost:8080/api/admin/${admin.id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       const data = await response.json();
       if (data.success) {
@@ -273,34 +288,63 @@ export default function UserManagementPage() {
 
   const getRoleBadge = (role: string) => {
     switch (role?.toLowerCase()) {
-      case "super_admin":
-        return "bg-purple-100 text-purple-800";
+      case "owner":
+        return "bg-yellow-100 text-yellow-800 border border-yellow-300";
       case "admin":
-        return "bg-blue-100 text-blue-800";
-      case "staff":
+        return "bg-purple-100 text-purple-800";
+      case "manager":
+        return "bg-indigo-100 text-indigo-800";
+      case "waiter":
+        return "bg-teal-100 text-teal-800";
+      case "bartender":
+        return "bg-cyan-100 text-cyan-800";
+      case "cashier":
+        return "bg-emerald-100 text-emerald-800";
+      case "chef":
+        return "bg-red-100 text-red-800";
+      case "commis_chef":
+        return "bg-orange-100 text-orange-800";
+      case "steward":
         return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-amber-700";
     }
   };
 
   const getRoleDisplayName = (role: string) => {
     switch (role?.toLowerCase()) {
-      case "super_admin":
-        return "Super Admin";
+      case "owner":
+        return "👑 Owner";
       case "admin":
-        return "Admin";
-      case "staff":
-        return "Staff";
+        return "🧑🏼‍💻 Admin";
+      case "manager":
+        return "🏪 Manager";
+      case "waiter":
+        return "🍽️ Waiter";
+      case "bartender":
+        return "🍹 Bartender";
+      case "cashier":
+        return "💰 Cashier";
+      case "chef":
+        return "👨‍🍳 Chef";
+      case "commis_chef":
+        return "🔪 Commis Chef";
+      case "steward":
+        return "🧹 Steward";
       default:
         return role || "Staff";
     }
   };
 
+  // ✅ ตรวจว่าปุ่มลบควรแสดงหรือไม่ — Owner ลบไม่ได้เลย ไม่ว่าใครจะกด
+  const canDelete = (admin: Admin) => {
+    if (admin.role?.toLowerCase() === "owner") return false;
+    return true;
+  };
+
   return (
     <div className="min-h-screen bg-amber-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* ✅ Header — ปรับ flex ให้ wrap บน tablet */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-2">
@@ -318,7 +362,6 @@ export default function UserManagementPage() {
           </button>
         </div>
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -334,7 +377,6 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        {/* ✅ Table — ปรับ responsive ซ่อนบางคอลัมน์ */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -388,14 +430,13 @@ export default function UserManagementPage() {
                             <span className="font-medium text-sm md:text-base block">
                               {admin.fullname || "ไม่ระบุชื่อ"}
                             </span>
-                            {/* ✅ แสดง email ใต้ชื่อบน mobile/tablet */}
                             <span className="text-xs text-gray-500 md:hidden block">
                               {admin.email}
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 md:px-6 py-3 md:py-4 text-gray-600 text-sm hidden md:table-cell">
+                      <td className="px-4 md:px-6 py-3 md:py-4 text-amber-800 text-sm hidden md:table-cell">
                         {admin.email}
                       </td>
                       <td className="px-4 md:px-6 py-3 md:py-4 text-center">
@@ -424,13 +465,24 @@ export default function UserManagementPage() {
                           >
                             ✏️
                           </button>
-                          <button
-                            onClick={() => deleteAdmin(admin)}
-                            className="p-1.5 md:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="ลบ"
-                          >
-                            🗑️
-                          </button>
+                          {/* ✅ ซ่อนปุ่มลบถ้าเป็น Owner ลบตัวเอง */}
+                          {canDelete(admin) ? (
+                            <button
+                              onClick={() => deleteAdmin(admin)}
+                              className="p-1.5 md:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="ลบ"
+                            >
+                              🗑️
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="p-1.5 md:p-2 text-gray-300 rounded-lg cursor-not-allowed"
+                              title="Owner ไม่สามารถลบตัวเองได้"
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -442,10 +494,16 @@ export default function UserManagementPage() {
         </div>
       </div>
 
-      {/* ═══ Modal ═══ */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setRoleDropdownOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b bg-amber-500 text-white rounded-t-xl">
               <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
                 {editingAdmin ? "✏️ แก้ไข Admin" : "➕ เพิ่ม Admin ใหม่"}
@@ -512,11 +570,11 @@ export default function UserManagementPage() {
                     setFormData({ ...formData, password: e.target.value })
                   }
                   disabled={
-                    editingAdmin !== null &&
-                    editingAdmin?.email !==
-                    JSON.parse(localStorage.getItem("user") || "{}").email
+                    !!editingAdmin &&
+                    editingAdmin.email !==
+                      JSON.parse(localStorage.getItem("user") || "{}").email
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${editingAdmin?.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${!!editingAdmin && editingAdmin.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder="อย่างน้อย 6 ตัวอักษร"
                 />
               </div>
@@ -535,11 +593,11 @@ export default function UserManagementPage() {
                     })
                   }
                   disabled={
-                    editingAdmin !== null &&
-                    editingAdmin?.email !==
-                    JSON.parse(localStorage.getItem("user") || "{}").email
+                    !!editingAdmin &&
+                    editingAdmin.email !==
+                      JSON.parse(localStorage.getItem("user") || "{}").email
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${editingAdmin?.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${!!editingAdmin && editingAdmin.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder="กรอกรหัสผ่านอีกครั้ง"
                 />
               </div>
@@ -548,25 +606,95 @@ export default function UserManagementPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   บทบาท *
                 </label>
-                <select
-                  value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
-                >
-                  <option value="staff">Staff (พนักงาน)</option>
-                  <option value="admin">Admin (ผู้ดูแล)</option>
-                  <option value="super_admin">
-                    Super Admin (ผู้ดูแลสูงสุด)
-                  </option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  เลือกแล้ว:{" "}
-                  <span className="font-medium">
-                    {getRoleDisplayName(formData.role)}
-                  </span>
-                </p>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRoleDropdownOpen(!roleDropdownOpen);
+                    }}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-left flex items-center justify-between bg-white hover:border-amber-400 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  >
+                    <span>{getRoleDisplayName(formData.role)}</span>
+                    <span
+                      className={`transition-transform duration-200 ${roleDropdownOpen ? "rotate-180" : ""}`}
+                    >
+                      ▾
+                    </span>
+                  </button>
+                  {roleDropdownOpen && (
+                    <div className="absolute z-50 w-full bottom-full mb-1 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-y-auto max-h-72">
+                      {[
+                        {
+                          label: "⚙️ ระบบ",
+                          options: [
+                            { value: "owner", label: "👑 Owner (เจ้าของ)" },
+                            { value: "admin", label: "Admin (ผู้ดูแล)" },
+                          ],
+                        },
+                        {
+                          label: "🏪 ฝ่ายหน้าร้าน (Service Team)",
+                          options: [
+                            {
+                              value: "manager",
+                              label: "ผู้จัดการร้าน (Manager)",
+                            },
+                            {
+                              value: "waiter",
+                              label: "พนักงานเสิร์ฟ (Waiter)",
+                            },
+                            {
+                              value: "bartender",
+                              label: "พนักงานผสมเครื่องดื่ม (Bartender)",
+                            },
+                            {
+                              value: "cashier",
+                              label: "พนักงานแคชเชียร์ (Cashier)",
+                            },
+                          ],
+                        },
+                        {
+                          label: "🍳 ฝ่ายหลังร้าน (Kitchen Team)",
+                          options: [
+                            { value: "chef", label: "เชฟ (Chef)" },
+                            {
+                              value: "commis_chef",
+                              label: "ผู้ช่วยกุ๊ก (Commis Chef)",
+                            },
+                            {
+                              value: "steward",
+                              label: "พนักงานทำความสะอาด (Steward)",
+                            },
+                          ],
+                        },
+                      ].map((group) => (
+                        <div key={group.label}>
+                          <p className="px-4 py-2 text-xs font-semibold text-gray-400 bg-gray-50 border-b border-gray-100">
+                            {group.label}
+                          </p>
+                          {group.options.map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                setFormData({ ...formData, role: opt.value });
+                                setRoleDropdownOpen(false);
+                              }}
+                              className={`w-full px-4 py-2.5 text-sm text-left transition-colors ${
+                                formData.role === opt.value
+                                  ? "bg-amber-100 text-amber-800 font-medium"
+                                  : "text-gray-700 hover:bg-amber-50 hover:text-amber-700"
+                              }`}
+                            >
+                              {formData.role === opt.value ? "✓ " : "　"}
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">

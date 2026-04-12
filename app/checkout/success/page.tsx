@@ -9,19 +9,23 @@ export default function CheckoutSuccessPage() {
   useEffect(() => {
     const lastOrderId = localStorage.getItem("lastOrderId");
     if (lastOrderId) {
-      fetch(`https://bakery-backend-production-6fc9.up.railway.app/api/orders/${lastOrderId}`)
-        .then(res => res.json())
-        .then(data => {
+      fetch(`http://localhost:8080/api/orders/${lastOrderId}`)
+        .then((res) => res.json())
+        .then((data) => {
           if (data.success && data.order?.ordCode) {
             setOrderId(data.order.ordCode);
           } else {
             const id = lastOrderId;
-            setOrderId(`ORD${String((Number(id) * 104729) % 1000000).padStart(6, "0")}${id}`);
+            setOrderId(
+              `ORD${String((Number(id) * 104729) % 1000000).padStart(6, "0")}${id}`,
+            );
           }
         })
         .catch(() => {
           const id = lastOrderId;
-          setOrderId(`ORD${String((Number(id) * 104729) % 1000000).padStart(6, "0")}${id}`);
+          setOrderId(
+            `ORD${String((Number(id) * 104729) % 1000000).padStart(6, "0")}${id}`,
+          );
         });
     }
   }, []);
@@ -36,10 +40,10 @@ export default function CheckoutSuccessPage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-amber-700 mb-2">
             สั่งซื้อสำเร็จ!
           </h1>
-          <p className="text-gray-600 mb-6">ขอบคุณที่สั่งซื้อสินค้ากับเรา</p>
+          <p className="text-amber-800 mb-6">ขอบคุณที่สั่งซื้อสินค้ากับเรา</p>
 
           {/* Order Details */}
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -49,10 +53,10 @@ export default function CheckoutSuccessPage() {
 
           {/* Info */}
           <div className="bg-amber-50 rounded-xl p-4 mb-6 text-left">
-            <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+            <h3 className="font-semibold text-amber-700 mb-2 flex items-center gap-2">
               📦 ขั้นตอนถัดไป
             </h3>
-            <ul className="text-sm text-gray-600 space-y-2">
+            <ul className="text-sm text-amber-800 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-green-500">✓</span>
                 <span>คุณจะได้รับอีเมลยืนยันคำสั่งซื้อ</span>
@@ -97,7 +101,7 @@ export default function CheckoutSuccessPage() {
         {/* Additional Info */}
         <div className="mt-6 text-center">
           <p className="text-gray-500 text-sm">
-            🧁 My Bakery - อบสดใหม่ทุกวัน ส่งตรงถึงบ้านคุณ
+            🧁 Pound Bakery - อบสดใหม่ทุกวัน ส่งตรงถึงบ้านคุณ
           </p>
         </div>
       </div>

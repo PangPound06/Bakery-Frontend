@@ -57,7 +57,7 @@ function GoogleCallbackContent() {
         setStatus("success");
 
         setTimeout(() => {
-          window.location.href = "/";
+          window.location.href = "/order-mode";
         }, 1500);
       } catch (err) {
         setStatus("error");
@@ -74,7 +74,7 @@ function GoogleCallbackContent() {
         {status === "loading" && (
           <>
             <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            <h2 className="text-xl font-semibold text-amber-700 mb-2">
               กำลังเข้าสู่ระบบ...
             </h2>
             <p className="text-gray-500">กรุณารอสักครู่</p>

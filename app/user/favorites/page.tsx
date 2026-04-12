@@ -15,6 +15,12 @@ interface FavoriteItem {
   type: string;
 }
 
+const formatPrice = (price: number) =>
+  price.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 export default function FavoritesPage() {
   const router = useRouter();
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -36,7 +42,7 @@ export default function FavoritesPage() {
 
       const userId = user.id || user.userId;
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/favorites/user/${userId}`,
+        `http://localhost:8080/api/favorites/user/${userId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -55,7 +61,7 @@ export default function FavoritesPage() {
       const userId = user.id || user.userId;
 
       const response = await fetch(
-        `https://bakery-backend-production-6fc9.up.railway.app/api/favorites/${userId}/${productId}`,
+        `http://localhost:8080/api/favorites/${userId}/${productId}`,
         { method: "DELETE" },
       );
       const data = await response.json();
@@ -69,38 +75,10 @@ export default function FavoritesPage() {
     }
   };
 
-  const addToCart = async (item: FavoriteItem) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("https://bakery-backend-production-6fc9.up.railway.app/api/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          productId: item.productId,
-          name: item.productName,
-          price: item.price,
-          category: item.category,
-          image: item.productImage,
-          quantity: 1,
-        }),
-      });
-
-      if (response.ok) {
-        alert("เพิ่มลงตะกร้าแล้ว! 🛒");
-        window.dispatchEvent(new Event("cartUpdated"));
-      }
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-    }
-  };
-
   const getImageUrl = (img: string) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `https://bakery-backend-production-6fc9.up.railway.app${img}`;
+    return `http://localhost:8080${img}`;
   };
 
   return (
@@ -213,22 +191,16 @@ export default function FavoritesPage() {
                         </div>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-gray-800 mb-1">
+                        <h3 className="font-semibold text-amber-700 mb-1">
                           {item.productName}
                         </h3>
                         <p className="text-lg font-bold text-amber-600 mb-3">
-                          ฿{item.price?.toLocaleString()}
+                          ฿{formatPrice(item.price)}
                         </p>
                         <div className="flex gap-2">
-                          <button
-                            onClick={() => addToCart(item)}
-                            className="flex-1 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
-                          >
-                            🛒 เพิ่มลงตะกร้า
-                          </button>
                           <Link
-                            href={`/${item.category}/${encodeURIComponent(item.productName)}`}
-                            className="px-4 py-2 border border-amber-400 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors text-sm font-medium"
+                            href={`/${item.category}/${item.productName.replace(/\s+/g, "-")}`}
+                            className="flex-1 py-2 text-center border border-amber-400 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors text-sm font-medium"
                           >
                             ดูสินค้า
                           </Link>

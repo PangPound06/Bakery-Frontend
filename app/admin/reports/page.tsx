@@ -12,6 +12,7 @@ interface Order {
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
+  orderType?: string;
   receiverName: string;
   createdAt: string;
   ordCode: string;
@@ -28,7 +29,21 @@ interface OrderWithItems extends Order {
   items: OrderItem[];
 }
 
-type SalesViewMode = "daily" | "monthly" | "yearly";
+type SalesViewMode = "daily" | "weekly" | "monthly" | "yearly";
+type DateRange =
+  | "today"
+  | "7d"
+  | "30d"
+  | "this_month"
+  | "this_year"
+  | "all"
+  | "custom";
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 export default function ReportsPage() {
   const router = useRouter();
@@ -38,13 +53,18 @@ export default function ReportsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [salesView, setSalesView] = useState<SalesViewMode>("daily");
   const [exporting, setExporting] = useState(false);
+  const [exportType, setExportType] = useState<"pdf" | "excel" | null>(null);
+
+  // ✅ Date range filter
+  const [dateRange, setDateRange] = useState<DateRange>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
       if (!user.email?.endsWith("@empbakery.com")) {
-        alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
         router.replace("/");
         return;
       }
@@ -57,22 +77,28 @@ export default function ReportsPage() {
 
   const fetchReportData = async () => {
     try {
-      const ordersRes = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/orders/all",
-      );
+      const token = localStorage.getItem("token");
+
+      const ordersRes = await fetch("http://localhost:8080/api/orders/all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       if (ordersRes.ok) {
         const ordersData: Order[] = await ordersRes.json();
         const ordersWithItems: OrderWithItems[] = await Promise.all(
           ordersData.map(async (order) => {
             try {
               const detailRes = await fetch(
-                `https://bakery-backend-production-6fc9.up.railway.app/api/orders/${order.id}`,
+                `http://localhost:8080/api/orders/${order.id}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                },
               );
               if (detailRes.ok) {
                 const detail = await detailRes.json();
                 return { ...order, items: detail.items || [] };
               }
-            } catch (err) {}
+            } catch {}
             return { ...order, items: [] };
           }),
         );
@@ -85,87 +111,91 @@ export default function ReportsPage() {
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return "จัดส่งแล้ว";
-      case "pending":
-        return "รอดำเนินการ";
-      case "confirmed":
-        return "ยืนยันแล้ว";
-      case "preparing":
-        return "กำลังเตรียม";
-      case "shipping":
-        return "กำลังจัดส่ง";
-      case "cancelled":
-        return "ยกเลิก";
-      default:
-        return status;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return "bg-green-100 text-green-700";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "confirmed":
-        return "bg-blue-100 text-blue-700";
-      case "preparing":
-        return "bg-indigo-100 text-indigo-700";
-      case "shipping":
-        return "bg-purple-100 text-purple-700";
-      case "cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const getPaymentMethodText = (method: string) => {
-    switch (method) {
-      case "qr_promptpay":
-        return "PromptPay";
-      case "card":
-        return "บัตรเครดิต";
-      default:
-        return method;
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(
-      dateStr + (dateStr.endsWith("Z") || dateStr.includes("+") ? "" : "Z"),
+  // ✅ Date range filtering
+  const getDateCutoff = (): { start: Date; end: Date } => {
+    const now = new Date();
+    const endOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
     );
-    return date.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Bangkok",
-    });
+
+    switch (dateRange) {
+      case "today": {
+        const startOfDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          0,
+          0,
+          0,
+        );
+        return { start: startOfDay, end: endOfDay };
+      }
+      case "7d":
+        return { start: new Date(now.getTime() - 7 * 86400000), end: endOfDay };
+      case "30d":
+        return {
+          start: new Date(now.getTime() - 30 * 86400000),
+          end: endOfDay,
+        };
+      case "this_month": {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        return { start: startOfMonth, end: endOfDay };
+      }
+      case "this_year": {
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        return { start: startOfYear, end: endOfDay };
+      }
+      case "custom": {
+        const s = customStart
+          ? new Date(customStart + "T00:00:00")
+          : new Date(0);
+        const e = customEnd ? new Date(customEnd + "T23:59:59") : endOfDay;
+        return { start: s, end: e };
+      }
+      default:
+        return { start: new Date(0), end: endOfDay };
+    }
   };
 
-  const filteredOrders = orders.filter((order) => {
+  const { start: dateStart, end: dateEnd } = getDateCutoff();
+
+  const dateFilteredOrders = orders.filter((o) => {
+    const d = new Date(o.createdAt);
+    return d >= dateStart && d <= dateEnd;
+  });
+
+  const filteredOrders = dateFilteredOrders.filter((order) => {
     if (filterStatus === "all") return true;
     return order.orderStatus === filterStatus;
   });
 
-  const validOrders = orders.filter((o) => o.orderStatus !== "cancelled");
+  const validOrders = dateFilteredOrders.filter((o) =>
+    ["confirmed", "preparing", "shipping", "delivered"].includes(o.orderStatus),
+  );
   const totalRevenue = validOrders.reduce((sum, o) => sum + o.total, 0);
-  const totalOrderCount = orders.length;
+  const totalOrderCount = dateFilteredOrders.length;
   const avgOrderValue =
     validOrders.length > 0 ? Math.round(totalRevenue / validOrders.length) : 0;
 
+  // ✅ Sales data builder
   const buildSalesData = () => {
     const grouped: { [key: string]: { revenue: number; orders: number } } = {};
     validOrders.forEach((order) => {
       const date = new Date(order.createdAt);
       let key = "";
       if (salesView === "daily") key = date.toISOString().split("T")[0];
-      else if (salesView === "monthly")
+      else if (salesView === "weekly") {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diff));
+        key = monday.toISOString().split("T")[0];
+      } else if (salesView === "monthly")
         key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       else key = `${date.getFullYear()}`;
 
@@ -185,16 +215,59 @@ export default function ReportsPage() {
   const totalSalesOrders = salesData.reduce((sum, d) => sum + d.orders, 0);
   const totalPeriods = salesData.length || 1;
 
+  // ✅ Helpers
+  const getStatusText = (s: string) =>
+    ({
+      delivered: "คำสั่งซื้อสำเร็จ",
+      pending: "รอดำเนินการ",
+      confirmed: "ยืนยันแล้ว",
+      preparing: "กำลังเตรียม",
+      shipping: "กำลังจัดส่ง",
+      cancelled: "ยกเลิก",
+    })[s] || s;
+  const getStatusColor = (s: string) =>
+    ({
+      delivered: "bg-green-100 text-green-700",
+      pending: "bg-yellow-100 text-yellow-700",
+      confirmed: "bg-blue-100 text-blue-700",
+      preparing: "bg-indigo-100 text-indigo-700",
+      shipping: "bg-purple-100 text-purple-700",
+      cancelled: "bg-red-100 text-red-700",
+    })[s] || "bg-gray-100 text-gray-700";
+  const getPaymentMethodText = (m: string) =>
+    ({ qr_promptpay: "PromptPay", card: "บัตรเครดิต", cash: "เงินสด" })[m] || m;
+  const getStatusTextEN = (s: string) =>
+    ({
+      delivered: "Delivered",
+      pending: "Pending",
+      confirmed: "Confirmed",
+      preparing: "Preparing",
+      shipping: "Shipping",
+      cancelled: "Cancelled",
+    })[s] || s;
+  const getPaymentMethodTextEN = (m: string) =>
+    ({ qr_promptpay: "PromptPay", card: "Credit Card", cash: "Cash" })[m] || m;
+  const formatDate = (s: string) =>
+    new Date(s).toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   const formatSalesLabel = (key: string): string => {
     if (salesView === "daily") {
       const d = new Date(key);
-      const thYear = d.getFullYear() + 543;
-      return `${d.toLocaleDateString("th-TH", { day: "numeric", month: "short" })} ${String(thYear).slice(-2)}`;
+      return `${d.toLocaleDateString("th-TH", { day: "numeric", month: "short" })} ${d.getFullYear() + 543}`;
+    } else if (salesView === "weekly") {
+      const monday = new Date(key);
+      const sunday = new Date(monday.getTime() + 6 * 86400000);
+      return `${monday.toLocaleDateString("th-TH", { day: "numeric", month: "short" })} - ${sunday.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}`;
     } else if (salesView === "monthly") {
       const [year, month] = key.split("-");
       const d = new Date(parseInt(year), parseInt(month) - 1);
-      const thYear = d.getFullYear() + 543;
-      return `${d.toLocaleDateString("th-TH", { month: "long" })} ${thYear}`;
+      return `${d.toLocaleDateString("th-TH", { month: "long" })} ${d.getFullYear() + 543}`;
     } else {
       return `พ.ศ. ${parseInt(key) + 543}`;
     }
@@ -202,72 +275,142 @@ export default function ReportsPage() {
 
   const formatSalesLabelEN = (key: string): string => {
     if (salesView === "daily") {
-      const d = new Date(key);
-      return d.toLocaleDateString("en-US", {
+      return new Date(key).toLocaleDateString("en-US", {
         day: "numeric",
         month: "short",
         year: "numeric",
       });
+    } else if (salesView === "weekly") {
+      const monday = new Date(key);
+      const sunday = new Date(monday.getTime() + 6 * 86400000);
+      return `${monday.toLocaleDateString("en-US", { day: "numeric", month: "short" })} - ${sunday.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}`;
     } else if (salesView === "monthly") {
       const [year, month] = key.split("-");
-      const d = new Date(parseInt(year), parseInt(month) - 1);
-      return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString(
+        "en-US",
+        { month: "long", year: "numeric" },
+      );
     } else {
       return key;
     }
   };
 
-  const getStatusTextEN = (status: string): string => {
-    switch (status) {
-      case "delivered":
-        return "Delivered";
-      case "pending":
-        return "Pending";
-      case "confirmed":
-        return "Confirmed";
-      case "preparing":
-        return "Preparing";
-      case "shipping":
-        return "Shipping";
-      case "cancelled":
-        return "Cancelled";
-      default:
-        return status;
+  const getPeriodLabel = (): string =>
+    ({ daily: "วัน", weekly: "สัปดาห์", monthly: "เดือน", yearly: "ปี" })[
+      salesView
+    ] || "";
+
+  const getDateRangeLabel = (): string => {
+    const labels: Record<DateRange, string> = {
+      today: "วันนี้",
+      "7d": "7 วันล่าสุด",
+      "30d": "30 วันล่าสุด",
+      this_month: "เดือนนี้",
+      this_year: "ปีนี้",
+      all: "ทั้งหมด",
+      custom: "กำหนดเอง",
+    };
+    return labels[dateRange];
+  };
+
+  // ✅ Export Excel
+  const exportExcel = async () => {
+    setExporting(true);
+    setExportType("excel");
+    try {
+      const XLSX = await import("xlsx");
+      const wb = XLSX.utils.book_new();
+
+      if (activeTab === "orders") {
+        const data = filteredOrders.map((order) => ({
+          "Order ID":
+            order.ordCode ||
+            `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`,
+          Customer: order.receiverName || "-",
+          Email: order.email,
+          Items:
+            order.items
+              .map((item) => `${item.productName} x${item.quantity}`)
+              .join(", ") || "-",
+          "Total (THB)": order.total,
+          Payment: getPaymentMethodTextEN(order.paymentMethod),
+          Status: getStatusTextEN(order.orderStatus),
+          Type: order.orderType === "pos" ? "POS" : "Online",
+          Date: new Date(order.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        ws["!cols"] = [
+          { wch: 18 },
+          { wch: 20 },
+          { wch: 28 },
+          { wch: 40 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 8 },
+          { wch: 22 },
+        ];
+        XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+        // Summary sheet
+        const summaryData = [
+          { Metric: "Total Revenue (THB)", Value: totalRevenue },
+          { Metric: "Total Orders", Value: totalOrderCount },
+          { Metric: "Avg Order Value (THB)", Value: avgOrderValue },
+          { Metric: "Date Range", Value: getDateRangeLabel() },
+          {
+            Metric: "Filter Status",
+            Value:
+              filterStatus === "all" ? "All" : getStatusTextEN(filterStatus),
+          },
+        ];
+        const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+        summaryWs["!cols"] = [{ wch: 25 }, { wch: 20 }];
+        XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+      } else {
+        const data = salesData.map((d) => ({
+          Period: formatSalesLabelEN(d.key),
+          "Revenue (THB)": d.revenue,
+          Orders: d.orders,
+          "Avg per Order (THB)":
+            d.orders > 0 ? Math.round(d.revenue / d.orders) : 0,
+        }));
+        data.push({
+          Period: "TOTAL",
+          "Revenue (THB)": totalSalesRevenue,
+          Orders: totalSalesOrders,
+          "Avg per Order (THB)":
+            totalSalesOrders > 0
+              ? Math.round(totalSalesRevenue / totalSalesOrders)
+              : 0,
+        });
+        const ws = XLSX.utils.json_to_sheet(data);
+        ws["!cols"] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, ws, `Sales_${salesView}`);
+      }
+
+      const now = new Date();
+      const fileName = `PoundBakery_${activeTab === "sales" ? "Sales" : "Orders"}_${salesView}_${now.toISOString().split("T")[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error("Excel export error:", error);
+      alert("เกิดข้อผิดพลาดในการสร้าง Excel");
+    } finally {
+      setExporting(false);
+      setExportType(null);
     }
   };
 
-  const getPaymentMethodTextEN = (method: string): string => {
-    switch (method) {
-      case "qr_promptpay":
-        return "PromptPay";
-      case "card":
-        return "Credit Card";
-      default:
-        return method;
-    }
-  };
-
-  const formatDateRange = (): string => {
-    if (salesData.length === 0) return "ยังไม่มีข้อมูล";
-    const first = salesData[0].key;
-    const last = salesData[salesData.length - 1].key;
-    return `${formatSalesLabel(first)} — ${formatSalesLabel(last)} (${salesData.length} ${getPeriodLabel()})`;
-  };
-
-  const getPeriodLabel = (): string => {
-    switch (salesView) {
-      case "daily":
-        return "วัน";
-      case "monthly":
-        return "เดือน";
-      case "yearly":
-        return "ปี";
-    }
-  };
-
+  // ✅ Export PDF
   const exportPDF = async () => {
     setExporting(true);
-
+    setExportType("pdf");
     try {
       const jsPDFModule = await import("jspdf");
       const jsPDF = jsPDFModule.default;
@@ -282,7 +425,7 @@ export default function ReportsPage() {
       doc.rect(0, 0, pageWidth, 35, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(20);
-      doc.text("My Bakery", margin, 15);
+      doc.text("Pound Bakery", margin, 15);
       doc.setFontSize(10);
       doc.text("Sales Report", margin, 23);
 
@@ -293,16 +436,20 @@ export default function ReportsPage() {
         day: "numeric",
       });
       doc.setFontSize(9);
-      doc.text(dateStr, pageWidth - margin, 15, { align: "right" });
+      doc.text(dateStr, pageWidth - margin, 12, { align: "right" });
+      doc.text(`Period: ${getDateRangeLabel()}`, pageWidth - margin, 19, {
+        align: "right",
+      });
       doc.text(
-        `View: ${salesView === "daily" ? "Daily" : salesView === "monthly" ? "Monthly" : "Yearly"}`,
+        `View: ${salesView.charAt(0).toUpperCase() + salesView.slice(1)}`,
         pageWidth - margin,
-        23,
+        26,
         { align: "right" },
       );
 
       y = 45;
 
+      // Summary cards
       doc.setTextColor(100, 100, 100);
       doc.setFontSize(9);
       doc.text("SUMMARY", margin, y);
@@ -395,34 +542,11 @@ export default function ReportsPage() {
             2: { halign: "center", cellWidth: 25 },
           },
         });
-
-        y = (doc as any).lastAutoTable.finalY + 10;
-
-        if (y > 260) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.setFillColor(255, 248, 235);
-        doc.roundedRect(margin, y, pageWidth - margin * 2, 20, 2, 2, "F");
-        const summaryItems = [
-          `Revenue: ${totalSalesRevenue.toLocaleString()} THB`,
-          `Orders: ${totalSalesOrders}`,
-          `Avg/${salesView === "daily" ? "Day" : salesView === "monthly" ? "Month" : "Year"}: ${Math.round(totalSalesRevenue / totalPeriods).toLocaleString()} THB`,
-          `Periods: ${totalPeriods}`,
-        ];
-        doc.setFontSize(8);
-        doc.setTextColor(120, 90, 30);
-        summaryItems.forEach((item, i) => {
-          const x = margin + 5 + i * ((pageWidth - margin * 2 - 10) / 4);
-          doc.text(item, x, y + 12);
-        });
       } else {
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(9);
-        const filterLabel =
-          filterStatus === "all" ? "ALL" : filterStatus.toUpperCase();
         doc.text(
-          `ORDERS (${filterLabel}) - ${filteredOrders.length} items`,
+          `ORDERS (${filterStatus === "all" ? "ALL" : filterStatus.toUpperCase()}) - ${filteredOrders.length} items`,
           margin,
           y,
         );
@@ -483,20 +607,21 @@ export default function ReportsPage() {
         doc.setFontSize(7);
         doc.setTextColor(180, 180, 180);
         doc.text(
-          `My Bakery Report - Page ${i}/${totalPages}`,
+          `Pound Bakery Report - Page ${i}/${totalPages}`,
           pageWidth / 2,
           doc.internal.pageSize.getHeight() - 8,
           { align: "center" },
         );
       }
 
-      const fileName = `MyBakery_${activeTab === "sales" ? "Sales" : "Orders"}_${salesView}_${now.toISOString().split("T")[0]}.pdf`;
+      const fileName = `PoundBakery_${activeTab === "sales" ? "Sales" : "Orders"}_${salesView}_${now.toISOString().split("T")[0]}.pdf`;
       doc.save(fileName);
     } catch (error) {
       console.error("PDF export error:", error);
-      alert("เกิดข้อผิดพลาดในการสร้าง PDF กรุณาลองใหม่");
+      alert("เกิดข้อผิดพลาดในการสร้าง PDF");
     } finally {
       setExporting(false);
+      setExportType(null);
     }
   };
 
@@ -522,68 +647,121 @@ export default function ReportsPage() {
             </h1>
             <p className="text-amber-600 mt-1">ดูสถิติและรายงานการขาย</p>
           </div>
-
-          <button
-            onClick={exportPDF}
-            disabled={exporting}
-            className="flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md hover:shadow-lg text-sm md:text-base"
-          >
-            {exporting ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                กำลังสร้าง PDF...
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                พิมพ์ PDF
-              </>
-            )}
-          </button>
+          {/* ✅ Export buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={exportPDF}
+              disabled={exporting}
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
+            >
+              {exporting && exportType === "pdf" ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  กำลังสร้าง...
+                </>
+              ) : (
+                <>📄 PDF</>
+              )}
+            </button>
+            <button
+              onClick={exportExcel}
+              disabled={exporting}
+              className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
+            >
+              {exporting && exportType === "excel" ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  กำลังสร้าง...
+                </>
+              ) : (
+                <>📊 Excel</>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* ✅ Summary Cards — ปรับ grid-cols-1 sm:grid-cols-3 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-green-500">
-            <p className="text-slate-500 text-xs md:text-sm">รายได้รวม</p>
-            <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
-              ฿{totalRevenue.toLocaleString()}
+        {/* ✅ Date Range Filter */}
+        <div className="bg-white rounded-2xl shadow-md p-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <span className="text-sm font-medium text-slate-600 shrink-0">
+              📅 ช่วงเวลา:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { key: "today", label: "วันนี้" },
+                  { key: "7d", label: "7 วัน" },
+                  { key: "30d", label: "30 วัน" },
+                  { key: "this_month", label: "เดือนนี้" },
+                  { key: "this_year", label: "ปีนี้" },
+                  { key: "all", label: "ทั้งหมด" },
+                  { key: "custom", label: "กำหนดเอง" },
+                ] as { key: DateRange; label: string }[]
+              ).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setDateRange(item.key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${dateRange === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            {dateRange === "custom" && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+                <input
+                  type="date"
+                  value={customStart}
+                  onChange={(e) => setCustomStart(e.target.value)}
+                  className="w-full sm:w-auto px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+                <span className="text-slate-400 text-sm">ถึง</span>
+                <input
+                  type="date"
+                  value={customEnd}
+                  onChange={(e) => setCustomEnd(e.target.value)}
+                  className="w-full sm:w-auto px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-green-500 flex sm:block items-center justify-between gap-4">
+            <p className="text-slate-500 text-xs md:text-sm shrink-0">
+              รายได้รวม
             </p>
-            <p className="text-xs text-slate-400 mt-1">
-              ไม่รวมคำสั่งซื้อที่ยกเลิก
+            <p className="text-xl md:text-3xl font-bold text-slate-800">
+              ฿{formatPrice(totalRevenue)}
+            </p>
+            <p className="text-xs text-slate-400 mt-1 hidden md:block">
+              ไม่รวมคำสั่งซื้อที่ยกเลิกและรอดำเนินการ • {getDateRangeLabel()}
             </p>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-blue-500">
-            <p className="text-slate-500 text-xs md:text-sm">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-blue-500 flex sm:block items-center justify-between gap-4">
+            <p className="text-slate-500 text-xs md:text-sm shrink-0">
               คำสั่งซื้อทั้งหมด
             </p>
-            <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
+            <p className="text-xl md:text-3xl font-bold text-slate-800">
               {totalOrderCount} รายการ
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1 hidden md:block">
               สำเร็จ{" "}
-              {orders.filter((o) => o.orderStatus === "delivered").length}{" "}
+              {
+                dateFilteredOrders.filter((o) => o.orderStatus === "delivered")
+                  .length
+              }{" "}
               รายการ
             </p>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-amber-500">
-            <p className="text-slate-500 text-xs md:text-sm">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-amber-500 flex sm:block items-center justify-between gap-4">
+            <p className="text-slate-500 text-xs md:text-sm shrink-0">
               ยอดเฉลี่ยต่อออเดอร์
             </p>
-            <p className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">
-              ฿{avgOrderValue.toLocaleString()}
+            <p className="text-xl md:text-3xl font-bold text-slate-800">
+              ฿{formatPrice(avgOrderValue)}
             </p>
           </div>
         </div>
@@ -604,10 +782,9 @@ export default function ReportsPage() {
           </button>
         </div>
 
-        {/* ═══════ Orders Tab ═══════ */}
+        {/* Orders Tab */}
         {activeTab === "orders" && (
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            {/* ✅ Filter — ใช้ overflow-x-auto สำหรับ tablet */}
             <div className="p-3 md:p-4 border-b border-slate-100 overflow-x-auto">
               <div className="flex gap-2 items-center min-w-max">
                 <span className="text-slate-600 font-medium text-sm shrink-0">
@@ -619,7 +796,7 @@ export default function ReportsPage() {
                   { key: "confirmed", label: "ยืนยันแล้ว" },
                   { key: "preparing", label: "กำลังเตรียม" },
                   { key: "shipping", label: "กำลังจัดส่ง" },
-                  { key: "delivered", label: "จัดส่งแล้ว" },
+                  { key: "delivered", label: "คำสั่งซื้อสำเร็จ" },
                   { key: "cancelled", label: "ยกเลิก" },
                 ].map((item) => (
                   <button
@@ -627,21 +804,20 @@ export default function ReportsPage() {
                     onClick={() => setFilterStatus(item.key)}
                     className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap ${filterStatus === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
-                    {item.label}
+                    {item.label}{" "}
                     <span className="ml-1 opacity-70">
                       (
                       {item.key === "all"
-                        ? orders.length
-                        : orders.filter((o) => o.orderStatus === item.key)
-                            .length}
+                        ? dateFilteredOrders.length
+                        : dateFilteredOrders.filter(
+                            (o) => o.orderStatus === item.key,
+                          ).length}
                       )
                     </span>
                   </button>
                 ))}
               </div>
             </div>
-
-            {/* ✅ Table — ซ่อนคอลัมน์บาง column บน tablet */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -676,7 +852,9 @@ export default function ReportsPage() {
                       className="border-b border-slate-100 hover:bg-slate-50"
                     >
                       <td className="px-3 md:px-4 py-3 md:py-4 font-medium text-slate-800 text-sm">
-                        #{order.ordCode || `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}
+                        #
+                        {order.ordCode ||
+                          `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
                         <p className="text-xs md:text-sm font-medium text-slate-800">
@@ -700,7 +878,7 @@ export default function ReportsPage() {
                         </div>
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4 font-semibold text-amber-600 text-sm">
-                        ฿{order.total.toLocaleString()}
+                        ฿{formatPrice(order.total)}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4 text-xs md:text-sm text-slate-600 hidden md:table-cell">
                         {getPaymentMethodText(order.paymentMethod)}
@@ -720,7 +898,6 @@ export default function ReportsPage() {
                 </tbody>
               </table>
             </div>
-
             {filteredOrders.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📭</div>
@@ -730,22 +907,25 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {/* ═══════ Sales Tab ═══════ */}
+        {/* Sales Tab */}
         {activeTab === "sales" && (
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
             <div className="p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                 <h3 className="text-base md:text-lg font-bold text-slate-800">
                   📊 ยอดขาย
                   {salesView === "daily"
                     ? "รายวัน"
-                    : salesView === "monthly"
-                      ? "รายเดือน"
-                      : "รายปี"}
+                    : salesView === "weekly"
+                      ? "รายสัปดาห์"
+                      : salesView === "monthly"
+                        ? "รายเดือน"
+                        : "รายปี"}
                 </h3>
                 <div className="flex bg-slate-100 rounded-xl p-1">
                   {[
                     { key: "daily" as SalesViewMode, label: "รายวัน" },
+                    { key: "weekly" as SalesViewMode, label: "รายสัปดาห์" },
                     { key: "monthly" as SalesViewMode, label: "รายเดือน" },
                     { key: "yearly" as SalesViewMode, label: "รายปี" },
                   ].map((mode) => (
@@ -760,10 +940,6 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <p className="text-xs md:text-sm text-slate-500 mb-6">
-                {formatDateRange()}
-              </p>
-
               {salesData.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-5xl mb-3">📭</div>
@@ -777,7 +953,7 @@ export default function ReportsPage() {
                         key={data.key}
                         className="flex items-center gap-2 md:gap-3"
                       >
-                        <div className="w-24 md:w-32 lg:w-36 text-xs md:text-sm text-slate-600 font-medium shrink-0 text-right">
+                        <div className="w-28 md:w-36 lg:w-44 text-xs md:text-sm text-slate-600 font-medium shrink-0 text-right">
                           {formatSalesLabel(data.key)}
                         </div>
                         <div className="flex-1">
@@ -790,7 +966,7 @@ export default function ReportsPage() {
                               }}
                             ></div>
                             <span className="text-xs md:text-sm font-medium text-slate-700 whitespace-nowrap">
-                              ฿{data.revenue.toLocaleString()}
+                              ฿{formatPrice(data.revenue)}
                             </span>
                           </div>
                         </div>
@@ -802,7 +978,6 @@ export default function ReportsPage() {
                     ))}
                   </div>
 
-                  {/* ✅ Summary — ปรับ grid-cols-2 sm:grid-cols-4 */}
                   <div className="mt-6 md:mt-8 p-3 md:p-4 bg-amber-50 rounded-xl">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 text-center">
                       <div>
@@ -810,7 +985,7 @@ export default function ReportsPage() {
                           รายได้รวมทั้งหมด
                         </p>
                         <p className="text-lg md:text-xl font-bold text-amber-600">
-                          ฿{totalSalesRevenue.toLocaleString()}
+                          ฿{formatPrice(totalSalesRevenue)}
                         </p>
                       </div>
                       <div>
@@ -827,9 +1002,9 @@ export default function ReportsPage() {
                         </p>
                         <p className="text-lg md:text-xl font-bold text-green-600">
                           ฿
-                          {Math.round(
-                            totalSalesRevenue / totalPeriods,
-                          ).toLocaleString()}
+                          {formatPrice(
+                            Math.round(totalSalesRevenue / totalPeriods),
+                          )}
                         </p>
                       </div>
                       <div>

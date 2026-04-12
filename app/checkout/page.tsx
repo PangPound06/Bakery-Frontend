@@ -12,6 +12,7 @@ interface CartItem {
   price: number;
   quantity: number;
   category: string;
+  selectedOption?: string | null;
 }
 
 interface OrderSummary {
@@ -20,6 +21,12 @@ interface OrderSummary {
   shipping: number;
   total: number;
 }
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -66,10 +73,35 @@ export default function CheckoutPage() {
     loadUserData();
   }, []);
 
-  const loadUserData = () => {
+  const loadUserData = async () => {
+    const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    // เติมชื่อจาก localStorage ก่อน (เร็ว)
     if (user.fullname) {
       setShippingData((prev) => ({ ...prev, fullname: user.fullname }));
+    }
+
+    // ดึง phone และ address จาก Profile API
+    if (token) {
+      try {
+        const res = await fetch("http://localhost:8080/api/profile/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.profile) {
+            setShippingData((prev) => ({
+              ...prev,
+              fullname: data.profile.fullname || prev.fullname,
+              phone: data.profile.phone || "",
+              address: data.profile.address || "",
+            }));
+          }
+        }
+      } catch (e) {
+        console.error("load profile error", e);
+      }
     }
   };
 
@@ -81,12 +113,9 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/cart",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch("http://localhost:8080/api/cart", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const data = await response.json();
 
@@ -113,7 +142,7 @@ export default function CheckoutPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/payment/promptpay/generate",
+        "http://localhost:8080/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -294,7 +323,7 @@ export default function CheckoutPage() {
             slipFormData.append("file", file);
 
             const slipRes = await fetch(
-              "https://bakery-backend-production-6fc9.up.railway.app/api/slip/verify",
+              "http://localhost:8080/api/slip/verify",
               {
                 method: "POST",
                 body: slipFormData,
@@ -387,14 +416,11 @@ export default function CheckoutPage() {
 
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/slip/upload",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        },
-      );
+      const response = await fetch("http://localhost:8080/api/slip/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -471,7 +497,7 @@ export default function CheckoutPage() {
       const [expMonth, expYear] = cardData.expiry.split("/");
 
       const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/payment/card/charge",
+        "http://localhost:8080/api/payment/card/charge",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -569,35 +595,44 @@ export default function CheckoutPage() {
         paymentStatus = "paid";
       }
 
-      const orderResponse = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/orders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            email: user.email,
-            items: orderSummary?.items.map((item) => ({
+      const orderResponse = await fetch("http://localhost:8080/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: user.email,
+          items: orderSummary?.items.map((item) => {
+            const opt = (item as any).selectedOption;
+            const isCakeItem = item.category === "cake";
+            const deduct = opt?.includes("2 ปอนด์")
+              ? 16
+              : opt?.includes("1 ปอนด์")
+                ? 8
+                : 1;
+            // ✅ ถ้าเป็น cake แต่ไม่มี option → "แบบชิ้น"
+            const finalOption = opt ?? (isCakeItem ? "แบบชิ้น" : null);
+            return {
               productId: item.productId,
               productName: item.productName,
               price: item.price,
-              quantity: item.quantity,
-            })),
-            subtotal: orderSummary?.subtotal,
-            shipping: orderSummary?.shipping,
-            total: orderSummary?.total,
-            paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
-            paymentStatus: paymentStatus,
-            paymentId: paymentId,
-            slipImage: slipImagePath,
-            shippingInfo: shippingData,
-            cardName: paymentMethod === "card" ? cardData.name : null,
-            cardLast4: cardLast4,
+              quantity: item.quantity * deduct,
+              selectedOption: finalOption,
+            };
           }),
-        },
-      );
+          subtotal: orderSummary?.subtotal,
+          shipping: orderSummary?.shipping,
+          total: orderSummary?.total,
+          paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
+          paymentStatus: paymentStatus,
+          paymentId: paymentId,
+          slipImage: slipImagePath,
+          shippingInfo: shippingData,
+          cardName: paymentMethod === "card" ? cardData.name : null,
+          cardLast4: cardLast4,
+        }),
+      });
 
       const orderData = await orderResponse.json();
 
@@ -607,13 +642,10 @@ export default function CheckoutPage() {
         return;
       }
 
-      await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/cart/clear",
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await fetch("http://localhost:8080/api/cart/clear", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       window.dispatchEvent(new Event("cartUpdated"));
       localStorage.setItem("lastOrderId", orderData.orderId.toString());
@@ -631,7 +663,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">กำลังโหลด...</p>
+          <p className="text-amber-800">กำลังโหลด...</p>
         </div>
       </div>
     );
@@ -751,7 +783,7 @@ export default function CheckoutPage() {
                       📱
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-gray-800">
+                      <p className="font-semibold text-amber-700">
                         QR PromptPay
                       </p>
                       <p className="text-sm text-gray-500">
@@ -773,7 +805,7 @@ export default function CheckoutPage() {
                       💳
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-gray-800">
+                      <p className="font-semibold text-amber-700">
                         บัตรเดบิต/เครดิต
                       </p>
                       <p className="text-sm text-gray-500">
@@ -791,7 +823,7 @@ export default function CheckoutPage() {
               {paymentMethod === "qr" && (
                 <div className="space-y-6">
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    <h3 className="text-lg font-semibold text-amber-700 mb-4">
                       ขั้นตอนที่ 1: สแกน QR Code เพื่อชำระเงิน
                     </h3>
                     <div className="bg-white p-4 rounded-xl inline-block shadow-md mb-4">
@@ -810,9 +842,9 @@ export default function CheckoutPage() {
                       )}
                     </div>
                     <p className="text-2xl font-bold text-amber-600">
-                      ฿{orderSummary?.total.toLocaleString()}
+                      ฿{formatPrice(orderSummary?.total ?? 0)}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-amber-800">
                       PromptPay: {PROMPTPAY_ID}
                     </p>
                   </div>
@@ -821,11 +853,11 @@ export default function CheckoutPage() {
                   <div
                     className={`rounded-xl p-6 ${slipValid ? "bg-gradient-to-br from-green-50 to-emerald-50" : "bg-gradient-to-br from-yellow-50 to-orange-50"}`}
                   >
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h3 className="text-lg font-semibold text-amber-700 mb-2">
                       📤 ขั้นตอนที่ 2: อัพโหลดสลิปการโอนเงิน{" "}
                       <span className="text-red-500">*</span>
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-sm text-amber-800 mb-4">
                       ⚠️ กรุณาอัพโหลดสลิปโอนเงินจากแอปธนาคารเท่านั้น
                       ระบบจะตรวจสอบความถูกต้อง
                     </p>
@@ -911,7 +943,7 @@ export default function CheckoutPage() {
               {/* Card Payment */}
               {paymentMethod === "card" && (
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  <h3 className="text-lg font-semibold text-amber-700 mb-4">
                     กรอกข้อมูลบัตร
                   </h3>
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
@@ -1007,24 +1039,24 @@ export default function CheckoutPage() {
                       <p className="text-xs text-gray-500">x{item.quantity}</p>
                     </div>
                     <p className="text-sm font-medium text-amber-600">
-                      ฿{(item.price * item.quantity).toLocaleString()}
+                      ฿{formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
                 ))}
               </div>
 
               <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-amber-800">
                   <span>ยอดรวมสินค้า</span>
-                  <span>฿{orderSummary?.subtotal.toLocaleString()}</span>
+                  <span>฿{formatPrice(orderSummary?.subtotal ?? 0)}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-amber-800">
                   <span>ค่าจัดส่ง</span>
                   {orderSummary?.shipping === 0 ? (
                     <span className="text-green-600 font-medium">ฟรี</span>
                   ) : (
                     <span className="text-red-500 font-medium">
-                      ฿{orderSummary?.shipping}
+                      ฿{formatPrice(orderSummary?.shipping ?? 0)}
                     </span>
                   )}
                 </div>
@@ -1052,7 +1084,7 @@ export default function CheckoutPage() {
                       ยอดรวมทั้งหมด
                     </span>
                     <span className="text-2xl font-bold text-amber-600">
-                      ฿{orderSummary?.total.toLocaleString()}
+                      ฿{formatPrice(orderSummary?.total ?? 0)}
                     </span>
                   </div>
                 </div>
@@ -1138,7 +1170,7 @@ export default function CheckoutPage() {
                     "📤 กรุณาอัพโหลดสลิปก่อน"
                   )
                 ) : (
-                  `💳 ชำระเงิน ฿${orderSummary?.total.toLocaleString()}`
+                  `💳 ชำระเงิน ฿${formatPrice(orderSummary?.total ?? 0)}`
                 )}
               </button>
 

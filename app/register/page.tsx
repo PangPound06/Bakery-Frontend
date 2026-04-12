@@ -71,18 +71,15 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch(
-        "https://bakery-backend-production-6fc9.up.railway.app/api/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fullname: formData.fullName,
-            email: formData.email,
-            password: formData.password,
-          }),
-        },
-      );
+      const response = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullname: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
       const data = await response.json();
 
@@ -92,7 +89,7 @@ export default function RegisterPage() {
 
       await Swal.fire({
         title: "สมัครสมาชิกสำเร็จ!",
-        text: "ยินดีต้อนรับสู่ My Bakery 🎉",
+        text: "ยินดีต้อนรับสู่ Pound Bakery 🎉",
         icon: "success",
         confirmButtonColor: "#f97316",
         timer: 2000,
@@ -115,13 +112,13 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-4xl font-bold text-amber-600 mb-2">
-                🧁 My Bakery
+                🧁 Pound Bakery
               </h1>
             </Link>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+            <h2 className="text-2xl font-semibold text-amber-700 mb-2">
               สมัครสมาชิก
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-amber-800 text-sm">
               สร้างบัญชีใหม่เพื่อเริ่มต้นใช้งาน
             </p>
           </div>
@@ -168,7 +165,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
-                placeholder="your-real-email@gmail.com"
+                placeholder="your_email@domain.com"
               />
             </div>
 
@@ -244,7 +241,7 @@ export default function RegisterPage() {
               />
               <label
                 htmlFor="acceptTerms"
-                className="ml-2 text-sm text-gray-600"
+                className="ml-2 text-sm text-amber-800"
               >
                 ฉันยอมรับ{" "}
                 <Link
@@ -276,7 +273,7 @@ export default function RegisterPage() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+            className="text-amber-800 hover:text-amber-700 text-sm font-medium"
           >
             ← กลับหน้าหลัก
           </Link>
