@@ -23,7 +23,7 @@ export default function OrderModePage() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch(`http://localhost:8080/api/dinein/my-orders`, {
+    fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())

@@ -71,7 +71,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:8080/api/auth/user/${user.userId}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/user/${user.userId}`,
         {
           method: "PUT",
           headers: {
@@ -177,7 +177,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:8080/api/auth/user/${user.id || user.userId}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/user/${user.id || user.userId}`,
         { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
       );
       const data = await response.json();

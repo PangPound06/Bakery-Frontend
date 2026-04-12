@@ -162,7 +162,9 @@ export default function Header() {
     if (isAdmin) return;
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/categories/active");
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/active",
+        );
         if (res.ok) setCategories(await res.json());
       } catch (e) {
         console.error(e);
@@ -175,7 +177,9 @@ export default function Header() {
     if (isAdmin) return;
     const fetchProducts = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/products");
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/products",
+        );
         if (res.ok) {
           const data = await res.json();
           setAllProducts(
@@ -240,7 +244,9 @@ export default function Header() {
     if (!userId) return;
     const fetchProfileImage = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/profile/${userId}`);
+        const res = await fetch(
+          `http://${process.env.NEXT_PUBLIC_API_URL}/api/profile/${userId}`,
+        );
         if (res.ok) {
           const data = await res.json();
           const newImage =

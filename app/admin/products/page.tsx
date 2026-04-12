@@ -108,7 +108,9 @@ export default function POSPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/categories/active");
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/active",
+        );
         if (res.ok) setCategories(await res.json());
       } catch (e) {
         console.error(e);
@@ -119,7 +121,9 @@ export default function POSPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/products");
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/products",
+      );
       if (res.ok) setProducts(await res.json());
     } catch (e) {
       console.error(e);
@@ -133,7 +137,7 @@ export default function POSPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/payment/promptpay/generate",
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -319,30 +323,33 @@ export default function POSPage() {
     try {
       const token = localStorage.getItem("token");
       const adminEmail = JSON.parse(localStorage.getItem("user") || "{}").email;
-      const res = await fetch("http://localhost:8080/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email: adminEmail,
-          items: buildOrderPayload(),
-          subtotal,
-          shipping: 0,
-          total: subtotal,
-          paymentMethod: paymentMethod === "cash" ? "cash" : "qr_promptpay",
-          paymentStatus: "paid",
-          orderStatus: "delivered",
-          orderType: "pos",
-          shippingInfo: {
-            fullname: customerName || "ลูกค้าหน้าร้าน",
-            phone: "-",
-            address: "หน้าร้าน",
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          note: `POS Sale${customerName ? ` - ${customerName}` : ""}`,
-        }),
-      });
+          body: JSON.stringify({
+            email: adminEmail,
+            items: buildOrderPayload(),
+            subtotal,
+            shipping: 0,
+            total: subtotal,
+            paymentMethod: paymentMethod === "cash" ? "cash" : "qr_promptpay",
+            paymentStatus: "paid",
+            orderStatus: "delivered",
+            orderType: "pos",
+            shippingInfo: {
+              fullname: customerName || "ลูกค้าหน้าร้าน",
+              phone: "-",
+              address: "หน้าร้าน",
+            },
+            note: `POS Sale${customerName ? ` - ${customerName}` : ""}`,
+          }),
+        },
+      );
       const data = await res.json();
       if (data.success) {
         const orderId =
@@ -385,30 +392,33 @@ export default function POSPage() {
     try {
       const token = localStorage.getItem("token");
       const adminEmail = JSON.parse(localStorage.getItem("user") || "{}").email;
-      const res = await fetch("http://localhost:8080/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email: adminEmail,
-          items: buildOrderPayload(),
-          subtotal,
-          shipping: 0,
-          total: subtotal,
-          paymentMethod: "qr_promptpay",
-          paymentStatus: "paid",
-          orderStatus: "delivered",
-          orderType: "pos",
-          shippingInfo: {
-            fullname: customerName || "ลูกค้าหน้าร้าน",
-            phone: "-",
-            address: "หน้าร้าน",
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          note: `POS Sale${customerName ? ` - ${customerName}` : ""}`,
-        }),
-      });
+          body: JSON.stringify({
+            email: adminEmail,
+            items: buildOrderPayload(),
+            subtotal,
+            shipping: 0,
+            total: subtotal,
+            paymentMethod: "qr_promptpay",
+            paymentStatus: "paid",
+            orderStatus: "delivered",
+            orderType: "pos",
+            shippingInfo: {
+              fullname: customerName || "ลูกค้าหน้าร้าน",
+              phone: "-",
+              address: "หน้าร้าน",
+            },
+            note: `POS Sale${customerName ? ` - ${customerName}` : ""}`,
+          }),
+        },
+      );
       const data = await res.json();
       if (data.success) {
         const orderId =

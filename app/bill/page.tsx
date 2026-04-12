@@ -78,9 +78,12 @@ export default function BillPage() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:8080/api/dinein/my-orders", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         if (res.status === 401) {
           localStorage.removeItem("token");
           router.replace("/login");

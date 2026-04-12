@@ -9,7 +9,9 @@ export default function CheckoutSuccessPage() {
   useEffect(() => {
     const lastOrderId = localStorage.getItem("lastOrderId");
     if (lastOrderId) {
-      fetch(`http://localhost:8080/api/orders/${lastOrderId}`)
+      fetch(
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${lastOrderId}`,
+      )
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.order?.ordCode) {

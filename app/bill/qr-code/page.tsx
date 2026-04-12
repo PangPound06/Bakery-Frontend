@@ -49,7 +49,7 @@ function BillQRContent() {
     setLoadingQR(true);
     try {
       const response = await fetch(
-        "http://localhost:8080/api/payment/promptpay/generate",
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -192,10 +192,13 @@ function BillQRContent() {
           try {
             const fd = new FormData();
             fd.append("file", file);
-            const res = await fetch("http://localhost:8080/api/slip/verify", {
-              method: "POST",
-              body: fd,
-            });
+            const res = await fetch(
+              "http://${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify",
+              {
+                method: "POST",
+                body: fd,
+              },
+            );
             const data = await res.json();
             if (data.success && data.amount != null) {
               const diff = Math.abs(data.amount - grandTotal);
@@ -265,11 +268,14 @@ function BillQRContent() {
     try {
       const fd = new FormData();
       fd.append("file", slipFile);
-      const uploadRes = await fetch("http://localhost:8080/api/slip/upload", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
+      const uploadRes = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        },
+      );
       const uploadData = await uploadRes.json();
       if (!uploadData.success) {
         setError(uploadData.message || "อัพโหลดสลิปไม่สำเร็จ");
@@ -279,26 +285,29 @@ function BillQRContent() {
       const buffetPriceStr = localStorage.getItem("buffetPrice");
       const dineType = localStorage.getItem("dineType");
 
-      await fetch("http://localhost:8080/api/dinein/request-bill", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/request-bill",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            slipImage: uploadData.path,
+            tableNo: localStorage.getItem("tableNo"),
+            buffetPrice:
+              dineType === "buffet" && buffetPriceStr
+                ? Number(buffetPriceStr)
+                : null,
+            buffetPax:
+              dineType === "buffet"
+                ? Number(localStorage.getItem("buffetPax") || 1)
+                : 1,
+            dineType: dineType || "alacarte",
+          }),
         },
-        body: JSON.stringify({
-          slipImage: uploadData.path,
-          tableNo: localStorage.getItem("tableNo"),
-          buffetPrice:
-            dineType === "buffet" && buffetPriceStr
-              ? Number(buffetPriceStr)
-              : null,
-          buffetPax:
-            dineType === "buffet"
-              ? Number(localStorage.getItem("buffetPax") || 1)
-              : 1,
-          dineType: dineType || "alacarte",
-        }),
-      });
+      );
 
       await Swal.fire({
         icon: "success",

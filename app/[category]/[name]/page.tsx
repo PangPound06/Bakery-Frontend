@@ -21,7 +21,9 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/categories");
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+        );
         if (res.ok) {
           const cats: Category[] = await res.json();
           const found = cats.find((c) => c.slug === categorySlug);

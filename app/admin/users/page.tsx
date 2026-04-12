@@ -35,9 +35,12 @@ export default function UserManagementPage() {
   const fetchAdmins = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/admin/list", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/list",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const data = await response.json();
       setAdmins(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -133,7 +136,7 @@ export default function UserManagementPage() {
         };
         if (formData.password) body.password = formData.password;
         response = await fetch(
-          `http://localhost:8080/api/admin/${editingAdmin.id}`,
+          `http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/${editingAdmin.id}`,
           {
             method: "PUT",
             headers: {
@@ -144,19 +147,22 @@ export default function UserManagementPage() {
           },
         );
       } else {
-        response = await fetch("http://localhost:8080/api/admin/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        response = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/register",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              fullname: formData.fullname.trim(),
+              email: formData.email.trim(),
+              password: formData.password,
+              role: formData.role,
+            }),
           },
-          body: JSON.stringify({
-            fullname: formData.fullname.trim(),
-            email: formData.email.trim(),
-            password: formData.password,
-            role: formData.role,
-          }),
-        });
+        );
       }
       const data = await response.json();
       if (data.success) {
@@ -196,7 +202,7 @@ export default function UserManagementPage() {
     if (!result.isConfirmed) return;
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/${admin.id}/toggle-status`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/${admin.id}/toggle-status`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -250,7 +256,7 @@ export default function UserManagementPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/${admin.id}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/${admin.id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

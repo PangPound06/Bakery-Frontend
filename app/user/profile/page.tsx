@@ -45,9 +45,12 @@ export default function ProfilePage() {
   // ✅ ใช้ /me แทน /{userId} — ไม่ต้องส่ง userId ใน URL
   const fetchProfile = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/profile/me", {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/profile/me",
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        },
+      );
       if (response.status === 401) {
         router.replace("/login");
         return;
@@ -74,14 +77,17 @@ export default function ProfilePage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("http://localhost:8080/api/profile/me", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/profile/me",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
       const data = await response.json();
       if (data.success) {
         setProfile(data.profile);
@@ -113,11 +119,14 @@ export default function ProfilePage() {
     fd.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8080/api/profile/me/image", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: fd,
-      });
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/profile/me/image",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getToken()}` },
+          body: fd,
+        },
+      );
       const data = await res.json();
       if (data.success) {
         setProfile((prev) =>
@@ -167,10 +176,13 @@ export default function ProfilePage() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch("http://localhost:8080/api/profile/me/image", {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/profile/me/image",
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${getToken()}` },
+        },
+      );
       const data = await res.json();
       if (data.success) {
         setProfile((prev) => (prev ? { ...prev, profileImage: "" } : prev));

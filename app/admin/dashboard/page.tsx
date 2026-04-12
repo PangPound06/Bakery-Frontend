@@ -131,7 +131,9 @@ export default function AdminDashboard() {
     if (!loading) {
       const days =
         timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all";
-      fetch(`http://localhost:8080/api/orders/stats/top-products?days=${days}`)
+      fetch(
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${days}`,
+      )
         .then((r) => (r.ok ? r.json() : { topProducts: [] }))
         .then((data) => setTopProducts(data.topProducts || []))
         .catch(console.error);
@@ -143,15 +145,15 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token");
 
       const [productsRes, ordersRes, usersRes, topProdRes] = await Promise.all([
-        fetch("http://localhost:8080/api/products"),
-        fetch("http://localhost:8080/api/orders/all", {
+        fetch("http://${process.env.NEXT_PUBLIC_API_URL}/api/products"),
+        fetch("http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/all", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:8080/api/auth/users", {
+        fetch("http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/users", {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(
-          `http://localhost:8080/api/orders/stats/top-products?days=${timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all"}`,
+          `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all"}`,
         ),
       ]);
 

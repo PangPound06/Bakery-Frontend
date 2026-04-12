@@ -1,7 +1,9 @@
 import { getToken, removeToken } from "./auth";
 
 //Base URL (แก้ตรงนี้ที่เดียวตอน deploy)
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://${process.env.NEXT_PUBLIC_API_URL}";
 
 // Types
 

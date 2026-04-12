@@ -79,9 +79,12 @@ export default function ReportsPage() {
     try {
       const token = localStorage.getItem("token");
 
-      const ordersRes = await fetch("http://localhost:8080/api/orders/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const ordersRes = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/all",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (ordersRes.ok) {
         const ordersData: Order[] = await ordersRes.json();
@@ -89,7 +92,7 @@ export default function ReportsPage() {
           ordersData.map(async (order) => {
             try {
               const detailRes = await fetch(
-                `http://localhost:8080/api/orders/${order.id}`,
+                `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
                 {
                   headers: { Authorization: `Bearer ${token}` },
                 },

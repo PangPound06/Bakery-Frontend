@@ -54,7 +54,7 @@ export default function SearchOrderPage() {
     setOrder(null);
     try {
       const res = await fetch(
-        `http://localhost:8080/api/orders/search/${searchInput.trim()}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/search/${searchInput.trim()}`,
       );
       const data = await res.json();
       if (data.success) {

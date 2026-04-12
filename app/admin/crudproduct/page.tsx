@@ -135,7 +135,9 @@ export default function CrudProductPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/products");
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/products",
+      );
       if (res.ok) setProducts(await res.json());
     } catch (e) {
       console.error(e);
@@ -147,7 +149,9 @@ export default function CrudProductPage() {
   // ✅ Fetch categories from API
   const fetchCategories = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/categories");
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+      );
       if (res.ok) setCategories(await res.json());
     } catch (e) {
       console.error(e);
@@ -160,14 +164,17 @@ export default function CrudProductPage() {
     if (!name) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/categories", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name, icon: newCategoryIcon || "" }),
         },
-        body: JSON.stringify({ name, icon: newCategoryIcon || "" }),
-      });
+      );
       const data = await res.json();
       if (data.success) {
         fetchCategories();
@@ -197,14 +204,17 @@ export default function CrudProductPage() {
 
   const handleUpdateCategory = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/categories/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: editCategoryName,
-          icon: editCategoryIcon,
-        }),
-      });
+      const res = await fetch(
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editCategoryName,
+            icon: editCategoryIcon,
+          }),
+        },
+      );
       const data = await res.json();
       if (data.success) {
         fetchCategories();
@@ -239,9 +249,12 @@ export default function CrudProductPage() {
     });
     if (!r.isConfirmed) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/categories/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
       const data = await res.json();
       if (data.success) {
         fetchCategories();
@@ -450,11 +463,14 @@ export default function CrudProductPage() {
       const fd = new FormData();
       fd.append("file", file);
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/upload/image", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/upload/image",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        },
+      );
       if (res.ok) {
         const d = await res.json();
         return d.url || d.imageUrl;
@@ -555,8 +571,8 @@ export default function CrudProductPage() {
       const token = localStorage.getItem("token");
       const url =
         modalMode === "create"
-          ? "http://localhost:8080/api/products"
-          : `http://localhost:8080/api/products/${selectedProduct?.id}`;
+          ? "http://${process.env.NEXT_PUBLIC_API_URL}/api/products"
+          : `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/${selectedProduct?.id}`;
       const res = await fetch(url, {
         method: modalMode === "create" ? "POST" : "PUT",
         headers: {
@@ -612,10 +628,13 @@ export default function CrudProductPage() {
     });
     if (!r.isConfirmed) return;
     const token = localStorage.getItem("token");
-    const res = await fetch(`http://localhost:8080/api/products/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetch(
+      `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     if (res.ok) {
       fetchProducts();
       await Swal.fire({

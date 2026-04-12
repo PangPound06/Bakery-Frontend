@@ -40,7 +40,7 @@ export default function CartPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  const API_URL = "http://localhost:8080/api/cart";
+  const API_URL = "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart";
 
   const getToken = () => {
     if (typeof window !== "undefined") return localStorage.getItem("token");
@@ -170,20 +170,23 @@ export default function CartPage() {
         image: item.image || null,
       }));
 
-      const res = await fetch("http://localhost:8080/api/dinein/orders", {
-        // ← เปลี่ยน URL
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/orders",
+        {
+          // ← เปลี่ยน URL
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            tableNo: tableNo, // ← เปลี่ยนจาก note เป็น tableNo
+            subtotal: cart.totalAmount,
+            total: cart.totalAmount,
+            items,
+          }),
         },
-        body: JSON.stringify({
-          tableNo: tableNo, // ← เปลี่ยนจาก note เป็น tableNo
-          subtotal: cart.totalAmount,
-          total: cart.totalAmount,
-          items,
-        }),
-      });
+      );
 
       const data = await res.json();
 

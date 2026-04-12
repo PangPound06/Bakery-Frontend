@@ -83,7 +83,7 @@ export default function ProductDetail({
       const userId = user.id || user.userId;
       if (!userId) return;
       const response = await fetch(
-        `http://localhost:8080/api/favorites/check/${userId}/${productId}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/favorites/check/${userId}/${productId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -105,7 +105,7 @@ export default function ProductDetail({
     setTogglingFav(true);
     try {
       const response = await fetch(
-        "http://localhost:8080/api/favorites/toggle",
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/favorites/toggle",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -134,7 +134,7 @@ export default function ProductDetail({
       try {
         const productName = (params.name as string).replace(/-/g, " ");
         const response = await fetch(
-          `http://localhost:8080/api/products/category/${category}`,
+          `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${category}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -181,9 +181,12 @@ export default function ProductDetail({
 
     // ✅ เช็ค fresh product
     if (fresh) {
-      const cartRes = await fetch("http://localhost:8080/api/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const cartRes = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       if (!cartRes.ok) {
         setError("ไม่สามารถเช็คตะกร้าได้");
         return;
@@ -216,22 +219,25 @@ export default function ProductDetail({
           ? selectedOption.name
           : null;
 
-      const response = await fetch("http://localhost:8080/api/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId: product.id,
+            name: product.name,
+            price: finalPrice,
+            category: product.category,
+            image: product.image,
+            quantity: actualQuantity,
+            selectedOption: optionLabel,
+          }),
         },
-        body: JSON.stringify({
-          productId: product.id,
-          name: product.name,
-          price: finalPrice,
-          category: product.category,
-          image: product.image,
-          quantity: actualQuantity,
-          selectedOption: optionLabel,
-        }),
-      });
+      );
       const data = await response.json();
       if (response.ok) {
         setAdded(true);

@@ -35,7 +35,7 @@ export default function TopProductsPage() {
   >([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/categories/active")
+    fetch("http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/active")
       .then((r) => (r.ok ? r.json() : []))
       .then(setCategories)
       .catch(console.error);
@@ -73,7 +73,7 @@ export default function TopProductsPage() {
     try {
       const days = filter === "7d" ? "7" : filter === "30d" ? "30" : "all";
       const res = await fetch(
-        `http://localhost:8080/api/orders/stats/top-products?days=${days}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${days}`,
         { cache: "no-store" },
       );
       if (res.ok) {

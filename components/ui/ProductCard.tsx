@@ -87,22 +87,25 @@ export default function ProductCard({
     setAdding(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:8080/api/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId: id,
+            name,
+            price: price + (option?.extraPrice ?? 0),
+            category,
+            image: img,
+            quantity: 1,
+            selectedOption: option ? option.name : null, // ✅ ส่ง selectedOption
+          }),
         },
-        body: JSON.stringify({
-          productId: id,
-          name,
-          price: price + (option?.extraPrice ?? 0),
-          category,
-          image: img,
-          quantity: 1,
-          selectedOption: option ? option.name : null, // ✅ ส่ง selectedOption
-        }),
-      });
+      );
       const data = await response.json();
       if (response.ok) {
         setAdding(false);

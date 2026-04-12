@@ -18,7 +18,9 @@ export default function Footer() {
     if (pathname?.startsWith("/admin")) return;
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/categories/active");
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/active",
+        );
         if (res.ok) setCategories(await res.json());
       } catch (e) {
         console.error(e);

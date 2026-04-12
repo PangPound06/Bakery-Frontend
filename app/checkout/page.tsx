@@ -85,9 +85,12 @@ export default function CheckoutPage() {
     // ดึง phone และ address จาก Profile API
     if (token) {
       try {
-        const res = await fetch("http://localhost:8080/api/profile/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          "http://${process.env.NEXT_PUBLIC_API_URL}/api/profile/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.profile) {
@@ -113,9 +116,12 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await fetch("http://localhost:8080/api/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       const data = await response.json();
 
@@ -142,7 +148,7 @@ export default function CheckoutPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/payment/promptpay/generate",
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -323,7 +329,7 @@ export default function CheckoutPage() {
             slipFormData.append("file", file);
 
             const slipRes = await fetch(
-              "http://localhost:8080/api/slip/verify",
+              "http://${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify",
               {
                 method: "POST",
                 body: slipFormData,
@@ -416,11 +422,14 @@ export default function CheckoutPage() {
 
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:8080/api/slip/upload", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const response = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        },
+      );
 
       const data = await response.json();
 
@@ -497,7 +506,7 @@ export default function CheckoutPage() {
       const [expMonth, expYear] = cardData.expiry.split("/");
 
       const response = await fetch(
-        "http://localhost:8080/api/payment/card/charge",
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/payment/card/charge",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -595,44 +604,47 @@ export default function CheckoutPage() {
         paymentStatus = "paid";
       }
 
-      const orderResponse = await fetch("http://localhost:8080/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email: user.email,
-          items: orderSummary?.items.map((item) => {
-            const opt = (item as any).selectedOption;
-            const isCakeItem = item.category === "cake";
-            const deduct = opt?.includes("2 ปอนด์")
-              ? 16
-              : opt?.includes("1 ปอนด์")
-                ? 8
-                : 1;
-            // ✅ ถ้าเป็น cake แต่ไม่มี option → "แบบชิ้น"
-            const finalOption = opt ?? (isCakeItem ? "แบบชิ้น" : null);
-            return {
-              productId: item.productId,
-              productName: item.productName,
-              price: item.price,
-              quantity: item.quantity * deduct,
-              selectedOption: finalOption,
-            };
+      const orderResponse = await fetch(
+        "http://${process.env.NEXT_PUBLIC_API_URL}/api/orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            email: user.email,
+            items: orderSummary?.items.map((item) => {
+              const opt = (item as any).selectedOption;
+              const isCakeItem = item.category === "cake";
+              const deduct = opt?.includes("2 ปอนด์")
+                ? 16
+                : opt?.includes("1 ปอนด์")
+                  ? 8
+                  : 1;
+              // ✅ ถ้าเป็น cake แต่ไม่มี option → "แบบชิ้น"
+              const finalOption = opt ?? (isCakeItem ? "แบบชิ้น" : null);
+              return {
+                productId: item.productId,
+                productName: item.productName,
+                price: item.price,
+                quantity: item.quantity * deduct,
+                selectedOption: finalOption,
+              };
+            }),
+            subtotal: orderSummary?.subtotal,
+            shipping: orderSummary?.shipping,
+            total: orderSummary?.total,
+            paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
+            paymentStatus: paymentStatus,
+            paymentId: paymentId,
+            slipImage: slipImagePath,
+            shippingInfo: shippingData,
+            cardName: paymentMethod === "card" ? cardData.name : null,
+            cardLast4: cardLast4,
           }),
-          subtotal: orderSummary?.subtotal,
-          shipping: orderSummary?.shipping,
-          total: orderSummary?.total,
-          paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
-          paymentStatus: paymentStatus,
-          paymentId: paymentId,
-          slipImage: slipImagePath,
-          shippingInfo: shippingData,
-          cardName: paymentMethod === "card" ? cardData.name : null,
-          cardLast4: cardLast4,
-        }),
-      });
+        },
+      );
 
       const orderData = await orderResponse.json();
 
@@ -642,7 +654,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      await fetch("http://localhost:8080/api/cart/clear", {
+      await fetch("http://${process.env.NEXT_PUBLIC_API_URL}/api/cart/clear", {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
