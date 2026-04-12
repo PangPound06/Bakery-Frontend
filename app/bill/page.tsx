@@ -79,7 +79,7 @@ export default function BillPage() {
       }
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },

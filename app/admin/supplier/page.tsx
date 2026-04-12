@@ -43,7 +43,7 @@ const formatPrice = (price: number) =>
   });
 
 const API =
-  process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL}";
+  process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL}`;
 
 export default function SupplierPage() {
   const router = useRouter();

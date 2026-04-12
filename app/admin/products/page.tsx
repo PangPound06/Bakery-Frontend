@@ -109,7 +109,7 @@ export default function POSPage() {
     const fetchCategories = async () => {
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/categories/active",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/categories/active`,
         );
         if (res.ok) setCategories(await res.json());
       } catch (e) {
@@ -122,7 +122,7 @@ export default function POSPage() {
   const fetchProducts = async () => {
     try {
       const res = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/products",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
       );
       if (res.ok) setProducts(await res.json());
     } catch (e) {
@@ -137,7 +137,7 @@ export default function POSPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -323,7 +323,7 @@ export default function POSPage() {
     try {
       const token = localStorage.getItem("token");
       const adminEmail = JSON.parse(localStorage.getItem("user") || "{}").email;
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/orders", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,7 +389,7 @@ export default function POSPage() {
     try {
       const token = localStorage.getItem("token");
       const adminEmail = JSON.parse(localStorage.getItem("user") || "{}").email;
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/orders", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

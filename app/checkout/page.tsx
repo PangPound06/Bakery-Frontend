@@ -86,7 +86,7 @@ export default function CheckoutPage() {
     if (token) {
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/profile/me",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -117,7 +117,7 @@ export default function CheckoutPage() {
       }
 
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/cart",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
   const generateQRCode = async (amount: number) => {
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -329,7 +329,7 @@ export default function CheckoutPage() {
             slipFormData.append("file", file);
 
             const slipRes = await fetch(
-              "${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify",
+              `${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify`,
               {
                 method: "POST",
                 body: slipFormData,
@@ -423,7 +423,7 @@ export default function CheckoutPage() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -506,7 +506,7 @@ export default function CheckoutPage() {
       const [expMonth, expYear] = cardData.expiry.split("/");
 
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/payment/card/charge",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payment/card/charge`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -605,7 +605,7 @@ export default function CheckoutPage() {
       }
 
       const orderResponse = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/orders",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders`,
         {
           method: "POST",
           headers: {
@@ -654,7 +654,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/cart/clear", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart/clear`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

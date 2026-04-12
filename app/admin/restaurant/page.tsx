@@ -121,7 +121,7 @@ export default function AdminRestaurantPage() {
     if (!silent) setLoading(true);
     try {
       const res = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders`,
       );
       if (res.ok) {
         const data: Order[] = await res.json();

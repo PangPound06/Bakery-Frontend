@@ -47,7 +47,7 @@ function LoginContent() {
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     setError("");
-    window.location.href = "${process.env.NEXT_PUBLIC_API_URL}/api/auth/google";
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +63,7 @@ function LoginContent() {
 
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/auth/login",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

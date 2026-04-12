@@ -80,7 +80,7 @@ export default function ReportsPage() {
       const token = localStorage.getItem("token");
 
       const ordersRes = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/orders/all",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/all`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },

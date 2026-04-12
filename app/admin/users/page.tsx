@@ -36,7 +36,7 @@ export default function UserManagementPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/admin/list",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/list`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -148,7 +148,7 @@ export default function UserManagementPage() {
         );
       } else {
         response = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/admin/register",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/register`,
           {
             method: "POST",
             headers: {

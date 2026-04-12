@@ -163,7 +163,7 @@ export default function Header() {
     const fetchCategories = async () => {
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/categories/active",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/categories/active`,
         );
         if (res.ok) setCategories(await res.json());
       } catch (e) {
@@ -178,7 +178,7 @@ export default function Header() {
     const fetchProducts = async () => {
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/products",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
         );
         if (res.ok) {
           const data = await res.json();

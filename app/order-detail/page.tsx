@@ -163,7 +163,7 @@ export default function OrderDetailPage() {
     // ✅ SSE: เชื่อมต่อ real-time stream แทน polling
     const connectSSE = () => {
       const es = new EventSource(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/stream",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/stream`,
       );
 
       es.addEventListener("order-update", () => {

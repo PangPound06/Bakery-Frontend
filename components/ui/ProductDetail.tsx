@@ -105,7 +105,7 @@ export default function ProductDetail({
     setTogglingFav(true);
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/favorites/toggle",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/toggle`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -182,7 +182,7 @@ export default function ProductDetail({
     // ✅ เช็ค fresh product
     if (fresh) {
       const cartRes = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/cart",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -220,7 +220,7 @@ export default function ProductDetail({
           : null;
 
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/add`,
         {
           method: "POST",
           headers: {

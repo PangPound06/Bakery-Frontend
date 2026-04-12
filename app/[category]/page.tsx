@@ -93,7 +93,7 @@ export default function CategoryPage() {
     const fetchCategory = async () => {
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/categories`,
         );
         if (res.ok) {
           const cats: Category[] = await res.json();

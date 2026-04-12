@@ -46,7 +46,7 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/profile/me",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`,
         {
           headers: { Authorization: `Bearer ${getToken()}` },
         },
@@ -78,7 +78,7 @@ export default function ProfilePage() {
     setError("");
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/profile/me",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`,
         {
           method: "PUT",
           headers: {
@@ -120,7 +120,7 @@ export default function ProfilePage() {
 
     try {
       const res = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/profile/me/image",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me/image`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${getToken()}` },
@@ -177,7 +177,7 @@ export default function ProfilePage() {
 
     try {
       const res = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/api/profile/me/image",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me/image`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${getToken()}` },

@@ -35,7 +35,7 @@ export default function TopProductsPage() {
   >([]);
 
   useEffect(() => {
-    fetch("${process.env.NEXT_PUBLIC_API_URL}/api/categories/active")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/active`)
       .then((r) => (r.ok ? r.json() : []))
       .then(setCategories)
       .catch(console.error);

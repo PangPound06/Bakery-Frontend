@@ -145,11 +145,11 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token");
 
       const [productsRes, ordersRes, usersRes, topProdRes] = await Promise.all([
-        fetch("${process.env.NEXT_PUBLIC_API_URL}/api/products"),
-        fetch("${process.env.NEXT_PUBLIC_API_URL}/api/orders/all", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/all`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("${process.env.NEXT_PUBLIC_API_URL}/api/auth/users", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/users`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(
