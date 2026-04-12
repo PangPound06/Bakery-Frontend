@@ -26,26 +26,15 @@ interface Category {
   isActive: boolean;
 }
 
-/*
 // Hero images per category slug (fallback for new categories)
 const HERO_IMAGES: Record<string, string> = {
   // สมมติ bakery: "/folder/image.jpg", สำหรับรูปภาพที่มาจากเครื่อง
-  bakery: "/images/hero/bakery.jpg",
-  cake: "/images/hero/cake.jpg",
-  drink: "/images/hero/drink.jpg",
-  food: "/images/hero/food.jpg",
-  appetizer: "/images/hero/appetizer.jpg",
+  bakery: "/images/hero/Bakery.jpg",
+  cake: "/images/hero/Cake.jpg",
+  drink: "/images/hero/Drink.jpg",
+  food: "/images/hero/Food.jpg",
+  appetizer: "/images/hero/Appetizer.jpg",
   // ใส่เพิ่มตรงนี้ได้เลยถ้ามีหมวดใหม่
-};
-*/
-
-const HERO_IMAGES: Record<string, string> = {
-  bakery: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=800",
-  cake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800",
-  drink: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=800",
-  food: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800",
-  appetizer:
-    "https://images.unsplash.com/photo-1541014741259-de529411b96a?w=800",
 };
 
 const RESERVED_PATHS = [
