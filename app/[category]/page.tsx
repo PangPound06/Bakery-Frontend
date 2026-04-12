@@ -93,7 +93,7 @@ export default function CategoryPage() {
     const fetchCategory = async () => {
       try {
         const res = await fetch(
-          "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+          "${process.env.NEXT_PUBLIC_API_URL}/api/categories",
         );
         if (res.ok) {
           const cats: Category[] = await res.json();
@@ -118,7 +118,7 @@ export default function CategoryPage() {
     if (isReserved) return; // ← ไม่ fetch ถ้าเป็น reserved
     try {
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${categorySlug}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${categorySlug}`,
       );
       if (response.ok) {
         const data = await response.json();

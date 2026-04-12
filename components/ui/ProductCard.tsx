@@ -88,7 +88,7 @@ export default function ProductCard({
     setError(null);
     try {
       const response = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
         {
           method: "POST",
           headers: {

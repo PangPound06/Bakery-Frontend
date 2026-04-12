@@ -250,10 +250,8 @@ export default function HomePage() {
   const fetchData = async () => {
     try {
       const [prodRes, catRes] = await Promise.all([
-        fetch("http://${process.env.NEXT_PUBLIC_API_URL}/api/products"),
-        fetch(
-          "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/active",
-        ),
+        fetch("${process.env.NEXT_PUBLIC_API_URL}/api/products"),
+        fetch("${process.env.NEXT_PUBLIC_API_URL}/api/categories/active"),
       ]);
 
       if (prodRes.ok) {
@@ -279,7 +277,7 @@ export default function HomePage() {
   const handleStockUpdate = async () => {
     try {
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/products",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/products",
       );
       if (res.ok) {
         const data = await res.json();

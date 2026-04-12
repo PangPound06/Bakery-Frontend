@@ -58,7 +58,7 @@ export default function AccountPage() {
   const fetchProfile = async (email: string) => {
     try {
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/${email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/${email}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -107,7 +107,7 @@ export default function AccountPage() {
 
     try {
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/${profile.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/${profile.email}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

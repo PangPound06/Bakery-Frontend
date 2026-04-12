@@ -87,7 +87,7 @@ export default function AdminOrdersPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/all",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/orders/all",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -125,7 +125,7 @@ export default function AdminOrdersPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -183,7 +183,7 @@ export default function AdminOrdersPage() {
       const body: any = { orderStatus };
       if (paymentStatus) body.paymentStatus = paymentStatus;
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status`,
         {
           method: "PUT",
           headers: {
@@ -252,7 +252,7 @@ export default function AdminOrdersPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/cancel`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/cancel`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -309,7 +309,7 @@ export default function AdminOrdersPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/items/${itemId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/items/${itemId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -868,7 +868,7 @@ export default function AdminOrdersPage() {
                                 setSlipModal(
                                   order.slipImage.startsWith("http")
                                     ? order.slipImage
-                                    : `http://${process.env.NEXT_PUBLIC_API_URL}${order.slipImage}`,
+                                    : `${process.env.NEXT_PUBLIC_API_URL}${order.slipImage}`,
                                 )
                               }
                               className="block text-xs text-blue-600 hover:underline"
@@ -1141,7 +1141,7 @@ export default function AdminOrdersPage() {
                         setSlipModal(
                           selectedOrder.slipImage.startsWith("http")
                             ? selectedOrder.slipImage
-                            : `http://${process.env.NEXT_PUBLIC_API_URL}${selectedOrder.slipImage}`,
+                            : `${process.env.NEXT_PUBLIC_API_URL}${selectedOrder.slipImage}`,
                         )
                       }
                       className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium w-full"

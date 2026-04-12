@@ -80,7 +80,7 @@ export default function ReportsPage() {
       const token = localStorage.getItem("token");
 
       const ordersRes = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/all",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/orders/all",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -92,7 +92,7 @@ export default function ReportsPage() {
           ordersData.map(async (order) => {
             try {
               const detailRes = await fetch(
-                `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
                 {
                   headers: { Authorization: `Bearer ${token}` },
                 },

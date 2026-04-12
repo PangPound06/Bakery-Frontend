@@ -49,7 +49,7 @@ function BillQRContent() {
     setLoadingQR(true);
     try {
       const response = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -193,7 +193,7 @@ function BillQRContent() {
             const fd = new FormData();
             fd.append("file", file);
             const res = await fetch(
-              "http://${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify",
+              "${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify",
               {
                 method: "POST",
                 body: fd,
@@ -269,7 +269,7 @@ function BillQRContent() {
       const fd = new FormData();
       fd.append("file", slipFile);
       const uploadRes = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload",
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -286,7 +286,7 @@ function BillQRContent() {
       const dineType = localStorage.getItem("dineType");
 
       await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/request-bill",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/request-bill",
         {
           method: "POST",
           headers: {

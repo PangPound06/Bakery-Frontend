@@ -119,7 +119,7 @@ export default function OrderDetailPage() {
     try {
       const table = localStorage.getItem("tableNo") || "";
       const res = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders?tableNo=${encodeURIComponent(table)}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders?tableNo=${encodeURIComponent(table)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -163,7 +163,7 @@ export default function OrderDetailPage() {
     // ✅ SSE: เชื่อมต่อ real-time stream แทน polling
     const connectSSE = () => {
       const es = new EventSource(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/stream",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/stream",
       );
 
       es.addEventListener("order-update", () => {

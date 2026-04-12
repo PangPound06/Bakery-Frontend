@@ -42,7 +42,7 @@ export default function FavoritesPage() {
 
       const userId = user.id || user.userId;
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/favorites/user/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/user/${userId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -61,7 +61,7 @@ export default function FavoritesPage() {
       const userId = user.id || user.userId;
 
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/favorites/${userId}/${productId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/${userId}/${productId}`,
         { method: "DELETE" },
       );
       const data = await response.json();
@@ -78,7 +78,7 @@ export default function FavoritesPage() {
   const getImageUrl = (img: string) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://${process.env.NEXT_PUBLIC_API_URL}${img}`;
+    return `${process.env.NEXT_PUBLIC_API_URL}${img}`;
   };
 
   return (

@@ -79,7 +79,7 @@ export default function OrdersPage() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.ok) setOrders(await response.json());
@@ -96,7 +96,7 @@ export default function OrdersPage() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.ok) setOrders(await response.json());
@@ -108,7 +108,7 @@ export default function OrdersPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.ok) {
@@ -140,7 +140,7 @@ export default function OrdersPage() {
     try {
       const token = localStorage.getItem("token"); // ✅ เพิ่ม
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/cancel`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/cancel`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` }, // ✅ เพิ่ม

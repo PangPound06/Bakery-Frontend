@@ -83,7 +83,7 @@ export default function ProductDetail({
       const userId = user.id || user.userId;
       if (!userId) return;
       const response = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/favorites/check/${userId}/${productId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/check/${userId}/${productId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -105,7 +105,7 @@ export default function ProductDetail({
     setTogglingFav(true);
     try {
       const response = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/favorites/toggle",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/favorites/toggle",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -134,7 +134,7 @@ export default function ProductDetail({
       try {
         const productName = (params.name as string).replace(/-/g, " ");
         const response = await fetch(
-          `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${category}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${category}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -182,7 +182,7 @@ export default function ProductDetail({
     // ✅ เช็ค fresh product
     if (fresh) {
       const cartRes = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/cart",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -220,7 +220,7 @@ export default function ProductDetail({
           : null;
 
       const response = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/cart/add",
         {
           method: "POST",
           headers: {

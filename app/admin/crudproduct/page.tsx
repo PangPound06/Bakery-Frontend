@@ -136,7 +136,7 @@ export default function CrudProductPage() {
   const fetchProducts = async () => {
     try {
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/products",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/products",
       );
       if (res.ok) setProducts(await res.json());
     } catch (e) {
@@ -150,7 +150,7 @@ export default function CrudProductPage() {
   const fetchCategories = async () => {
     try {
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/categories",
       );
       if (res.ok) setCategories(await res.json());
     } catch (e) {
@@ -165,7 +165,7 @@ export default function CrudProductPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/categories",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/categories",
         {
           method: "POST",
           headers: {
@@ -205,7 +205,7 @@ export default function CrudProductPage() {
   const handleUpdateCategory = async (id: number) => {
     try {
       const res = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -250,7 +250,7 @@ export default function CrudProductPage() {
     if (!r.isConfirmed) return;
     try {
       const res = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
         {
           method: "DELETE",
         },
@@ -464,7 +464,7 @@ export default function CrudProductPage() {
       fd.append("file", file);
       const token = localStorage.getItem("token");
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/upload/image",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/upload/image",
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -571,8 +571,8 @@ export default function CrudProductPage() {
       const token = localStorage.getItem("token");
       const url =
         modalMode === "create"
-          ? "http://${process.env.NEXT_PUBLIC_API_URL}/api/products"
-          : `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/${selectedProduct?.id}`;
+          ? "${process.env.NEXT_PUBLIC_API_URL}/api/products"
+          : `${process.env.NEXT_PUBLIC_API_URL}/api/products/${selectedProduct?.id}`;
       const res = await fetch(url, {
         method: modalMode === "create" ? "POST" : "PUT",
         headers: {
@@ -629,7 +629,7 @@ export default function CrudProductPage() {
     if (!r.isConfirmed) return;
     const token = localStorage.getItem("token");
     const res = await fetch(
-      `http://${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

@@ -121,7 +121,7 @@ export default function AdminRestaurantPage() {
     if (!silent) setLoading(true);
     try {
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders",
       );
       if (res.ok) {
         const data: Order[] = await res.json();
@@ -153,7 +153,7 @@ export default function AdminRestaurantPage() {
     setLoadingDetail(true);
     try {
       const res = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -189,7 +189,7 @@ export default function AdminRestaurantPage() {
     setUpdating(true);
     try {
       const res = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}/status`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -234,7 +234,7 @@ export default function AdminRestaurantPage() {
 
     try {
       const res = await fetch(
-        `http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}/cancel`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}/cancel`,
         { method: "PUT" },
       );
       const data = await res.json();

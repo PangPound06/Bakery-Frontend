@@ -40,7 +40,7 @@ export default function CartPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  const API_URL = "http://${process.env.NEXT_PUBLIC_API_URL}/api/cart";
+  const API_URL = "${process.env.NEXT_PUBLIC_API_URL}/api/cart";
 
   const getToken = () => {
     if (typeof window !== "undefined") return localStorage.getItem("token");
@@ -171,7 +171,7 @@ export default function CartPage() {
       }));
 
       const res = await fetch(
-        "http://${process.env.NEXT_PUBLIC_API_URL}/api/dinein/orders",
+        "${process.env.NEXT_PUBLIC_API_URL}/api/dinein/orders",
         {
           // ← เปลี่ยน URL
           method: "POST",
