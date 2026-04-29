@@ -594,7 +594,7 @@ export default function POSPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-24 object-cover"
+                        className="w-full aspect-square object-cover"
                       />
                       {unavailable && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
