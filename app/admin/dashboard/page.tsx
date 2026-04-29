@@ -298,7 +298,7 @@ export default function AdminDashboard() {
     )
     .slice(0, 6);
   const formatDate = (s: string) =>
-    new Date(s).toLocaleDateString("th-TH", {
+    new Date(s).toLocaleString("th-TH", {
       month: "short",
       day: "numeric",
       hour: "2-digit",

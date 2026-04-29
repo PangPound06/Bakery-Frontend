@@ -474,7 +474,7 @@ export default function AdminOrdersPage() {
     const orderCode =
       order.ordCode ||
       `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
-    const date = new Date(order.createdAt).toLocaleDateString("th-TH", {
+    const date = new Date(order.createdAt).toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -592,7 +592,7 @@ export default function AdminOrdersPage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("th-TH", {
+    return date.toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -1507,7 +1507,7 @@ export default function AdminOrdersPage() {
                 </button>
               ))}
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {allProducts
                 .filter(

@@ -240,7 +240,7 @@ export default function OrdersPage() {
   };
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("th-TH", {
+    new Date(dateStr).toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
