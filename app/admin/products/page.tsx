@@ -562,7 +562,7 @@ export default function POSPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
               {filteredProducts.map((product) => {
                 const inOrder = orderItems.find(
                   (i) => i.product.id === product.id,
