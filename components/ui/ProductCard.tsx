@@ -59,16 +59,7 @@ export default function ProductCard({
   onStockUpdate,
 }: ProductCardProps) {
   const router = useRouter();
-  const [adding, setAdding] = useState(false);
-  const [added, setAdded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [currentStock, setCurrentStock] = useState(stockQuantity);
-
-  // ✅ Options modal state
-  const [showOptionsModal, setShowOptionsModal] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<ProductOption | null>(
-    null,
-  );
 
   const isFresh =
     currentStock === FRESH_STOCK_VALUE || stockQuantity === FRESH_STOCK_VALUE;
@@ -76,73 +67,6 @@ export default function ProductCard({
   const isOutOfStock = isFresh ? false : currentStock <= 0 || !isAvailable;
   const productOptions = parseOptions(options);
   const hasOptions = productOptions.length > 0;
-
-  const doAddToCart = async (option: ProductOption | null) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    setAdding(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/add`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            productId: id,
-            name,
-            price: price + (option?.extraPrice ?? 0),
-            category,
-            image: img,
-            quantity: 1,
-            selectedOption: option ? option.name : null, // ✅ ส่ง selectedOption
-          }),
-        },
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setAdding(false);
-        setAdded(true);
-        if (!isFresh) setCurrentStock((prev) => prev - 1);
-        window.dispatchEvent(new Event("cartUpdated"));
-        if (onStockUpdate) onStockUpdate();
-        setTimeout(() => setAdded(false), 1000);
-        if (onAddToCart)
-          onAddToCart({
-            id,
-            name,
-            type,
-            category,
-            price,
-            img,
-            description,
-            stockQuantity: isFresh ? FRESH_STOCK_VALUE : currentStock - 1,
-            isAvailable,
-          });
-      } else {
-        setAdding(false);
-        setError(data.error || "เกิดข้อผิดพลาด");
-        setTimeout(() => setError(null), 3000);
-      }
-    } catch {
-      setAdding(false);
-      setError("ไม่สามารถเชื่อมต่อ server ได้");
-      setTimeout(() => setError(null), 3000);
-    }
-  };
-
-  const handleConfirmOption = () => {
-    if (hasOptions && !selectedOption) return; // บังคับเลือก
-    setShowOptionsModal(false);
-    doAddToCart(selectedOption);
-  };
 
   return (
     <>
@@ -217,19 +141,13 @@ export default function ProductCard({
               )}
             </div>
 
-            {error && (
-              <div className="mb-3 p-2 bg-red-100 text-red-600 text-sm rounded-lg text-center">
-                {error}
-              </div>
-            )}
-
             <div className="space-y-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   router.push(`/${category}/${name.replace(/\s+/g, "-")}`);
                 }}
-                className="w-full py-3 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 border-2 border-amber-400 text-amber-700 hover:bg-amber-50 shadow-md hover:shadow-lg"
+                className="w-full py-3 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-amber-400 text-white hover:bg-amber-500 shadow-md hover:shadow-lg"
               >
                 <svg
                   className="w-5 h-5"
@@ -256,64 +174,6 @@ export default function ProductCard({
           </div>
         </div>
       </div>
-
-      {/* ✅ Options Modal */}
-      {showOptionsModal && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setShowOptionsModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-amber-500 text-white px-6 py-4 rounded-t-2xl">
-              <h3 className="font-bold text-lg">เลือกตัวเลือก</h3>
-              <p className="text-amber-100 text-sm mt-0.5">{name}</p>
-            </div>
-            <div className="p-5 space-y-2">
-              {productOptions.map((o) => (
-                <button
-                  key={o.name}
-                  type="button"
-                  onClick={() => setSelectedOption(o)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${
-                    selectedOption?.name === o.name
-                      ? "border-amber-500 bg-amber-50"
-                      : "border-gray-200 hover:border-amber-300"
-                  }`}
-                >
-                  <span className="font-medium text-amber-700">{o.name}</span>
-                  <span
-                    className={`text-sm font-semibold ${o.extraPrice > 0 ? "text-green-600" : "text-gray-500"}`}
-                  >
-                    {o.extraPrice > 0
-                      ? `฿${formatPrice(price + o.extraPrice)} (+฿${formatPrice(o.extraPrice)})`
-                      : `฿${formatPrice(price)}`}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <div className="px-5 pb-5 flex gap-3">
-              <button
-                onClick={() => setShowOptionsModal(false)}
-                className="flex-1 py-3 bg-gray-100 text-amber-800 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={handleConfirmOption}
-                disabled={!selectedOption}
-                className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                ✅ เพิ่มลงตะกร้า
-                {selectedOption &&
-                  ` — ฿${formatPrice(price + selectedOption.extraPrice)}`}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
