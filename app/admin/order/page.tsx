@@ -89,6 +89,7 @@ export default function AdminOrdersPage() {
   const [selectedAddOption, setSelectedAddOption] =
     useState<ProductOption | null>(null);
   const [addQty, setAddQty] = useState(1);
+  const [addFilterCategory, setAddFilterCategory] = useState("all");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -1311,6 +1312,7 @@ export default function AdminOrdersPage() {
                           fetchAllProducts();
                           setShowAddProductModal(true);
                           setAddSearch("");
+                          setAddFilterCategory("all");
                         }}
                         className="w-full mt-2 py-2 border-2 border-dashed border-amber-300 text-amber-600 rounded-xl hover:bg-amber-50 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                       >
@@ -1485,11 +1487,34 @@ export default function AdminOrdersPage() {
                 className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
+
+            {/* ✅ Category Filter */}
+            <div className="flex gap-1.5 px-3 py-2 border-b overflow-x-auto scrollbar-hide flex-shrink-0">
+              {[
+                "all",
+                ...Array.from(new Set(allProducts.map((p) => p.category))),
+              ].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setAddFilterCategory(cat)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    addFilterCategory === cat
+                      ? "bg-amber-500 text-white"
+                      : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                  }`}
+                >
+                  {cat === "all" ? "ทั้งหมด" : cat}
+                </button>
+              ))}
+            </div>
+            
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {allProducts
                 .filter(
                   (p) =>
                     p.name.toLowerCase().includes(addSearch.toLowerCase()) &&
+                    (addFilterCategory === "all" ||
+                      p.category === addFilterCategory) &&
                     (p.stockQuantity > 0 || p.stockQuantity === 9999) &&
                     p.isAvailable,
                 )
