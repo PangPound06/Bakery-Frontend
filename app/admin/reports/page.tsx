@@ -257,6 +257,7 @@ export default function ReportsPage() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Bangkok",
     });
 
   const formatSalesLabel = (key: string): string => {

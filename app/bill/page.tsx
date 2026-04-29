@@ -43,6 +43,7 @@ function formatDate(dateStr: string) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: "Asia/Bangkok",
   });
 }
 

@@ -53,6 +53,8 @@ export default function AdminOrdersPage() {
   const [slipModal, setSlipModal] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [prevOrderCount, setPrevOrderCount] = useState(0);
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editQty, setEditQty] = useState<number>(1);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -383,6 +385,7 @@ export default function AdminOrdersPage() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Bangkok",
     });
 
     win.document.write(`<html><head><title>ใบเสร็จ ${orderCode}</title>
@@ -500,6 +503,7 @@ export default function AdminOrdersPage() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Bangkok",
     });
   };
 
@@ -1020,12 +1024,14 @@ export default function AdminOrdersPage() {
                   </p>
                   <div className="space-y-2">
                     {orderItems.map((item) => {
+                      const isEditing = editingItemId === item.id;
                       const canRemove =
                         selectedOrder &&
                         !["delivered", "cancelled"].includes(
                           selectedOrder.orderStatus,
                         ) &&
                         selectedOrder.orderType !== "pos";
+
                       return (
                         <div
                           key={item.id}
@@ -1040,40 +1046,160 @@ export default function AdminOrdersPage() {
                                 {item.selectedOption}
                               </span>
                             )}
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              ฿{formatPrice(item.price)} x {item.quantity}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <p className="font-semibold text-amber-600">
-                              ฿{formatPrice(item.price * item.quantity)}
-                            </p>
-                            {canRemove && (
-                              <button
-                                onClick={() =>
-                                  removeOrderItem(
-                                    selectedOrder.id,
-                                    item.id,
-                                    item.productName,
-                                  )
-                                }
-                                className="p-1.5 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition-colors"
-                                title="ลบสินค้านี้"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                            {isEditing ? (
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <button
+                                  onClick={() =>
+                                    setEditQty((q) => Math.max(1, q - 1))
+                                  }
+                                  className="w-7 h-7 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-bold flex items-center justify-center"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                  />
-                                </svg>
-                              </button>
+                                  −
+                                </button>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={editQty}
+                                  onChange={(e) =>
+                                    setEditQty(
+                                      Math.max(1, Number(e.target.value)),
+                                    )
+                                  }
+                                  className="w-14 text-center border border-amber-300 rounded-lg py-0.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                />
+                                <button
+                                  onClick={() => setEditQty((q) => q + 1)}
+                                  className="w-7 h-7 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold flex items-center justify-center"
+                                >
+                                  +
+                                </button>
+                                <span className="text-xs text-amber-600 font-semibold ml-1">
+                                  = ฿{formatPrice(item.price * editQty)}
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                ฿{formatPrice(item.price)} x {item.quantity}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  onClick={async () => {
+                                    const token = localStorage.getItem("token");
+                                    const res = await fetch(
+                                      `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${selectedOrder!.id}/items/${item.id}`,
+                                      {
+                                        method: "PATCH",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                          Authorization: `Bearer ${token}`,
+                                        },
+                                        body: JSON.stringify({
+                                          quantity: editQty,
+                                        }),
+                                      },
+                                    );
+                                    const data = await res.json();
+                                    if (data.success) {
+                                      setOrderItems((prev) =>
+                                        prev.map((i) =>
+                                          i.id === item.id
+                                            ? { ...i, quantity: editQty }
+                                            : i,
+                                        ),
+                                      );
+                                      setSelectedOrder((prev) =>
+                                        prev
+                                          ? {
+                                              ...prev,
+                                              subtotal: data.newSubtotal,
+                                              total: data.newTotal,
+                                            }
+                                          : prev,
+                                      );
+                                      fetchOrders();
+                                    } else {
+                                      Swal.fire({
+                                        icon: "error",
+                                        title: "แก้ไขไม่สำเร็จ",
+                                        text: data.message,
+                                        confirmButtonColor: "#f97316",
+                                      });
+                                    }
+                                    setEditingItemId(null);
+                                  }}
+                                  className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold"
+                                >
+                                  ✓ บันทึก
+                                </button>
+                                <button
+                                  onClick={() => setEditingItemId(null)}
+                                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-medium"
+                                >
+                                  ยกเลิก
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <p className="font-semibold text-amber-600">
+                                  ฿{formatPrice(item.price * item.quantity)}
+                                </p>
+                                {canRemove && (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        setEditingItemId(item.id);
+                                        setEditQty(item.quantity);
+                                      }}
+                                      className="p-1.5 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors"
+                                      title="แก้ไขจำนวน"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        removeOrderItem(
+                                          selectedOrder!.id,
+                                          item.id,
+                                          item.productName,
+                                        )
+                                      }
+                                      className="p-1.5 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition-colors"
+                                      title="ลบสินค้านี้"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
