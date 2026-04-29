@@ -457,6 +457,7 @@ export default function AdminOrdersPage() {
   };
 
   const printReceipt = (order: Order, items: OrderItem[]) => {
+    console.log("createdAt raw:", order.createdAt);
     const win = window.open("", "_blank");
     if (!win) return;
     const itemsHtml = items
