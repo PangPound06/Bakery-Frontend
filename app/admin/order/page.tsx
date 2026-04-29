@@ -32,6 +32,31 @@ interface Order {
   ordCode: string;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  options?: string | null;
+  stockQuantity: number;
+  isAvailable: boolean;
+}
+
+interface ProductOption {
+  name: string;
+  extraPrice: number;
+}
+
+const parseOptions = (s?: string | null): ProductOption[] => {
+  if (!s) return [];
+  try {
+    return JSON.parse(s);
+  } catch {
+    return [];
+  }
+};
+
 const formatPrice = (price: number) =>
   price.toLocaleString("th-TH", {
     minimumFractionDigits: 2,
@@ -55,6 +80,15 @@ export default function AdminOrdersPage() {
   const [prevOrderCount, setPrevOrderCount] = useState(0);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [editQty, setEditQty] = useState<number>(1);
+
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [addSearch, setAddSearch] = useState("");
+  const [addingProduct, setAddingProduct] = useState<Product | null>(null);
+  const [addOptionModal, setAddOptionModal] = useState(false);
+  const [selectedAddOption, setSelectedAddOption] =
+    useState<ProductOption | null>(null);
+  const [addQty, setAddQty] = useState(1);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -356,6 +390,66 @@ export default function AdminOrdersPage() {
         icon: "error",
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถลบสินค้าได้",
+        confirmButtonColor: "#f97316",
+      });
+    }
+  };
+
+  const fetchAllProducts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (res.ok) setAllProducts(await res.json());
+    } catch {}
+  };
+
+  const doAddProductToOrder = async (
+    product: Product,
+    option: ProductOption | null,
+  ) => {
+    const token = localStorage.getItem("token");
+    const finalPrice = product.price + (option?.extraPrice ?? 0);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${selectedOrder!.id}/items`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          productName: product.name,
+          price: finalPrice,
+          quantity: addQty,
+          selectedOption: option?.name ?? null,
+          image: product.image,
+        }),
+      },
+    );
+    const data = await res.json();
+    if (data.success) {
+      setOrderItems((prev) => [...prev, data.newItem]);
+      setSelectedOrder((prev) =>
+        prev
+          ? { ...prev, subtotal: data.newSubtotal, total: data.newTotal }
+          : prev,
+      );
+      fetchOrders();
+      setShowAddProductModal(false);
+      setAddingProduct(null);
+      setSelectedAddOption(null);
+      setAddQty(1);
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "เพิ่มไม่สำเร็จ",
+        text: data.message,
         confirmButtonColor: "#f97316",
       });
     }
@@ -1206,6 +1300,23 @@ export default function AdminOrdersPage() {
                       );
                     })}
                   </div>
+                  {/* ปุ่มเพิ่มสินค้า */}
+                  {selectedOrder &&
+                    !["delivered", "cancelled"].includes(
+                      selectedOrder.orderStatus,
+                    ) &&
+                    selectedOrder.orderType !== "pos" && (
+                      <button
+                        onClick={() => {
+                          fetchAllProducts();
+                          setShowAddProductModal(true);
+                          setAddSearch("");
+                        }}
+                        className="w-full mt-2 py-2 border-2 border-dashed border-amber-300 text-amber-600 rounded-xl hover:bg-amber-50 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        ➕ เพิ่มสินค้าใน order นี้
+                      </button>
+                    )}
                 </div>
 
                 {/* Price */}
@@ -1341,6 +1452,156 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Add Product Modal */}
+      {showAddProductModal && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+          onClick={() => setShowAddProductModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-amber-500 text-white px-5 py-4 rounded-t-2xl flex items-center justify-between">
+              <h3 className="font-bold text-lg">➕ เพิ่มสินค้า</h3>
+              <button
+                onClick={() => setShowAddProductModal(false)}
+                className="hover:bg-amber-600 p-1.5 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 border-b">
+              <input
+                type="text"
+                placeholder="ค้นหาชื่อสินค้า..."
+                value={addSearch}
+                onChange={(e) => setAddSearch(e.target.value)}
+                autoFocus
+                className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {allProducts
+                .filter(
+                  (p) =>
+                    p.name.toLowerCase().includes(addSearch.toLowerCase()) &&
+                    (p.stockQuantity > 0 || p.stockQuantity === 9999) &&
+                    p.isAvailable,
+                )
+                .map((p) => {
+                  const opts = parseOptions(p.options);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setAddingProduct(p);
+                        setAddQty(1);
+                        setSelectedAddOption(null);
+                        if (opts.length > 0) {
+                          setAddOptionModal(true);
+                        } else {
+                          doAddProductToOrder(p, null);
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-amber-100 hover:border-amber-400 hover:bg-amber-50 text-left transition-all"
+                    >
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-amber-700 text-sm truncate">
+                          {p.name}
+                        </p>
+                        <p className="text-amber-500 text-xs font-bold">
+                          ฿{formatPrice(p.price)}
+                        </p>
+                        {opts.length > 0 && (
+                          <div className="flex gap-1 mt-0.5 flex-wrap">
+                            {opts.map((o) => (
+                              <span
+                                key={o.name}
+                                className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full"
+                              >
+                                {o.name}
+                                {o.extraPrice > 0 ? ` +฿${o.extraPrice}` : ""}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              {allProducts.filter((p) =>
+                p.name.toLowerCase().includes(addSearch.toLowerCase()),
+              ).length === 0 && (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  ไม่พบสินค้า
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Option Modal สำหรับเพิ่มสินค้า */}
+      {addOptionModal && addingProduct && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4"
+          onClick={() => setAddOptionModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-amber-500 text-white px-5 py-4 rounded-t-2xl">
+              <h3 className="font-bold">เลือกตัวเลือก</h3>
+              <p className="text-amber-100 text-sm">{addingProduct.name}</p>
+            </div>
+            <div className="p-4 space-y-2">
+              {parseOptions(addingProduct.options).map((o) => (
+                <button
+                  key={o.name}
+                  onClick={() => setSelectedAddOption(o)}
+                  className={`w-full flex justify-between px-4 py-3 rounded-xl border-2 transition-all ${
+                    selectedAddOption?.name === o.name
+                      ? "border-amber-500 bg-amber-50"
+                      : "border-gray-200 hover:border-amber-300"
+                  }`}
+                >
+                  <span className="font-medium text-amber-700">{o.name}</span>
+                  <span className="text-sm text-green-600">
+                    ฿{formatPrice(addingProduct.price + o.extraPrice)}
+                    {o.extraPrice > 0 ? ` (+฿${o.extraPrice})` : ""}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="px-4 pb-4 flex gap-3">
+              <button
+                onClick={() => setAddOptionModal(false)}
+                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+              >
+                ยกเลิก
+              </button>
+              <button
+                disabled={!selectedAddOption}
+                onClick={() => {
+                  setAddOptionModal(false);
+                  doAddProductToOrder(addingProduct, selectedAddOption);
+                }}
+                className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 disabled:opacity-40"
+              >
+                ✅ เพิ่ม
+              </button>
+            </div>
           </div>
         </div>
       )}
