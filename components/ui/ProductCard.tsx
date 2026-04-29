@@ -147,7 +147,7 @@ export default function ProductCard({
                   e.stopPropagation();
                   router.push(`/${category}/${name.replace(/\s+/g, "-")}`);
                 }}
-                className="w-full py-3 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-amber-400 text-white hover:bg-amber-500 shadow-md hover:shadow-lg"
+                className="w-full py-3 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg"
               >
                 <svg
                   className="w-5 h-5"
