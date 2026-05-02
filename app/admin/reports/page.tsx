@@ -185,22 +185,40 @@ export default function ReportsPage() {
   const avgOrderValue =
     validOrders.length > 0 ? Math.round(totalRevenue / validOrders.length) : 0;
 
-  // ✅ Sales data builder
+  // ✅ Sales data builder (แก้ Timezone ตรงนี้)
   const buildSalesData = () => {
     const grouped: { [key: string]: { revenue: number; orders: number } } = {};
     validOrders.forEach((order) => {
-      const date = new Date(order.createdAt);
+      // 1. บังคับข้อมูลเวลาให้เป็นของไทยเสมอ (+07:00) ป้องกันบั๊กข้ามวัน
+      let safeDateStr = order.createdAt;
+      if (!safeDateStr.includes("Z") && !safeDateStr.includes("+")) {
+        safeDateStr = `${safeDateStr.substring(0, 19)}+07:00`;
+      }
+      const date = new Date(safeDateStr);
+
+      // 2. ดึงฟอร์แมต YYYY-MM-DD แบบเวลาไทยเป๊ะๆ (ใช้ en-CA จะได้ฟอร์แมต ปี-เดือน-วัน พอดี)
+      const thaiDateString = date.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Bangkok",
+      });
+      const [year, month, day] = thaiDateString.split("-");
+
       let key = "";
-      if (salesView === "daily") key = date.toISOString().split("T")[0];
-      else if (salesView === "weekly") {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      if (salesView === "daily") {
+        key = thaiDateString; // ได้ "2026-05-03" ถูกต้องแน่นอน
+      } else if (salesView === "weekly") {
+        // คำนวณหาวันจันทร์ของสัปดาห์นั้นๆ โดยอิงจากเวลาไทย
+        const d = new Date(
+          date.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }),
+        );
+        const dayOfWeek = d.getDay();
+        const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
         const monday = new Date(d.setDate(diff));
-        key = monday.toISOString().split("T")[0];
-      } else if (salesView === "monthly")
-        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-      else key = `${date.getFullYear()}`;
+        key = monday.toLocaleDateString("en-CA");
+      } else if (salesView === "monthly") {
+        key = `${year}-${month}`; // "2026-05"
+      } else {
+        key = `${year}`; // "2026"
+      }
 
       if (!grouped[key]) grouped[key] = { revenue: 0, orders: 0 };
       grouped[key].revenue += order.total;
