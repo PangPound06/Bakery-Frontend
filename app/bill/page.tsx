@@ -32,16 +32,34 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   cancelled: { label: "ยกเลิก", color: "text-red-500" },
 };
 
-function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleString("th-TH", {
+export function formatTime(dateStr: string) {
+  if (!dateStr) return "-";
+
+  // บังคับแปลง String ให้เป็น Format ที่เติม Timezone ของไทยถ้ายังไม่มี
+  let safeDateStr = dateStr;
+  if (!safeDateStr.includes("Z") && !safeDateStr.includes("+")) {
+    safeDateStr = `${safeDateStr}+07:00`;
+  }
+
+  const date = new Date(safeDateStr);
+  return date.toLocaleTimeString("th-TH", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Asia/Bangkok",
   });
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString("th-TH", {
+export function formatDate(dateStr: string) {
+  if (!dateStr) return "-";
+
+  // บังคับแปลง String ให้เป็น Format ที่เติม Timezone ของไทยถ้ายังไม่มี
+  let safeDateStr = dateStr;
+  if (!safeDateStr.includes("Z") && !safeDateStr.includes("+")) {
+    safeDateStr = `${safeDateStr}+07:00`;
+  }
+
+  const date = new Date(safeDateStr);
+  return date.toLocaleDateString("th-TH", {
     day: "2-digit",
     month: "short",
     year: "numeric",
