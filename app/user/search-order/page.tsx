@@ -134,7 +134,7 @@ export default function SearchOrderPage() {
   };
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z").toLocaleString("th-TH", {
+    new Date(dateStr).toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
