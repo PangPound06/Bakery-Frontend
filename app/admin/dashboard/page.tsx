@@ -297,15 +297,28 @@ export default function AdminDashboard() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
     .slice(0, 6);
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleString("th-TH", {
-      year: "numeric",
+  const formatDate = (dateStr: string) => {
+    console.log("formatDate:", dateStr);
+    const dateObj = new Date(dateStr);
+
+    // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)
+    const datePart = dateObj.toLocaleString("th-TH", {
+      day: "2-digit", // หรือ "numeric" ตามต้องการ
       month: "short",
-      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Bangkok",
+    });
+
+    // 2. ดึงเฉพาะส่วนเวลา (ที่ทำงานได้ตรงเวลา)
+    const timePart = dateObj.toLocaleString("th-TH", {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Asia/Bangkok",
     });
+
+    // 3. นำมาต่อกัน
+    return `${datePart} ${timePart}`;
+  };
   const getStatusColor = (s: string) =>
     ({
       pending: "bg-amber-100 text-amber-700",

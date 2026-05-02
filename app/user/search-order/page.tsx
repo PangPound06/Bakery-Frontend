@@ -133,15 +133,28 @@ export default function SearchOrderPage() {
     }
   };
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleString("th-TH", {
-      year: "numeric",
+  const formatDate = (dateStr: string) => {
+    console.log("formatDate:", dateStr);
+    const dateObj = new Date(dateStr);
+
+    // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)
+    const datePart = dateObj.toLocaleString("th-TH", {
+      day: "2-digit", // หรือ "numeric" ตามต้องการ
       month: "short",
-      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Bangkok",
+    });
+
+    // 2. ดึงเฉพาะส่วนเวลา (ที่ทำงานได้ตรงเวลา)
+    const timePart = dateObj.toLocaleString("th-TH", {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Asia/Bangkok",
     });
+
+    // 3. นำมาต่อกัน
+    return `${datePart} ${timePart}`;
+  };
 
   const ordCode = order
     ? order.ordCode ||
