@@ -39,7 +39,7 @@ function formatTime(dateStr: string) {
   });
 }
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString("th-TH", {
+  return new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z").toLocaleString("th-TH", {
     day: "2-digit",
     month: "short",
     year: "numeric",

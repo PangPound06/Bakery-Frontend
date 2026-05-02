@@ -251,7 +251,7 @@ export default function ReportsPage() {
   const getPaymentMethodTextEN = (m: string) =>
     ({ qr_promptpay: "PromptPay", card: "Credit Card", cash: "Cash" })[m] || m;
   const formatDate = (s: string) =>
-    new Date(s).toLocaleString("th-TH", {
+    new Date(s.endsWith("Z") ? s : s + "Z").toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
