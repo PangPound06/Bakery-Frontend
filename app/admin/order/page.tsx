@@ -593,18 +593,18 @@ export default function AdminOrdersPage() {
     return { text: "🌐 ออนไลน์", bg: "bg-blue-50 text-blue-600" };
   };
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z").toLocaleString(
-      "th-TH",
-      {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Asia/Bangkok",
-      },
-    );
+  const formatDate = (dateStr: string) => {
+    console.log("formatDate input:", dateStr, typeof dateStr);
+    const utcStr = dateStr.endsWith("Z") ? dateStr : dateStr + "Z";
+    return new Date(utcStr).toLocaleString("th-TH", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Bangkok",
+    });
+  };
 
   const getNextStatusActions = (order: Order) => {
     const actions: {

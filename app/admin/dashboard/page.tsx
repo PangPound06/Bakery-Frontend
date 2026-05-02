@@ -297,14 +297,18 @@ export default function AdminDashboard() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
     .slice(0, 6);
-  const formatDate = (s: string) =>
-    new Date(s.endsWith("Z") ? s : s + "Z").toLocaleString("th-TH", {
+  const formatDate = (dateStr: string) => {
+    console.log("formatDate input:", dateStr, typeof dateStr);
+    const utcStr = dateStr.endsWith("Z") ? dateStr : dateStr + "Z";
+    return new Date(utcStr).toLocaleString("th-TH", {
+      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Asia/Bangkok",
     });
+  };
   const getStatusColor = (s: string) =>
     ({
       pending: "bg-amber-100 text-amber-700",
