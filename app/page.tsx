@@ -27,7 +27,7 @@ interface Category {
 
 // Hero images per category slug (fallback for new categories)
 const HERO_IMAGES: Record<string, string> = {
-  // สมมติ bakery: "/folder/image.jpg", สำหรับรูปภาพที่มาจากเครื่อง
+  // "/images/hero/category.jpg", สำหรับรูปภาพที่มาจากเครื่อง อยยู่ใน public/images/hero/
   bakery: "/images/hero/Bakery.jpg",
   cake: "/images/hero/Cake.jpg",
   drink: "/images/hero/Drink.jpg",
