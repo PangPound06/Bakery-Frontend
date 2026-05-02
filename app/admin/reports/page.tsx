@@ -250,10 +250,8 @@ export default function ReportsPage() {
     })[s] || s;
   const getPaymentMethodTextEN = (m: string) =>
     ({ qr_promptpay: "PromptPay", card: "Credit Card", cash: "Cash" })[m] || m;
-  const formatDate = (dateStr: string) => {
-    console.log("formatDate input:", dateStr, typeof dateStr);
-    const utcStr = dateStr.endsWith("Z") ? dateStr : dateStr + "Z";
-    return new Date(utcStr).toLocaleString("th-TH", {
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -261,7 +259,6 @@ export default function ReportsPage() {
       minute: "2-digit",
       timeZone: "Asia/Bangkok",
     });
-  };
 
   const formatSalesLabel = (key: string): string => {
     if (salesView === "daily") {

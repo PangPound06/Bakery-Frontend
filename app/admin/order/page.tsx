@@ -475,9 +475,7 @@ export default function AdminOrdersPage() {
     const orderCode =
       order.ordCode ||
       `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
-    const date = new Date(
-      order.createdAt.endsWith("Z") ? order.createdAt : order.createdAt + "Z",
-    ).toLocaleString("th-TH", {
+    const date = new Date(order.createdAt).toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -593,10 +591,8 @@ export default function AdminOrdersPage() {
     return { text: "🌐 ออนไลน์", bg: "bg-blue-50 text-blue-600" };
   };
 
-  const formatDate = (dateStr: string) => {
-    console.log("formatDate input:", dateStr, typeof dateStr);
-    const utcStr = dateStr.endsWith("Z") ? dateStr : dateStr + "Z";
-    return new Date(utcStr).toLocaleString("th-TH", {
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -604,7 +600,6 @@ export default function AdminOrdersPage() {
       minute: "2-digit",
       timeZone: "Asia/Bangkok",
     });
-  };
 
   const getNextStatusActions = (order: Order) => {
     const actions: {
