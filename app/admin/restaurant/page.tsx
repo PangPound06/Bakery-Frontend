@@ -62,12 +62,21 @@ function getTableNo(note?: string) {
 }
 
 function formatDateTime(dateStr: string) {
-  return new Date(dateStr).toLocaleString("th-TH", {
+  if (!dateStr) return "-";
+
+  // 1. ตัดเศษมิลลิวินาทีหรือ Timezone เดิมออก (ให้เหลือ 19 ตัวอักษร)
+  const cleanDateStr = dateStr.substring(0, 19);
+
+  // 2. ประทับ Timezone ประเทศไทย (+07:00) เข้าไป
+  const date = new Date(`${cleanDateStr}+07:00`);
+
+  return date.toLocaleString("th-TH", {
     day: "2-digit",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Bangkok",
   });
 }
 
