@@ -10,8 +10,12 @@ import {
   CreateReservationRequest,
 } from "@/types/reservation";
 
-// ── โต๊ะในร้าน (ปรับตามจริง) ───────────────────────────────────────────────
-const TABLES = ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2"];
+const TABLES = [
+  1, 2, 3, 4, 5,
+  6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+  16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+  26, 27, 28, 29, 30,
+];
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "รอยืนยัน",
@@ -253,9 +257,9 @@ export default function ReservationPage() {
                   <button
                     type="button"
                     key={t}
-                    onClick={() => setTableNo(t)}
+                    onClick={() => setTableNo(String(t))}
                     className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-                      tableNo === t
+                      tableNo === String(t)
                         ? "bg-[#8b5e3c] text-white border-[#8b5e3c] shadow"
                         : "bg-white text-gray-600 border-gray-200 hover:border-[#8b5e3c] hover:text-[#8b5e3c]"
                     }`}
