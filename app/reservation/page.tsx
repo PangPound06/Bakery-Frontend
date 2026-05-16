@@ -68,7 +68,7 @@ export default function ReservationPage() {
     setLoadingSlots(true);
     setSelectedTime("");
     fetch(
-      `${Config.apiUrl}/api/reservations/availability?tableNo=${tableNo}&date=${date}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/availability?tableNo=${tableNo}&date=${date}`,
       {
         headers: { "x-api-key": Config.apiKey },
       },
@@ -83,7 +83,7 @@ export default function ReservationPage() {
     setLoadingMy(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${Config.apiUrl}/api/reservations/my`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservations/my`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "x-api-key": Config.apiKey,
@@ -128,7 +128,7 @@ export default function ReservationPage() {
         note,
       };
 
-      const res = await fetch(`${Config.apiUrl}/api/reservations`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -189,7 +189,7 @@ export default function ReservationPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${Config.apiUrl}/api/reservations/${id}/cancel`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/${id}/cancel`,
         {
           method: "PUT",
           headers: {
@@ -220,7 +220,7 @@ export default function ReservationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] pb-16">
+    <div className="min-h-screen bg-amber-50 pb-16">
       {/* ── Page Header ── */}
       <div className="bg-white border-b border-gray-200 px-4 py-5">
         <div className="max-w-5xl mx-auto">

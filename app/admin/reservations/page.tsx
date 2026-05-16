@@ -74,8 +74,8 @@ export default function AdminReservationsPage() {
     try {
       const token = localStorage.getItem("token");
       const url = filterDate
-        ? `${Config.apiUrl}/api/reservations/admin/all?date=${filterDate}`
-        : `${Config.apiUrl}/api/reservations/admin/all`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/admin/all?date=${filterDate}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/admin/all`;
 
       const res = await fetch(url, {
         headers: {
@@ -116,7 +116,7 @@ export default function AdminReservationsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${Config.apiUrl}/api/reservations/admin/${id}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/admin/${id}/status`,
         {
           method: "PUT",
           headers: {
