@@ -72,7 +72,7 @@ export default function AdminReservationsPage() {
   const fetchReservations = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem(Config.tokenKey);
+      const token = localStorage.getItem("token");
       const url = filterDate
         ? `${Config.apiUrl}/api/reservations/admin/all?date=${filterDate}`
         : `${Config.apiUrl}/api/reservations/admin/all`;
@@ -114,7 +114,7 @@ export default function AdminReservationsPage() {
 
     setUpdatingId(id);
     try {
-      const token = localStorage.getItem(Config.tokenKey);
+      const token = localStorage.getItem("token");
       const res = await fetch(
         `${Config.apiUrl}/api/reservations/admin/${id}/status`,
         {

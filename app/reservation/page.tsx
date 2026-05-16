@@ -50,7 +50,7 @@ export default function ReservationPage() {
 
   // ── Auth check ──────────────────────────────────────────────────────────
   useEffect(() => {
-    const token = localStorage.getItem(Config.tokenKey);
+    const token = localStorage.getItem("token");
     if (!token) {
       router.replace("/login");
       return;
@@ -82,7 +82,7 @@ export default function ReservationPage() {
   async function fetchMyReservations() {
     setLoadingMy(true);
     try {
-      const token = localStorage.getItem(Config.tokenKey);
+      const token = localStorage.getItem("token");
       const res = await fetch(`${Config.apiUrl}/api/reservations/my`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -117,7 +117,7 @@ export default function ReservationPage() {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem(Config.tokenKey);
+      const token = localStorage.getItem("token");
       const body: CreateReservationRequest = {
         tableNo,
         reservationDate: date,
@@ -187,7 +187,7 @@ export default function ReservationPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const token = localStorage.getItem(Config.tokenKey);
+      const token = localStorage.getItem("token");
       const res = await fetch(
         `${Config.apiUrl}/api/reservations/${id}/cancel`,
         {
