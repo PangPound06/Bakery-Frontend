@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function OrderModePage() {
   const router = useRouter();
@@ -228,6 +229,47 @@ export default function OrderModePage() {
                 </div>
               </div>
             </button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 px-2">
+              <div className="flex-1 h-px bg-stone-200"></div>
+              <span className="text-xs text-stone-400 font-medium">หรือ</span>
+              <div className="flex-1 h-px bg-stone-200"></div>
+            </div>
+
+            {/* จองโต๊ะล่วงหน้า */}
+            <Link
+              href="/reservation"
+              className="w-full bg-white rounded-2xl p-6 border-2 border-transparent hover:border-green-400 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-left group flex items-center gap-4"
+            >
+              <div className="w-14 h-14 rounded-xl bg-green-50 group-hover:bg-gradient-to-br group-hover:from-green-500 group-hover:to-emerald-400 flex items-center justify-center text-2xl transition-all duration-300 flex-shrink-0">
+                🗓️
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-amber-700">
+                  จองโต๊ะล่วงหน้า
+                </h2>
+                <p className="text-stone-500 text-sm">
+                  เลือกวัน เวลา และโต๊ะที่ต้องการ
+                </p>
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-stone-100 group-hover:bg-green-500 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-stone-400 group-hover:text-white transition-colors"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
           </div>
         )}
       </div>
