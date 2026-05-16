@@ -80,7 +80,6 @@ export default function AdminReservationsPage() {
       const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "x-api-key": Config.apiKey,
         },
       });
       const data = await res.json();
@@ -122,7 +121,6 @@ export default function AdminReservationsPage() {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            "x-api-key": Config.apiKey,
           },
           body: JSON.stringify({ status }),
         },

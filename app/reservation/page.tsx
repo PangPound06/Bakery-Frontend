@@ -11,10 +11,8 @@ import {
 } from "@/types/reservation";
 
 const TABLES = [
-  1, 2, 3, 4, 5,
-  6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-  16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-  26, 27, 28, 29, 30,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+  23, 24, 25, 26, 27, 28, 29, 30,
 ];
 
 const STATUS_LABEL: Record<string, string> = {
@@ -87,12 +85,14 @@ export default function ReservationPage() {
     setLoadingMy(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservations/my`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "x-api-key": Config.apiKey,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/my`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       if (res.status === 401) {
         router.replace("/login");
         return;
@@ -132,15 +132,17 @@ export default function ReservationPage() {
         note,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "x-api-key": Config.apiKey,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
       const data = await res.json();
 
       if (res.ok) {
@@ -198,7 +200,6 @@ export default function ReservationPage() {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
-            "x-api-key": Config.apiKey,
           },
         },
       );
