@@ -198,244 +198,238 @@ export default function MyReservationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
-      {/* 🟢 1. เปลี่ยนเป็น max-w-6xl และใช้ flex เลย์เอาต์แทน grid */}
-      <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row gap-6 md:gap-8">
-        {/* ── Sidebar (เมนูด้านข้าง) ── */}
-        {/* 🟢 2. กำหนด w-64 และ flex-shrink-0 เพื่อไม่ให้เมนูโดนบีบ */}
-        <div className="hidden md:block w-full md:w-64 bg-white rounded-[24px] shadow-sm py-8 px-4 border border-gray-50 flex-shrink-0 h-fit">
-          <nav className="space-y-3">
-            <Link
-              href="/user/profile"
-              className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">👤</span>
-              {/* 🟢 3. ใส่ whitespace-nowrap ทุกเมนูเพื่อห้ามตกบรรทัด */}
-              <span className="whitespace-nowrap">ข้อมูลส่วนตัว</span>
-            </Link>
-            <Link
-              href="/user/orders"
-              className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">📋</span>
-              <span className="whitespace-nowrap">รายการสั่งซื้อ</span>
-            </Link>
-            <Link
-              href="/user/search-order"
-              className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">🔍</span>
-              <span className="whitespace-nowrap">ค้นหาคำสั่งซื้อ</span>
-            </Link>
-
-            {/* เมนูที่เลือกอยู่ (Active) */}
-            <Link
-              href="/user/reservations"
-              className="flex items-center gap-4 px-5 py-3.5 rounded-xl bg-[#FFF3D6] text-[#B45309] font-medium shadow-sm transition-colors"
-            >
-              <span className="text-xl">📅</span>
-              <span className="whitespace-nowrap">การจองคิว</span>
-            </Link>
-
-            <Link
-              href="/user/favorites"
-              className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">❤️</span>
-              <span className="whitespace-nowrap">รายการโปรด</span>
-            </Link>
-            <Link
-              href="/user/settings"
-              className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">⚙️</span>
-              <span className="whitespace-nowrap">ตั้งค่า</span>
-            </Link>
-          </nav>
+      <div className="max-w-4xl mx-auto px-4">
+        {/* ── Header ── */}
+        <div className="mb-8">
+          <Link
+            href="/"
+            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+          >
+            ← กลับหน้าหลัก
+          </Link>
+          <h1 className="text-3xl font-bold text-amber-800">📅 การจองของฉัน</h1>
+          <p className="text-amber-600 mt-1">
+            การจองทั้งหมด {filtered.length} รายการ
+          </p>
         </div>
 
-        {/* ── Main Content (เนื้อหาฝั่งขวา) ── */}
-        {/* 🟢 4. ใช้ flex-1 เพื่อให้เนื้อหาขยายเต็มพื้นที่ที่เหลือ และ min-w-0 ป้องกันเนื้อหาล้น */}
-        <div className="flex-1 min-w-0 space-y-6">
-          {/* 🟢 5. ย้ายส่วน Header เข้ามาไว้ในนี้ เพื่อให้มันอยู่เหนือ Filter */}
-          <div className="mb-2">
-            <Link
-              href="/"
-              className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
-            >
-              ← กลับหน้าหลัก
-            </Link>
-            <h1 className="text-3xl font-bold text-amber-800">
-              📅 การจองของฉัน
-            </h1>
-            <p className="text-amber-600 mt-1">
-              การจองทั้งหมด {filtered.length} รายการ
-            </p>
+        {/* ── Grid Layout ── */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* ── Sidebar ── */}
+          <div className="hidden md:block md:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <nav className="space-y-2">
+                <Link
+                  href="/user/profile"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>👤</span> ข้อมูลส่วนตัว
+                </Link>
+                <Link
+                  href="/user/orders"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>📋</span> รายการสั่งซื้อ
+                </Link>
+                <Link
+                  href="/user/search-order"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>🔍</span> ค้นหาคำสั่งซื้อ
+                </Link>
+
+                {/* 🟢 เมนูที่เลือกอยู่ (Active) เปลี่ยนคลาสให้ตรงกับหน้า Orders */}
+                <Link
+                  href="/user/reservations"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                >
+                  <span>📅</span> การจองคิว
+                </Link>
+
+                <Link
+                  href="/user/favorites"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>❤️</span> รายการโปรด
+                </Link>
+                <Link
+                  href="/user/settings"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                >
+                  <span>⚙️</span> ตั้งค่า
+                </Link>
+              </nav>
+            </div>
           </div>
 
-          {/* Filter Card */}
-          <div className="bg-white rounded-2xl shadow-lg p-4">
-            {/* Main Tabs */}
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: "upcoming", label: "🕐 กำลังจะมาถึง" },
-                { value: "all", label: "📋 ทั้งหมด" },
-                { value: "past", label: "🗂️ ผ่านมาแล้ว" },
-              ].map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => {
-                    setTab(t.value as TabFilter);
-                    setStatusFilter("");
-                  }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    tab === t.value
-                      ? "bg-amber-500 text-white shadow"
-                      : "bg-gray-100 text-amber-800 hover:bg-gray-200"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Status filter (only in "all" tab) */}
-            {tab === "all" && (
-              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
+          {/* ── Main Content ── */}
+          <div className="md:col-span-3 space-y-4">
+            {/* Filter Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              {/* Main Tabs */}
+              <div className="flex flex-wrap gap-2">
                 {[
-                  { val: "", label: "ทั้งหมด" },
-                  { val: "pending", label: "⏳ รอยืนยัน" },
-                  { val: "confirmed", label: "✅ ยืนยันแล้ว" },
-                  { val: "completed", label: "🎉 เสร็จสิ้น" },
-                  { val: "cancelled", label: "❌ ยกเลิก" },
-                ].map((s) => (
+                  { value: "upcoming", label: "🕐 กำลังจะมาถึง" },
+                  { value: "all", label: "📋 ทั้งหมด" },
+                  { value: "past", label: "🗂️ ผ่านมาแล้ว" },
+                ].map((t) => (
                   <button
-                    key={s.val}
-                    onClick={() => setStatusFilter(s.val)}
+                    key={t.value}
+                    onClick={() => {
+                      setTab(t.value as TabFilter);
+                      setStatusFilter("");
+                    }}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      statusFilter === s.val
-                        ? "bg-amber-500 text-white"
+                      tab === t.value
+                        ? "bg-amber-500 text-white shadow"
                         : "bg-gray-100 text-amber-800 hover:bg-gray-200"
                     }`}
                   >
-                    {s.label}
+                    {t.label}
                   </button>
                 ))}
               </div>
+
+              {/* Status filter (only in "all" tab) */}
+              {tab === "all" && (
+                <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
+                  {[
+                    { val: "", label: "ทั้งหมด" },
+                    { val: "pending", label: "⏳ รอยืนยัน" },
+                    { val: "confirmed", label: "✅ ยืนยันแล้ว" },
+                    { val: "completed", label: "🎉 เสร็จสิ้น" },
+                    { val: "cancelled", label: "❌ ยกเลิก" },
+                  ].map((s) => (
+                    <button
+                      key={s.val}
+                      onClick={() => setStatusFilter(s.val)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        statusFilter === s.val
+                          ? "bg-amber-500 text-white"
+                          : "bg-gray-100 text-amber-800 hover:bg-gray-200"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* List */}
+            {filtered.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                <div className="text-6xl mb-4">📭</div>
+                <p className="text-gray-500 text-lg font-medium mb-1">
+                  {tab === "upcoming"
+                    ? "ไม่มีการจองที่จะมาถึง"
+                    : tab === "past"
+                      ? "ไม่มีประวัติการจอง"
+                      : "ยังไม่มีการจอง"}
+                </p>
+                <p className="text-sm text-gray-400 mb-5">
+                  เริ่มจองโต๊ะแรกของคุณตอนนี้
+                </p>
+                <Link
+                  href="/reservation"
+                  className="inline-block px-6 py-3 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-colors"
+                >
+                  ➕ จองโต๊ะใหม่
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filtered.map((r) => {
+                  const config = STATUS_CONFIG[r.status];
+                  const days = daysUntil(r.reservationDate);
+                  const isUpcoming =
+                    days >= 0 &&
+                    r.status !== "cancelled" &&
+                    r.status !== "completed";
+
+                  return (
+                    <div
+                      key={r.id}
+                      className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{config.icon}</span>
+                          <div>
+                            <p className="font-semibold text-amber-700">
+                              การจอง #{r.reservationCode}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatDateThai(r.reservationDate)} |{" "}
+                              {r.reservationTime} น.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isUpcoming && (
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                              {getDaysLabel(r.reservationDate)}
+                            </span>
+                          )}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${config.badge}`}
+                          >
+                            {STATUS_LABEL[r.status]}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              👤 {r.customerName} | 📞 {r.customerPhone}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              👥 จำนวนคน:{" "}
+                              <span className="font-medium text-gray-700">
+                                {r.partySize} ท่าน
+                              </span>
+                            </p>
+                            {r.note && (
+                              <p className="text-sm text-gray-500 mt-1">
+                                📝 หมายเหตุ: {r.note}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500 mb-0.5">
+                              หมายเลขโต๊ะ
+                            </p>
+                            <p className="text-2xl font-bold text-gray-800">
+                              {r.tableNo}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        {(r.status === "pending" ||
+                          r.status === "confirmed") && (
+                          <div className="flex mt-4 pt-4 border-t border-gray-100">
+                            <button
+                              onClick={() =>
+                                handleCancel(r.id, r.reservationCode)
+                              }
+                              className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                            >
+                              ❌ ยกเลิกการจอง
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
-
-          {/* List */}
-          {filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-              <div className="text-6xl mb-4">📭</div>
-              <p className="text-gray-500 text-lg font-medium mb-1">
-                {tab === "upcoming"
-                  ? "ไม่มีการจองที่จะมาถึง"
-                  : tab === "past"
-                    ? "ไม่มีประวัติการจอง"
-                    : "ยังไม่มีการจอง"}
-              </p>
-              <p className="text-sm text-gray-400 mb-5">
-                เริ่มจองโต๊ะแรกของคุณตอนนี้
-              </p>
-              <Link
-                href="/reservation"
-                className="inline-block px-6 py-3 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-colors"
-              >
-                ➕ จองโต๊ะใหม่
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filtered.map((r) => {
-                const config = STATUS_CONFIG[r.status];
-                const days = daysUntil(r.reservationDate);
-                const isUpcoming =
-                  days >= 0 &&
-                  r.status !== "cancelled" &&
-                  r.status !== "completed";
-
-                return (
-                  <div
-                    key={r.id}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-                  >
-                    {/* Card Header */}
-                    <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{config.icon}</span>
-                        <div>
-                          <p className="font-semibold text-amber-700">
-                            การจอง #{r.reservationCode}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatDateThai(r.reservationDate)} |{" "}
-                            {r.reservationTime} น.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {isUpcoming && (
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                            {getDaysLabel(r.reservationDate)}
-                          </span>
-                        )}
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${config.badge}`}
-                        >
-                          {STATUS_LABEL[r.status]}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-500">
-                            👤 {r.customerName} | 📞 {r.customerPhone}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            👥 จำนวนคน:{" "}
-                            <span className="font-medium text-gray-700">
-                              {r.partySize} ท่าน
-                            </span>
-                          </p>
-                          {r.note && (
-                            <p className="text-sm text-gray-500 mt-1">
-                              📝 หมายเหตุ: {r.note}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-500 mb-0.5">
-                            หมายเลขโต๊ะ
-                          </p>
-                          <p className="text-2xl font-bold text-gray-800">
-                            {r.tableNo}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      {(r.status === "pending" || r.status === "confirmed") && (
-                        <div className="flex mt-4 pt-4 border-t border-gray-100">
-                          <button
-                            onClick={() =>
-                              handleCancel(r.id, r.reservationCode)
-                            }
-                            className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
-                          >
-                            ❌ ยกเลิกการจอง
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
     </div>
