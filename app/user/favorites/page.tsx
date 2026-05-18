@@ -124,7 +124,7 @@ export default function FavoritesPage() {
                   href="/user/reservations"
                   className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
                 >
-                  <span>📅</span> การจองของฉัน
+                  <span>📅</span> การจองคิว
                 </Link>
                 <Link
                   href="/user/favorites"
