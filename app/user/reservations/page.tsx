@@ -154,19 +154,6 @@ export default function MyReservationsPage() {
     return true;
   });
 
-  const counts = {
-    upcoming: reservations.filter(
-      (r) =>
-        r.reservationDate >= today &&
-        r.status !== "cancelled" &&
-        r.status !== "completed",
-    ).length,
-    pending: reservations.filter((r) => r.status === "pending").length,
-    confirmed: reservations.filter((r) => r.status === "confirmed").length,
-    completed: reservations.filter((r) => r.status === "completed").length,
-    cancelled: reservations.filter((r) => r.status === "cancelled").length,
-  };
-
   function daysUntil(dateStr: string): number {
     const target = new Date(dateStr);
     const now = new Date();
@@ -211,7 +198,8 @@ export default function MyReservationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+      {/* 🟢 จุดสำคัญ: แก้ max-w-6xl เป็น max-w-4xl เพื่อให้ความกว้างเท่าหน้า Orders */}
+      <div className="max-w-4xl mx-auto px-4">
         {/* ── Header ── */}
         <div className="mb-8">
           <Link
@@ -241,43 +229,47 @@ export default function MyReservationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* ── Sidebar ── */}
           <div className="hidden md:block md:col-span-1">
-            {/* ปรับ Padding บนล่าง (py-8) และความโค้งมนให้ตรงกับดีไซน์รูปภาพ */}
+            {/* 🟢 แก้กล่อง Sidebar: ความโค้งและ Padding บนล่าง (py-8) */}
             <div className="bg-white rounded-[24px] shadow-sm py-8 px-4 border border-gray-50">
-              {/* ใช้ space-y-3 หรือ 4 เพื่อระยะห่างที่โปร่งขึ้น */}
               <nav className="space-y-3">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
                 >
                   <span className="text-xl">👤</span> <span>ข้อมูลส่วนตัว</span>
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
                 >
-                  <span className="text-xl">📋</span> <span>รายการสั่งซื้อ</span>
+                  <span className="text-xl">📋</span>{" "}
+                  <span>รายการสั่งซื้อ</span>
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
                 >
-                  <span className="text-xl">🔍</span> <span>ค้นหาคำสั่งซื้อ</span>
+                  <span className="text-xl">🔍</span>{" "}
+                  <span>ค้นหาคำสั่งซื้อ</span>
                 </Link>
+
+                {/* 🟢 แก้เมนูที่เลือกอยู่ (Active): สีเหลืองอ่อนตามรูปภาพ */}
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-[#fef0c7] text-amber-800 font-bold shadow-sm"
+                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl bg-[#FFF3D6] text-[#B45309] font-medium shadow-sm transition-colors"
                 >
                   <span className="text-xl">📅</span> <span>การจองคิว</span>
                 </Link>
+
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
                 >
                   <span className="text-xl">❤️</span> <span>รายการโปรด</span>
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
                 >
                   <span className="text-xl">⚙️</span> <span>ตั้งค่า</span>
                 </Link>
@@ -287,83 +279,35 @@ export default function MyReservationsPage() {
 
           {/* ── Main Content ── */}
           <div className="md:col-span-3 space-y-4">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-2xl p-4 shadow-lg">
-                <div className="text-2xl mb-1">📅</div>
-                <div className="text-2xl font-bold">{counts.upcoming}</div>
-                <div className="text-xs opacity-90 mt-1">กำลังจะมาถึง</div>
+            {/* Filter Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              {/* Main Tabs */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: "upcoming", label: "🕐 กำลังจะมาถึง" },
+                  { value: "all", label: "📋 ทั้งหมด" },
+                  { value: "past", label: "🗂️ ผ่านมาแล้ว" },
+                ].map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => {
+                      setTab(t.value as TabFilter);
+                      setStatusFilter("");
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      tab === t.value
+                        ? "bg-amber-500 text-white shadow"
+                        : "bg-gray-100 text-amber-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
               </div>
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-yellow-100">
-                <div className="text-2xl mb-1">⏳</div>
-                <div className="text-2xl font-bold text-yellow-700">
-                  {counts.pending}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">รอยืนยัน</div>
-              </div>
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-green-100">
-                <div className="text-2xl mb-1">✅</div>
-                <div className="text-2xl font-bold text-green-700">
-                  {counts.confirmed}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">ยืนยันแล้ว</div>
-              </div>
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-blue-100">
-                <div className="text-2xl mb-1">🎉</div>
-                <div className="text-2xl font-bold text-blue-700">
-                  {counts.completed}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">เสร็จสิ้น</div>
-              </div>
-            </div>
 
-            {/* Tabs */}
-            <div className="bg-white rounded-2xl shadow-lg p-2 flex flex-col sm:flex-row gap-1">
-              <button
-                onClick={() => {
-                  setTab("upcoming");
-                  setStatusFilter("");
-                }}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-                  tab === "upcoming"
-                    ? "bg-amber-500 text-white shadow"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                🕐 กำลังจะมาถึง
-              </button>
-              <button
-                onClick={() => {
-                  setTab("all");
-                  setStatusFilter("");
-                }}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-                  tab === "all"
-                    ? "bg-amber-500 text-white shadow"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                📋 ทั้งหมด
-              </button>
-              <button
-                onClick={() => {
-                  setTab("past");
-                  setStatusFilter("");
-                }}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-                  tab === "past"
-                    ? "bg-amber-500 text-white shadow"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                🗂️ ผ่านมาแล้ว
-              </button>
-            </div>
-
-            {/* Status filter (only in "all" tab) */}
-            {tab === "all" && (
-              <div className="bg-white rounded-2xl shadow-lg p-4">
-                <div className="flex flex-wrap gap-2">
+              {/* Status filter (only in "all" tab) */}
+              {tab === "all" && (
+                <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
                   {[
                     { val: "", label: "ทั้งหมด" },
                     { val: "pending", label: "⏳ รอยืนยัน" },
@@ -384,8 +328,8 @@ export default function MyReservationsPage() {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* List */}
             {filtered.length === 0 ? (
@@ -424,80 +368,63 @@ export default function MyReservationsPage() {
                       className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                     >
                       {/* Card Header */}
-                      <div
-                        className={`bg-gradient-to-r ${config.bgGradient} p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100`}
-                      >
+                      <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{config.icon}</span>
                           <div>
-                            <p className="font-semibold text-gray-800">
+                            <p className="font-semibold text-amber-700">
                               การจอง #{r.reservationCode}
                             </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span
-                                className={`text-xs font-medium px-2.5 py-1 rounded-full ${config.badge}`}
-                              >
-                                {STATUS_LABEL[r.status]}
-                              </span>
-                              {isUpcoming && (
-                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded-full">
-                                  {getDaysLabel(r.reservationDate)}
-                                </span>
-                              )}
-                            </div>
+                            <p className="text-xs text-gray-500">
+                              {formatDateThai(r.reservationDate)} |{" "}
+                              {r.reservationTime} น.
+                            </p>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right">
-                          <p className="text-sm text-gray-500">
-                            📆 {formatDateThai(r.reservationDate)}
-                          </p>
-                          <p className="text-sm font-medium text-gray-700 mt-0.5">
-                            🕐 เวลา {r.reservationTime} น.
-                          </p>
+                        <div className="flex items-center gap-2">
+                          {isUpcoming && (
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                              {getDaysLabel(r.reservationDate)}
+                            </span>
+                          )}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${config.badge}`}
+                          >
+                            {STATUS_LABEL[r.status]}
+                          </span>
                         </div>
                       </div>
 
                       {/* Card Body */}
                       <div className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Left: โต๊ะ */}
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0 text-3xl">
-                              🪑
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 mb-0.5">
-                                หมายเลขโต๊ะ
-                              </p>
-                              <p className="text-2xl font-bold text-gray-800">
-                                {r.tableNo}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Right: ข้อมูลลูกค้า */}
-                          <div className="space-y-1.5 md:border-l md:border-gray-100 md:pl-4 flex flex-col justify-center">
-                            <div className="text-sm text-gray-700 flex items-center gap-2">
-                              <span>👥</span>
-                              <span>
-                                จำนวน <span className="font-semibold">{r.partySize}</span> คน
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              👤 {r.customerName} | 📞 {r.customerPhone}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              👥 จำนวนคน:{" "}
+                              <span className="font-medium text-gray-700">
+                                {r.partySize} ท่าน
                               </span>
-                            </div>
-                            <div className="text-sm text-gray-700 flex items-center gap-2">
-                              <span>👤</span> {r.customerName}
-                            </div>
-                            <div className="text-sm text-gray-700 flex items-center gap-2">
-                              <span>📞</span> {r.customerPhone}
-                            </div>
+                            </p>
                             {r.note && (
-                              <div className="text-sm text-gray-500 italic mt-1 bg-gray-50 p-2 rounded-lg">
-                                📝 &ldquo;{r.note}&rdquo;
-                              </div>
+                              <p className="text-sm text-gray-500 mt-1">
+                                📝 หมายเหตุ: {r.note}
+                              </p>
                             )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500 mb-0.5">
+                              หมายเลขโต๊ะ
+                            </p>
+                            <p className="text-2xl font-bold text-gray-800">
+                              {r.tableNo}
+                            </p>
                           </div>
                         </div>
 
-                        {/* Cancel Button */}
+                        {/* Actions */}
                         {(r.status === "pending" ||
                           r.status === "confirmed") && (
                           <div className="flex mt-4 pt-4 border-t border-gray-100">
@@ -505,7 +432,7 @@ export default function MyReservationsPage() {
                               onClick={() =>
                                 handleCancel(r.id, r.reservationCode)
                               }
-                              className="w-full sm:w-auto ml-auto px-5 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                              className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
                             >
                               ❌ ยกเลิกการจอง
                             </button>
