@@ -82,7 +82,7 @@ export default function UserMenu({ user }: UserMenuProps) {
     { href: "/user/profile", label: "ข้อมูลส่วนตัว", icon: "profile" },
     { href: "/user/orders", label: "รายการสั่งซื้อ", icon: "orders" },
     { href: "/user/search-order", label: "ค้นหาคำสั่งซื้อ", icon: "search" },
-    { href: "/user/reservations", label: "การจองของฉัน", icon: "reservations" },
+    { href: "/user/reservations", label: "การจองคิว", icon: "reservations" },
     { href: "/user/favorites", label: "รายการโปรด", icon: "favorites" },
     { href: "/user/settings", label: "ตั้งค่า", icon: "settings" },
   ];

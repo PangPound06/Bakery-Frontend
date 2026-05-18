@@ -437,12 +437,12 @@ export default function ReservationPage() {
           </form>
         </div>
 
-        {/* ─────────────────── การจองของฉัน ─────────────────── */}
+        {/* ─────────────────── การจองคิว ─────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold text-amber-800">
               <i className="fa-solid fa-clock-rotate-left mr-2 text-[#8b5e3c]" />
-              การจองของฉัน
+              การจองคิว
             </h2>
             <button
               onClick={fetchMyReservations}

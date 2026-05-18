@@ -207,7 +207,7 @@ export default function MyReservationsPage() {
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">📅 การจองของฉัน</h1>
+          <h1 className="text-3xl font-bold text-amber-800">📅 การจองคิว</h1>
           <p className="text-amber-600 mt-1">
             การจองทั้งหมด {filtered.length} รายการ
           </p>
