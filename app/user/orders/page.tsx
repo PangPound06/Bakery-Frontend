@@ -303,6 +303,7 @@ export default function OrdersPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Sidebar */}
           <div className="hidden md:block md:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <nav className="space-y-2">
