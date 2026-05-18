@@ -239,45 +239,47 @@ export default function MyReservationsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar */}
+          {/* ── Sidebar ── */}
           <div className="hidden md:block md:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-              <nav className="space-y-2">
+            {/* ปรับ Padding บนล่าง (py-8) และความโค้งมนให้ตรงกับดีไซน์รูปภาพ */}
+            <div className="bg-white rounded-[24px] shadow-sm py-8 px-4 border border-gray-50">
+              {/* ใช้ space-y-3 หรือ 4 เพื่อระยะห่างที่โปร่งขึ้น */}
+              <nav className="space-y-3">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
                 >
-                  <span>👤</span> ข้อมูลส่วนตัว
+                  <span className="text-xl">👤</span> <span>ข้อมูลส่วนตัว</span>
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
                 >
-                  <span>📋</span> รายการสั่งซื้อ
+                  <span className="text-xl">📋</span> <span>รายการสั่งซื้อ</span>
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
                 >
-                  <span>🔍</span> ค้นหาคำสั่งซื้อ
+                  <span className="text-xl">🔍</span> <span>ค้นหาคำสั่งซื้อ</span>
                 </Link>
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-[#fef0c7] text-amber-800 font-bold shadow-sm"
                 >
-                  <span>📅</span> การจองคิว
+                  <span className="text-xl">📅</span> <span>การจองคิว</span>
                 </Link>
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
                 >
-                  <span>❤️</span> รายการโปรด
+                  <span className="text-xl">❤️</span> <span>รายการโปรด</span>
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-gray-50 text-gray-600 font-medium transition-colors"
                 >
-                  <span>⚙️</span> ตั้งค่า
+                  <span className="text-xl">⚙️</span> <span>ตั้งค่า</span>
                 </Link>
               </nav>
             </div>
@@ -358,7 +360,7 @@ export default function MyReservationsPage() {
               </button>
             </div>
 
-            {/* Status filter (only in "all" tab) - เหมือนหน้า Orders */}
+            {/* Status filter (only in "all" tab) */}
             {tab === "all" && (
               <div className="bg-white rounded-2xl shadow-lg p-4">
                 <div className="flex flex-wrap gap-2">
@@ -478,11 +480,7 @@ export default function MyReservationsPage() {
                             <div className="text-sm text-gray-700 flex items-center gap-2">
                               <span>👥</span>
                               <span>
-                                จำนวน{" "}
-                                <span className="font-semibold">
-                                  {r.partySize}
-                                </span>{" "}
-                                คน
+                                จำนวน <span className="font-semibold">{r.partySize}</span> คน
                               </span>
                             </div>
                             <div className="text-sm text-gray-700 flex items-center gap-2">
@@ -499,7 +497,7 @@ export default function MyReservationsPage() {
                           </div>
                         </div>
 
-                        {/* Cancel Button - สไตล์คล้ายหน้า Orders */}
+                        {/* Cancel Button */}
                         {(r.status === "pending" ||
                           r.status === "confirmed") && (
                           <div className="flex mt-4 pt-4 border-t border-gray-100">
