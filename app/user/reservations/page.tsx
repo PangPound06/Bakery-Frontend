@@ -198,32 +198,18 @@ export default function MyReservationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
-      {/* 🟢 จุดสำคัญ: แก้ max-w-6xl เป็น max-w-4xl เพื่อให้ความกว้างเท่าหน้า Orders */}
       <div className="max-w-4xl mx-auto px-4">
-        {/* ── Header ── */}
         <div className="mb-8">
           <Link
             href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4 w-fit"
+            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
           >
             ← กลับหน้าหลัก
           </Link>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-amber-800">
-                📅 การจองของฉัน
-              </h1>
-              <p className="text-amber-600 mt-1">
-                การจองทั้งหมด {filtered.length} รายการ
-              </p>
-            </div>
-            <Link
-              href="/reservation"
-              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto"
-            >
-              <span>➕</span> จองโต๊ะใหม่
-            </Link>
-          </div>
+          <h1 className="text-3xl font-bold text-amber-800">📅 การจองของฉัน</h1>
+          <p className="text-amber-600 mt-1">
+            การจองทั้งหมด {filtered.length} รายการ
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
