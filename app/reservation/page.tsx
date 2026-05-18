@@ -228,21 +228,34 @@ export default function ReservationPage() {
     <div className="min-h-screen bg-amber-50 pb-16">
       {/* ── Page Header ── */}
       <div className="bg-white border-b border-gray-200 px-4 py-5">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-800">
-            <i className="fa-solid fa-calendar-check mr-2 text-[#8b5e3c]" />
-            จองโต๊ะอาหาร
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            เลือกโต๊ะ วัน และเวลาที่ต้องการ
-          </p>
+        <div className="max-w-5xl mx-auto flex items-center gap-3">
+          {/* ✅ ปุ่มย้อนกลับ */}
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="ย้อนกลับ"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-50 active:bg-amber-100 transition-colors shrink-0"
+          >
+            <i className="fa-solid fa-chevron-left text-lg" />
+          </button>
+
+          {/* ── Title ── */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-amber-800">
+              <i className="fa-solid fa-calendar-check mr-2 text-[#8b5e3c]" />
+              จองโต๊ะอาหาร
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              เลือกโต๊ะ วัน และเวลาที่ต้องการ
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ─────────────────── ฟอร์มจองโต๊ะ ─────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-5">
+          <h2 className="text-lg font-semibold text-amber-800 mb-5">
             <i className="fa-solid fa-pen-to-square mr-2 text-[#8b5e3c]" />
             ข้อมูลการจอง
           </h2>
@@ -427,7 +440,7 @@ export default function ReservationPage() {
         {/* ─────────────────── การจองของฉัน ─────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-amber-800">
               <i className="fa-solid fa-clock-rotate-left mr-2 text-[#8b5e3c]" />
               การจองของฉัน
             </h2>
