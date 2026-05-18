@@ -16,11 +16,6 @@ interface Category {
 
 const adminNavLinks = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/admin/crudproduct", label: "Manage Product", icon: "📦" },
-  { href: "/admin/order", label: "Orders", icon: "🛒" },
-  { href: "/admin/reports", label: "Reports", icon: "📋" },
-  { href: "/admin/users", label: "User Management", icon: "👥" },
-  { href: "/admin/account", label: "Account Settings", icon: "⚙️" },
 ];
 
 interface SearchResult {

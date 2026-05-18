@@ -241,13 +241,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar */}
+          {/* ── Sidebar ── */}
           <div className="md:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <nav className="space-y-2">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </Link>
@@ -262,6 +262,12 @@ export default function ProfilePage() {
                   className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
                 >
                   <span>🔍</span> ค้นหาคำสั่งซื้อ
+                </Link>
+                <Link
+                  href="/user/reservations"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                >
+                  <span>📅</span> การจองของฉัน
                 </Link>
                 <Link
                   href="/user/favorites"
