@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import { Reservation } from "@/types/reservation";
+import { useReservationStream } from "@/lib/useReservationStream";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "รอยืนยัน",
@@ -114,6 +115,45 @@ export default function AdminReservationsPage() {
   useEffect(() => {
     fetchReservations();
   }, [fetchReservations]);
+
+  // ── Real-time updates ผ่าน SSE ──
+  useReservationStream((event) => {
+    setReservations((prev) => {
+      switch (event.type) {
+        case "CREATED": {
+          const newRes = event.reservation as Reservation;
+          // กัน duplicate กรณี event มาก่อน fetch แรกเสร็จ
+          if (prev.some((r) => r.id === newRes.id)) return prev;
+          // แทรกบนสุด (backend order by date/time desc อยู่แล้ว)
+          return [newRes, ...prev];
+        }
+        case "UPDATED":
+        case "STATUS_CHANGED": {
+          const updated = event.reservation as Reservation;
+          return prev.map((r) =>
+            r.id === event.id ? { ...r, ...updated } : r,
+          );
+        }
+        case "DELETED":
+          return prev.filter((r) => r.id !== event.id);
+        default:
+          return prev;
+      }
+    });
+
+    // แจ้งเตือนเบาๆ เมื่อมีการจองใหม่
+    if (event.type === "CREATED" && event.reservation) {
+      const r = event.reservation as Reservation;
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "info",
+        title: `จองใหม่: ${r.customerName}`,
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    }
+  });
 
   async function updateStatus(id: number, status: string, label: string) {
     const result = await Swal.fire({

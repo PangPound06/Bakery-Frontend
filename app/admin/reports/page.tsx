@@ -60,6 +60,9 @@ export default function ReportsPage() {
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 
+  // ติดตามว่า items ของแต่ละ order โหลดเสร็จทั้งหมดหรือยัง
+  const [itemsLoading, setItemsLoading] = useState(false);
+
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -79,38 +82,57 @@ export default function ReportsPage() {
     try {
       const token = localStorage.getItem("token");
 
+      // ─── ขั้นที่ 1: ดึง orders list อย่างเดียว (เร็ว ~200ms) ───
       const ordersRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/all`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      if (ordersRes.ok) {
-        const ordersData: Order[] = await ordersRes.json();
-        const ordersWithItems: OrderWithItems[] = await Promise.all(
-          ordersData.map(async (order) => {
-            try {
-              const detailRes = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                },
-              );
-              if (detailRes.ok) {
-                const detail = await detailRes.json();
-                return { ...order, items: detail.items || [] };
-              }
-            } catch {}
-            return { ...order, items: [] };
-          }),
-        );
-        setOrders(ordersWithItems);
+      if (!ordersRes.ok) {
+        setLoading(false);
+        return;
       }
+
+      const ordersData: Order[] = await ordersRes.json();
+
+      // ─── ขั้นที่ 2: render ตารางทันทีด้วย items = [] ───
+      // KPI/Summary/Sales chart ทำงานได้แล้ว เพราะใช้ total/orderStatus ที่มีอยู่
+      const initial: OrderWithItems[] = ordersData.map((o) => ({
+        ...o,
+        items: [],
+      }));
+      setOrders(initial);
+      setLoading(false); // ← ปลด loading ปุ๊บ! ผู้ใช้เห็นข้อมูลทันที
+      setItemsLoading(true);
+
+      // ─── ขั้นที่ 3: ทยอยโหลด items ของแต่ละ order ใน background ───
+      // ใช้ Promise.all เพื่อยิงพร้อมกัน แต่ไม่ block UI เพราะไม่ await
+      Promise.all(
+        ordersData.map(async (order) => {
+          try {
+            const detailRes = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+            if (detailRes.ok) {
+              const detail = await detailRes.json();
+              return { id: order.id, items: detail.items || [] };
+            }
+          } catch {}
+          return { id: order.id, items: [] };
+        }),
+      ).then((results) => {
+        // อัปเดต state ครั้งเดียวหลังโหลดครบ — ไม่ทำให้ตารางกระตุก
+        const itemsMap = new Map(results.map((r) => [r.id, r.items]));
+        setOrders((prev) =>
+          prev.map((o) => ({ ...o, items: itemsMap.get(o.id) || [] })),
+        );
+        setItemsLoading(false);
+      });
     } catch (error) {
       console.error("Error:", error);
-    } finally {
       setLoading(false);
+      setItemsLoading(false);
     }
   };
 
@@ -686,7 +708,7 @@ export default function ReportsPage() {
           <div className="flex gap-2">
             <button
               onClick={exportPDF}
-              disabled={exporting}
+              disabled={exporting || itemsLoading}
               className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
             >
               {exporting && exportType === "pdf" ? (
@@ -700,7 +722,7 @@ export default function ReportsPage() {
             </button>
             <button
               onClick={exportExcel}
-              disabled={exporting}
+              disabled={exporting || itemsLoading}
               className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
             >
               {exporting && exportType === "excel" ? (
@@ -712,6 +734,12 @@ export default function ReportsPage() {
                 <>📊 Excel</>
               )}
             </button>
+            {itemsLoading && (
+              <span className="text-xs text-amber-600 self-center ml-2">
+                <span className="inline-block w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mr-1"></span>
+                กำลังโหลดรายการ...
+              </span>
+            )}
           </div>
         </div>
 
