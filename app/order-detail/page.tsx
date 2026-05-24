@@ -103,7 +103,6 @@ export default function OrderDetailPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [tableNo, setTableNo] = useState<string>("");
   const router = useRouter();
-  const eventSourceRef = useRef<EventSource | null>(null);
   const [dineType, setDineType] = useState("");
   const [buffetPrice, setBuffetPrice] = useState<number | null>(null);
 
@@ -160,36 +159,15 @@ export default function OrderDetailPage() {
       setBuffetPrice(totalBuffet);
     }
 
-    // ✅ SSE: เชื่อมต่อ real-time stream แทน polling
-    const connectSSE = () => {
-      const es = new EventSource(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/stream`,
-      );
-
-      es.addEventListener("order-update", () => {
-        // พอได้รับ event → fetch ข้อมูลใหม่ทันที
-        fetchOrders();
-      });
-
-      es.onerror = () => {
-        es.close();
-        // reconnect หลัง 3 วินาที ถ้า connection หลุด
-        setTimeout(connectSSE, 3000);
-      };
-
-      eventSourceRef.current = es;
-    };
-
-    connectSSE();
-
-    // ✅ fallback polling ทุก 30 วินาที (กันกรณี SSE หลุด)
-    const interval = setInterval(fetchOrders, 30000);
+    // ── REST polling ทุก 3 วินาที (แทน SSE) ──
+    // ใช้ 3 วิเพราะลูกค้านั่งกินที่ร้าน status เปลี่ยนไม่บ่อยมาก
+    const interval = setInterval(() => {
+      if (document.hidden) return; // ไม่ poll ตอน tab ซ่อน
+      fetchOrders();
+    }, 3000);
 
     return () => {
       clearInterval(interval);
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
     };
   }, []);
 

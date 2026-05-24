@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import { Reservation } from "@/types/reservation";
-import { useReservationStream } from "@/lib/useReservationStream";
+import { useReservationPolling } from "@/lib/useReservationPolling";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "รอยืนยัน",
@@ -52,7 +52,6 @@ const TABLE_OPTIONS = Array.from({ length: 30 }, (_, i) => String(i + 1));
 const TIME_SLOTS: string[] = [];
 for (let h = 10; h <= 20; h++) {
   TIME_SLOTS.push(`${String(h).padStart(2, "0")}:00`);
-  if (h !== 20) TIME_SLOTS.push(`${String(h).padStart(2, "0")}:30`);
 }
 
 type EditForm = {
@@ -116,44 +115,41 @@ export default function AdminReservationsPage() {
     fetchReservations();
   }, [fetchReservations]);
 
-  // ── Real-time updates ผ่าน SSE ──
-  useReservationStream((event) => {
+  // ── Real-time updates ผ่าน REST polling (ทุก 2 วินาที) ──
+  useReservationPolling((latest) => {
     setReservations((prev) => {
-      switch (event.type) {
-        case "CREATED": {
-          const newRes = event.reservation as Reservation;
-          // กัน duplicate กรณี event มาก่อน fetch แรกเสร็จ
-          if (prev.some((r) => r.id === newRes.id)) return prev;
-          // แทรกบนสุด (backend order by date/time desc อยู่แล้ว)
-          return [newRes, ...prev];
-        }
-        case "UPDATED":
-        case "STATUS_CHANGED": {
-          const updated = event.reservation as Reservation;
-          return prev.map((r) =>
-            r.id === event.id ? { ...r, ...updated } : r,
-          );
-        }
-        case "DELETED":
-          return prev.filter((r) => r.id !== event.id);
-        default:
-          return prev;
+      // เช็คว่าข้อมูลเปลี่ยนจริงหรือไม่ — กัน re-render โดยไม่จำเป็น
+      if (
+        prev.length === latest.length &&
+        prev.every(
+          (p, i) =>
+            p.id === latest[i].id &&
+            p.status === latest[i].status &&
+            p.updatedAt === latest[i].updatedAt,
+        )
+      ) {
+        return prev;
       }
-    });
 
-    // แจ้งเตือนเบาๆ เมื่อมีการจองใหม่
-    if (event.type === "CREATED" && event.reservation) {
-      const r = event.reservation as Reservation;
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "info",
-        title: `จองใหม่: ${r.customerName}`,
-        timer: 2500,
-        showConfirmButton: false,
-      });
-    }
-  });
+      // ตรวจหา reservation ใหม่ที่เพิ่งเข้ามา → แสดง toast
+      const prevIds = new Set(prev.map((r) => r.id));
+      const newOnes = latest.filter((r) => !prevIds.has(r.id));
+
+      if (newOnes.length > 0 && prev.length > 0) {
+        // เฉพาะตอนที่ "เพิ่ม" จริงๆ ไม่ใช่โหลดครั้งแรก
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "info",
+          title: `จองใหม่: ${newOnes[0].customerName}${newOnes.length > 1 ? ` +${newOnes.length - 1}` : ""}`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+
+      return latest;
+    });
+  }, 2000);
 
   async function updateStatus(id: number, status: string, label: string) {
     const result = await Swal.fire({
@@ -708,9 +704,11 @@ export default function AdminReservationsPage() {
                 <input
                   type="tel"
                   value={editForm.customerPhone}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, customerPhone: e.target.value })
-                  }
+                  onChange={(e) => {
+                    // กรองเฉพาะตัวเลข — ลบทุกอย่างที่ไม่ใช่ 0-9
+                    const onlyNums = e.target.value.replace(/\D/g, "");
+                    setEditForm({ ...editForm, customerPhone: onlyNums });
+                  }}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8b5e3c]"
                 />
               </div>
