@@ -332,6 +332,65 @@ export default function SupplierPage() {
     }
   };
 
+  const handleDelete = async (sup: Supplier) => {
+    // เช็คก่อนว่ามี PO ผูกอยู่ไหม (ฝั่ง frontend) — UX ดีขึ้น ไม่ต้องรอ backend
+    const poCount = pos.filter((p) => p.supplierId === sup.id).length;
+
+    if (poCount > 0) {
+      await Swal.fire({
+        title: "ไม่สามารถลบได้",
+        html: `Supplier <b>${sup.name}</b> มีคำสั่งซื้อ <b>${poCount}</b> รายการผูกอยู่<br/><br/>กรุณาใช้ปุ่ม "ระงับ" แทน หรือลบ PO ทั้งหมดก่อน`,
+        icon: "warning",
+        confirmButtonColor: "#f97316",
+      });
+      return;
+    }
+
+    // ยืนยันการลบ
+    const result = await Swal.fire({
+      title: "ยืนยันการลบ?",
+      html: `ลบ <b>${sup.name}</b> ออกจากระบบถาวร<br/><span class="text-sm text-gray-500">การกระทำนี้ไม่สามารถยกเลิกได้</span>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ลบถาวร",
+      cancelButtonText: "ยกเลิก",
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`${API}/api/suppliers/${sup.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "ลบไม่สำเร็จ");
+      }
+
+      // ลบออกจาก state
+      setSuppliers((prev) => prev.filter((s) => s.id !== sup.id));
+      if (selectedSupplier?.id === sup.id) {
+        setSelectedSupplier(null);
+      }
+
+      await Swal.fire({
+        title: "ลบสำเร็จ",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err: any) {
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: err?.message || "ไม่สามารถลบได้",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
+    }
+  };
+
   const handleUpdatePOStatus = async (poId: number, currentStatus: string) => {
     const { value } = await Swal.fire({
       title: "เปลี่ยนสถานะ PO",
@@ -782,6 +841,16 @@ export default function SupplierPage() {
                                           ? "ระงับ"
                                           : "เปิดใช้"}
                                       </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDelete(sup);
+                                        }}
+                                        className="px-2.5 py-1 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors"
+                                        title="ลบ Supplier ถาวร"
+                                      >
+                                        🗑️ ลบ
+                                      </button>
                                     </div>
                                   </td>
                                 </tr>
@@ -1173,17 +1242,23 @@ export default function SupplierPage() {
                     });
                     setShowEditSupplierModal(true);
                   }}
-                  className="w-full py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-medium transition-colors"
+                  className="w-full py-2 bg-blue-200 text-blue-600 hover:bg-blue-300 rounded-xl text-xs font-medium transition-colors"
                 >
                   ✏️ แก้ไขข้อมูล
                 </button>
                 <button
                   onClick={() => handleSuspend(selectedSupplier)}
-                  className={`w-full py-2 rounded-xl text-xs font-medium transition-colors ${selectedSupplier.status === "active" ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+                  className={`w-full py-2 rounded-xl text-xs font-medium transition-colors ${selectedSupplier.status === "active" ? "bg-red-200 text-red-600 hover:bg-red-300" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
                 >
                   {selectedSupplier.status === "active"
                     ? "ระงับ Supplier"
                     : "เปิดใช้งานอีกครั้ง"}
+                </button>
+                <button
+                  onClick={() => handleDelete(selectedSupplier)}
+                  className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-medium transition-colors"
+                >
+                  🗑️ ลบ Supplier ถาวร
                 </button>
               </div>
             </div>
