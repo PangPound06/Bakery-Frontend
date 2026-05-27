@@ -63,6 +63,17 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+// ดึงชื่อลูกค้าจาก note ของ POS order
+// รูปแบบ note ของ POS: "POS Sale - <ชื่อลูกค้า>"
+const getCustomerName = (order: Order): string => {
+  if (order.receiverName) return order.receiverName;
+  if (order.orderType === "pos" && order.note) {
+    const match = order.note.match(/POS Sale\s*-\s*(.+)/);
+    if (match) return match[1].trim();
+  }
+  return "-";
+};
+
 export default function AdminOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -953,7 +964,7 @@ export default function AdminOrdersPage() {
                       {/* ✅ แก้จุดที่ 4 — เพิ่ม badge หน้าร้าน/ออนไลน์ */}
                       <td className="px-4 py-4">
                         <p className="font-medium text-amber-700 text-sm">
-                          {order.receiverName || "-"}
+                          {getCustomerName(order)}
                         </p>
                         <p className="text-xs text-gray-500">{order.email}</p>
                         <span
@@ -1411,19 +1422,19 @@ export default function AdminOrdersPage() {
                     <p>
                       <span className="text-gray-500">ชื่อผู้รับ:</span>{" "}
                       <span className="font-medium">
-                        {selectedOrder.receiverName}
+                        {getCustomerName(selectedOrder)}
                       </span>
                     </p>
                     <p>
                       <span className="text-gray-500">เบอร์โทร:</span>{" "}
                       <span className="font-medium">
-                        {selectedOrder.receiverPhone}
+                        {selectedOrder.receiverPhone || "-"}
                       </span>
                     </p>
                     <p>
                       <span className="text-gray-500">ที่อยู่:</span>{" "}
                       <span className="font-medium">
-                        {selectedOrder.receiverAddress}
+                        {selectedOrder.receiverAddress || "-"}
                       </span>
                     </p>
                     {selectedOrder.note && (

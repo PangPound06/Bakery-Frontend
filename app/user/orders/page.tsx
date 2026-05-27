@@ -39,6 +39,16 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+// ดึงชื่อลูกค้าจาก receiverName ก่อน → fallback ไป note ของ POS
+const getCustomerName = (order: Order): string => {
+  if (order.receiverName) return order.receiverName;
+  if (order.orderType === "pos" && order.note) {
+    const match = order.note.match(/POS Sale\s*-\s*(.+)/i);
+    if (match) return match[1].trim();
+  }
+  return "-";
+};
+
 // ✅ ใช้แค่ isPoundOption เพื่อแสดง badge — Backend แปลง quantity ให้แล้ว
 const isPoundOption = (opt?: string | null) => opt?.includes("ปอนด์") ?? false;
 
@@ -592,7 +602,7 @@ export default function OrdersPage() {
                     <p>
                       <span className="text-gray-500">ชื่อผู้รับ:</span>{" "}
                       <span className="font-medium">
-                        {selectedOrder.receiverName}
+                        {getCustomerName(selectedOrder)}
                       </span>
                     </p>
                     <p>
