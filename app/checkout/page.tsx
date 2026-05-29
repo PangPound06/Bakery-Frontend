@@ -639,7 +639,12 @@ export default function CheckoutPage() {
             paymentStatus: paymentStatus,
             paymentId: paymentId,
             slipImage: slipImagePath,
-            shippingInfo: shippingData,
+            // ✅ ส่งแบบ flat ให้ตรงกับที่ backend อ่าน (receiverName/Phone/Address + note)
+            // เดิมส่งห่อใน shippingInfo → backend หาไม่เจอ เลยบันทึกเป็น null
+            receiverName: shippingData.fullname,
+            receiverPhone: shippingData.phone,
+            receiverAddress: shippingData.address,
+            note: shippingData.note,
             cardName: paymentMethod === "card" ? cardData.name : null,
             cardLast4: cardLast4,
           }),
