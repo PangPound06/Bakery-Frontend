@@ -219,6 +219,64 @@ export default function AdminRestaurantPage() {
     }
   };
 
+  // ✅ ลบข้อมูล dine-in ทั้งหมด (เฉพาะ tb_dinein_orders + tb_dinein_order_items)
+  // ไม่กระทบหน้า Manage orders / Top Products
+  const deleteAllDineIn = async () => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "ลบข้อมูล dine-in ทั้งหมด?",
+      html:
+        '<div class="text-sm text-gray-600">จะลบออเดอร์สั่งในร้านทั้งหมดอย่างถาวร</div>' +
+        '<div class="text-sm text-gray-500 mt-2">ยอดขายที่ปิดบิลแล้วในหน้า Manage orders และ Top Products จะไม่ได้รับผลกระทบ</div>',
+      input: "text",
+      inputPlaceholder: 'พิมพ์ "ลบทั้งหมด" เพื่อยืนยัน',
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "ลบถาวร",
+      cancelButtonText: "ยกเลิก",
+      inputValidator: (value) =>
+        value !== "ลบทั้งหมด" ? 'กรุณาพิมพ์ "ลบทั้งหมด" ให้ถูกต้อง' : null,
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/all`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "ลบข้อมูล dine-in ทั้งหมดแล้ว",
+          text: `ลบ ${data.deletedOrders ?? 0} ออเดอร์`,
+          timer: 1800,
+          showConfirmButton: false,
+        });
+        setSelectedOrder(null);
+        fetchOrders();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "ลบไม่สำเร็จ",
+          text: data.message || "เกิดข้อผิดพลาด",
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถเชื่อมต่อได้",
+      });
+    }
+  };
+
   const cancelOrder = async (orderId: number) => {
     const result = await Swal.fire({
       icon: "warning",
@@ -338,25 +396,46 @@ export default function AdminRestaurantPage() {
               ออเดอร์สั่งในร้านทั้งหมด {orders.length} รายการ
             </p>
           </div>
-          <button
-            onClick={() => fetchOrders()}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => fetchOrders()}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            รีเฟรช
-          </button>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              รีเฟรช
+            </button>
+            <button
+              onClick={deleteAllDineIn}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              ลบ dine-in ทั้งหมด
+            </button>
+          </div>
         </div>
 
         {/* Status Cards */}
