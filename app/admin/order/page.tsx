@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -88,7 +88,15 @@ export default function AdminOrdersPage() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [slipModal, setSlipModal] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
-  const [prevOrderCount, setPrevOrderCount] = useState(0);
+  const prevTotalRef = useRef(0);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [summaryTotalOrders, setSummaryTotalOrders] = useState(0);
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
+  const [channelCounts, setChannelCounts] = useState<Record<string, number>>(
+    {},
+  );
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [editQty, setEditQty] = useState<number>(1);
 
@@ -124,49 +132,86 @@ export default function AdminOrdersPage() {
       router.replace("/login");
       return;
     }
-
-    fetchOrders();
-    const interval = setInterval(() => fetchOrders(true), 2000);
-    return () => clearInterval(interval);
   }, [router]);
 
-  const fetchOrders = async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/all`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      if (response.ok) {
-        const data = await response.json();
-        if (silent && data.length > prevOrderCount && prevOrderCount > 0) {
-          try {
-            const audio = new Audio(
-              "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjlkp9/LpnQyHEBvruHLn2kvGT5wse7TpWcqFTpxsvLWpWUnEzlxtPfaqmMkETd0t/3grGAgDDR3u8U",
-            );
-            audio.volume = 0.5;
-            audio.play().catch(() => {});
-          } catch {}
-          if (Notification.permission === "granted") {
-            new Notification("🛒 คำสั่งซื้อใหม่!", {
-              body: `มีคำสั่งซื้อใหม่เข้ามา (ทั้งหมด ${data.length} รายการ)`,
-            });
-          } else if (Notification.permission !== "denied") {
-            Notification.requestPermission();
-          }
+  // ดึงข้อมูลแบบแบ่งหน้า + กรองที่ฝั่ง server (ไม่ดึงทั้งตาราง)
+  // และดึง summary แยกเพื่อให้ตัวเลขบนแท็บเป็นยอดรวมทั้งระบบ ไม่ใช่แค่หน้าปัจจุบัน
+  const fetchOrders = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const base = process.env.NEXT_PUBLIC_API_URL;
+
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("size", "50");
+        if (filterStatus !== "all") params.set("status", filterStatus);
+        if (filterChannel !== "all") params.set("channel", filterChannel);
+        if (searchTerm.trim()) params.set("search", searchTerm.trim());
+
+        const [pageRes, sumRes] = await Promise.all([
+          fetch(`${base}/api/orders/admin/page?${params}`, { headers }),
+          fetch(`${base}/api/orders/admin/report-summary`, { headers }),
+        ]);
+
+        if (pageRes.ok) {
+          const data = await pageRes.json();
+          setOrders(data.content || []);
+          setTotalPages(data.totalPages || 1);
+          setTotalElements(data.totalElements || 0);
         }
-        setPrevOrderCount(data.length);
-        setOrders(data);
+
+        if (sumRes.ok) {
+          const s = await sumRes.json();
+          const total = s.totalOrderCount || 0;
+
+          // แจ้งเตือนเมื่อมีออเดอร์ใหม่ (เทียบยอดรวมทั้งระบบ)
+          if (silent && total > prevTotalRef.current && prevTotalRef.current > 0) {
+            try {
+              const audio = new Audio(
+                "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjlkp9/LpnQyHEBvruHLn2kvGT5wse7TpWcqFTpxsvLWpWUnEzlxtPfaqmMkETd0t/3grGAgDDR3u8U",
+              );
+              audio.volume = 0.5;
+              audio.play().catch(() => {});
+            } catch {}
+            if (Notification.permission === "granted") {
+              new Notification("🛒 คำสั่งซื้อใหม่!", {
+                body: `มีคำสั่งซื้อใหม่เข้ามา (ทั้งหมด ${total} รายการ)`,
+              });
+            } else if (Notification.permission !== "denied") {
+              Notification.requestPermission();
+            }
+          }
+          prevTotalRef.current = total;
+          setSummaryTotalOrders(total);
+          setStatusCounts(s.statusCounts || {});
+          setChannelCounts(s.channelCounts || {});
+        }
+      } catch (error) {
+        if (!silent) console.error("Error fetching orders:", error);
+      } finally {
+        if (!silent) setLoading(false);
       }
-    } catch (error) {
-      if (!silent) console.error("Error fetching orders:", error);
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
+    },
+    [page, filterStatus, filterChannel, searchTerm],
+  );
+
+  // โหลดใหม่เมื่อ page/filter/search เปลี่ยน
+  useEffect(() => {
+    fetchOrders(false);
+  }, [fetchOrders]);
+
+  // poll หน้าปัจจุบันทุก 2 วิ (ใช้ ref กัน stale closure)
+  const fetchOrdersRef = useRef(fetchOrders);
+  useEffect(() => {
+    fetchOrdersRef.current = fetchOrders;
+  });
+  useEffect(() => {
+    const interval = setInterval(() => fetchOrdersRef.current(true), 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchOrderDetail = async (orderId: number) => {
     setLoadingDetail(true);
@@ -690,43 +735,34 @@ export default function AdminOrdersPage() {
     return actions;
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const matchStatus =
-      filterStatus === "all" || order.orderStatus === filterStatus;
-    const matchChannel =
-      filterChannel === "all" ||
-      (filterChannel === "pos" && order.orderType === "pos") ||
-      (filterChannel === "online" &&
-        order.orderType !== "pos" &&
-        order.orderType !== "dine-in") ||
-      (filterChannel === "dine-in" && order.orderType === "dine-in") ||
-      (filterChannel === "dine-in-alacarte" &&
-        order.orderType === "dine-in" &&
-        !order.note?.includes("Buffet")) ||
-      (filterChannel === "dine-in-buffet" &&
-        order.orderType === "dine-in" &&
-        order.note?.includes("Buffet"));
-    const ordCode = `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
-    const matchSearch =
-      searchTerm === "" ||
-      order.id.toString().includes(searchTerm) ||
-      (order.ordCode || "").toUpperCase().includes(searchTerm.toUpperCase()) ||
-      ordCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.receiverName || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    return matchStatus && matchChannel && matchSearch;
-  });
+  // orders ถูกกรอง + แบ่งหน้าจากฝั่ง server แล้ว → ใช้ได้เลย ไม่ต้องกรองซ้ำ
+  const filteredOrders = orders;
 
-  const statusCounts = {
-    all: orders.length,
-    pending: orders.filter((o) => o.orderStatus === "pending").length,
-    confirmed: orders.filter((o) => o.orderStatus === "confirmed").length,
-    preparing: orders.filter((o) => o.orderStatus === "preparing").length,
-    shipping: orders.filter((o) => o.orderStatus === "shipping").length,
-    delivered: orders.filter((o) => o.orderStatus === "delivered").length,
-    cancelled: orders.filter((o) => o.orderStatus === "cancelled").length,
+  // ตัวเลขบนแท็บมาจาก summary (ยอดรวมทั้งระบบ ไม่ใช่แค่หน้าปัจจุบัน)
+  const statusCount = (key: string) =>
+    key === "all" ? summaryTotalOrders : statusCounts[key] || 0;
+
+  const channelKeyMap: Record<string, string> = {
+    all: "all",
+    online: "online",
+    pos: "pos",
+    "dine-in": "dineIn",
+    "dine-in-alacarte": "alacarte",
+    "dine-in-buffet": "buffet",
+  };
+  const channelCount = (key: string) =>
+    channelCounts[channelKeyMap[key]] || 0;
+
+  // เปลี่ยน filter/ค้นหา แล้วกลับไปหน้าแรกเสมอ
+  const onChangeStatus = (key: string) => {
+    setFilterStatus(key);
+    setPage(0);
+  };
+  const onChangeChannel = (
+    key: "all" | "online" | "pos" | "dine-in" | "dine-in-alacarte" | "dine-in-buffet",
+  ) => {
+    setFilterChannel(key);
+    setPage(0);
   };
 
   if (loading) {
@@ -747,10 +783,10 @@ export default function AdminOrdersPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📦</span>Manage Orders
+              <span className="text-4xl">📦</span>Manage orders
             </h1>
             <p className="text-amber-600 mt-1">
-              คำสั่งซื้อทั้งหมด {orders.length} รายการ
+              คำสั่งซื้อทั้งหมด {summaryTotalOrders} รายการ
             </p>
           </div>
         </div>
@@ -798,7 +834,7 @@ export default function AdminOrdersPage() {
           ].map((item) => (
             <button
               key={item.key}
-              onClick={() => setFilterStatus(item.key)}
+              onClick={() => onChangeStatus(item.key)}
               className={`p-2 md:p-3 rounded-xl text-center transition-all ${filterStatus === item.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"} ${item.color}`}
             >
               <div className="text-xl md:text-2xl">{item.icon}</div>
@@ -806,7 +842,7 @@ export default function AdminOrdersPage() {
                 {item.label}
               </div>
               <div className="text-base md:text-lg font-bold">
-                {statusCounts[item.key as keyof typeof statusCounts]}
+                {statusCount(item.key)}
               </div>
             </button>
           ))}
@@ -815,55 +851,16 @@ export default function AdminOrdersPage() {
         {/* ✅ Channel Filter */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
           {[
-            {
-              key: "all" as const,
-              label: "ทั้งหมด",
-              icon: "📋",
-              count: orders.length,
-            },
-            {
-              key: "online" as const,
-              label: "ออนไลน์",
-              icon: "🌐",
-              count: orders.filter(
-                (o) => o.orderType !== "pos" && o.orderType !== "dine-in",
-              ).length,
-            },
-            {
-              key: "pos" as const,
-              label: "หน้าร้าน",
-              icon: "🏪",
-              count: orders.filter((o) => o.orderType === "pos").length,
-            },
-            {
-              key: "dine-in" as const,
-              label: "ในร้าน",
-              icon: "🪑",
-              count: orders.filter((o) => o.orderType === "dine-in").length,
-            },
-            {
-              key: "dine-in-alacarte" as const,
-              label: "A la carte",
-              icon: "🍜",
-              count: orders.filter(
-                (o) =>
-                  o.orderType === "dine-in" &&
-                  o.note &&
-                  !o.note.includes("Buffet"),
-              ).length,
-            },
-            {
-              key: "dine-in-buffet" as const,
-              label: "Buffet",
-              icon: "🍱",
-              count: orders.filter(
-                (o) => o.orderType === "dine-in" && o.note?.includes("Buffet"),
-              ).length,
-            },
+            { key: "all" as const, label: "ทั้งหมด", icon: "📋" },
+            { key: "online" as const, label: "ออนไลน์", icon: "🌐" },
+            { key: "pos" as const, label: "หน้าร้าน", icon: "🏪" },
+            { key: "dine-in" as const, label: "ในร้าน", icon: "🪑" },
+            { key: "dine-in-alacarte" as const, label: "A la carte", icon: "🍜" },
+            { key: "dine-in-buffet" as const, label: "Buffet", icon: "🍱" },
           ].map((item) => (
             <button
               key={item.key}
-              onClick={() => setFilterChannel(item.key)}
+              onClick={() => onChangeChannel(item.key)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 filterChannel === item.key
                   ? "bg-amber-500 text-white shadow-md"
@@ -879,7 +876,7 @@ export default function AdminOrdersPage() {
                     : "bg-amber-100 text-amber-700"
                 }`}
               >
-                {item.count}
+                {channelCount(item.key)}
               </span>
             </button>
           ))}
@@ -892,7 +889,10 @@ export default function AdminOrdersPage() {
               type="text"
               placeholder="ค้นหา Order ID, อีเมล, ชื่อผู้รับ..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(0);
+              }}
               className="w-full px-4 py-3 pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <svg
@@ -1051,6 +1051,33 @@ export default function AdminOrdersPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page <= 0}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              ← ก่อนหน้า
+            </button>
+            <span className="text-sm text-amber-700 font-medium">
+              หน้า {page + 1} / {totalPages}
+              <span className="text-amber-400">
+                {" "}
+                ({totalElements} รายการ)
+              </span>
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              ถัดไป →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Order Detail Modal */}

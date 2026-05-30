@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 interface Order {
@@ -45,6 +45,22 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+type Summary = {
+  totalRevenue: number;
+  totalOrderCount: number;
+  validOrderCount: number;
+  successCount: number;
+  avgOrderValue: number;
+  statusCounts: Record<string, number>;
+  salesDaily: { date: string; revenue: number; orders: number }[];
+};
+
+// แปลง Date → "YYYY-MM-DDTHH:mm:ss" แบบเวลาท้องถิ่น (ไม่ใช่ UTC) ส่งให้ backend
+const toParam = (d: Date) => {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
 export default function ReportsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -63,6 +79,20 @@ export default function ReportsPage() {
   // ติดตามว่า items ของแต่ละ order โหลดเสร็จทั้งหมดหรือยัง
   const [itemsLoading, setItemsLoading] = useState(false);
 
+  // server-side pagination + summary
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [summary, setSummary] = useState<Summary>({
+    totalRevenue: 0,
+    totalOrderCount: 0,
+    validOrderCount: 0,
+    successCount: 0,
+    avgOrderValue: 0,
+    statusCounts: {},
+    salesDaily: [],
+  });
+
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -75,65 +105,86 @@ export default function ReportsPage() {
       router.replace("/login");
       return;
     }
-    fetchReportData();
   }, [router]);
 
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const base = process.env.NEXT_PUBLIC_API_URL;
 
-      // ─── ขั้นที่ 1: ดึง orders list อย่างเดียว (เร็ว ~200ms) ───
-      const ordersRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/all`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-
-      if (!ordersRes.ok) {
-        setLoading(false);
-        return;
+      const sumParams = new URLSearchParams();
+      const pageParams = new URLSearchParams();
+      pageParams.set("page", String(page));
+      pageParams.set("size", "50");
+      if (filterStatus !== "all") pageParams.set("status", filterStatus);
+      if (dateRange !== "all") {
+        const { start, end } = getDateCutoff();
+        const f = toParam(start);
+        const t = toParam(end);
+        sumParams.set("from", f);
+        sumParams.set("to", t);
+        pageParams.set("from", f);
+        pageParams.set("to", t);
       }
 
-      const ordersData: Order[] = await ordersRes.json();
-
-      // ─── ขั้นที่ 2: render ตารางทันทีด้วย items = [] ───
-      // KPI/Summary/Sales chart ทำงานได้แล้ว เพราะใช้ total/orderStatus ที่มีอยู่
-      const initial: OrderWithItems[] = ordersData.map((o) => ({
-        ...o,
-        items: [],
-      }));
-      setOrders(initial);
-      setLoading(false); // ← ปลด loading ปุ๊บ! ผู้ใช้เห็นข้อมูลทันที
-      setItemsLoading(true);
-
-      // ─── ขั้นที่ 3: ทยอยโหลด items ของแต่ละ order ใน background ───
-      // ใช้ Promise.all เพื่อยิงพร้อมกัน แต่ไม่ block UI เพราะไม่ await
-      Promise.all(
-        ordersData.map(async (order) => {
-          try {
-            const detailRes = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
-              { headers: { Authorization: `Bearer ${token}` } },
-            );
-            if (detailRes.ok) {
-              const detail = await detailRes.json();
-              return { id: order.id, items: detail.items || [] };
-            }
-          } catch {}
-          return { id: order.id, items: [] };
+      // KPI/กราฟ/นับสถานะ จาก summary (รวมยอดใน SQL), ตาราง จาก page (แบ่งหน้า)
+      const [sumRes, pageRes] = await Promise.all([
+        fetch(`${base}/api/orders/admin/report-summary?${sumParams}`, {
+          headers,
         }),
-      ).then((results) => {
-        // อัปเดต state ครั้งเดียวหลังโหลดครบ — ไม่ทำให้ตารางกระตุก
-        const itemsMap = new Map(results.map((r) => [r.id, r.items]));
-        setOrders((prev) =>
-          prev.map((o) => ({ ...o, items: itemsMap.get(o.id) || [] })),
-        );
-        setItemsLoading(false);
-      });
+        fetch(`${base}/api/orders/admin/page?${pageParams}`, { headers }),
+      ]);
+
+      if (sumRes.ok) setSummary(await sumRes.json());
+      if (pageRes.ok) {
+        const d = await pageRes.json();
+        setOrders(d.content || []);
+        setTotalPages(d.totalPages || 1);
+        setTotalElements(d.totalElements || 0);
+      }
     } catch (error) {
       console.error("Error:", error);
+    } finally {
       setLoading(false);
-      setItemsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, filterStatus, dateRange, customStart, customEnd]);
+
+  // โหลดใหม่เมื่อ page / filter / ช่วงวันที่ เปลี่ยน
+  useEffect(() => {
+    fetchReportData();
+  }, [fetchReportData]);
+
+  // ดึง orders ทั้งหมดที่ตรง filter ปัจจุบัน (สำหรับ export) — วน page จนครบ (จำกัดกันโหลดเยอะเกิน)
+  const fetchAllForExport = async (): Promise<OrderWithItems[]> => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+    const base = process.env.NEXT_PUBLIC_API_URL;
+    const all: OrderWithItems[] = [];
+    const size = 200;
+    const MAX_PAGES = 50; // ≤ 10,000 แถว
+    let range: { start: Date; end: Date } | null =
+      dateRange !== "all" ? getDateCutoff() : null;
+    for (let p = 0; p < MAX_PAGES; p++) {
+      const params = new URLSearchParams();
+      params.set("page", String(p));
+      params.set("size", String(size));
+      if (filterStatus !== "all") params.set("status", filterStatus);
+      if (range) {
+        params.set("from", toParam(range.start));
+        params.set("to", toParam(range.end));
+      }
+      const res = await fetch(`${base}/api/orders/admin/page?${params}`, {
+        headers,
+      });
+      if (!res.ok) break;
+      const d = await res.json();
+      all.push(...((d.content as OrderWithItems[]) || []));
+      if (p + 1 >= (d.totalPages || 1)) break;
+    }
+    return all;
   };
 
   // ✅ Date range filtering
@@ -187,64 +238,56 @@ export default function ReportsPage() {
     }
   };
 
-  const { start: dateStart, end: dateEnd } = getDateCutoff();
+  // KPI/นับสถานะ มาจาก summary (รวมยอดใน SQL) — ไม่คำนวณจาก orders ทั้งก้อนอีกต่อไป
+  const totalRevenue = summary.totalRevenue || 0;
+  const totalOrderCount = summary.totalOrderCount || 0;
+  const avgOrderValue = summary.avgOrderValue || 0;
+  const successCount = summary.successCount || 0;
+  const statusCounts = summary.statusCounts || {};
 
-  const dateFilteredOrders = orders.filter((o) => {
-    const d = new Date(o.createdAt);
-    return d >= dateStart && d <= dateEnd;
-  });
+  // orders = หน้าปัจจุบัน (ถูกกรองวันที่+สถานะจาก server แล้ว)
+  const filteredOrders = orders;
 
-  const filteredOrders = dateFilteredOrders.filter((order) => {
-    if (filterStatus === "all") return true;
-    return order.orderStatus === filterStatus;
-  });
+  const statusTabCount = (key: string) =>
+    key === "all" ? totalOrderCount : statusCounts[key] || 0;
 
-  const validOrders = dateFilteredOrders.filter((o) =>
-    ["confirmed", "preparing", "shipping", "delivered"].includes(o.orderStatus),
-  );
-  const totalRevenue = validOrders.reduce((sum, o) => sum + o.total, 0);
-  const totalOrderCount = dateFilteredOrders.length;
-  const avgOrderValue =
-    validOrders.length > 0 ? Math.round(totalRevenue / validOrders.length) : 0;
+  const onChangeDateRange = (key: DateRange) => {
+    setDateRange(key);
+    setPage(0);
+  };
+  const onChangeStatus = (key: string) => {
+    setFilterStatus(key);
+    setPage(0);
+  };
 
   // ✅ Sales data builder (แก้ Timezone ตรงนี้)
   const buildSalesData = () => {
     const grouped: { [key: string]: { revenue: number; orders: number } } = {};
-    validOrders.forEach((order) => {
-      // 1. บังคับข้อมูลเวลาให้เป็นของไทยเสมอ (+07:00) ป้องกันบั๊กข้ามวัน
-      let safeDateStr = order.createdAt;
-      if (!safeDateStr.includes("Z") && !safeDateStr.includes("+")) {
-        safeDateStr = `${safeDateStr.substring(0, 19)}+07:00`;
-      }
-      const date = new Date(safeDateStr);
-
-      // 2. ดึงฟอร์แมต YYYY-MM-DD แบบเวลาไทยเป๊ะๆ (ใช้ en-CA จะได้ฟอร์แมต ปี-เดือน-วัน พอดี)
-      const thaiDateString = date.toLocaleDateString("en-CA", {
-        timeZone: "Asia/Bangkok",
-      });
-      const [year, month, day] = thaiDateString.split("-");
+    // salesDaily มาจาก server: [{ date: "YYYY-MM-DD" (เวลาไทย), revenue, orders }]
+    (summary.salesDaily || []).forEach(({ date, revenue, orders }) => {
+      const [year, month] = date.split("-");
 
       let key = "";
       if (salesView === "daily") {
-        key = thaiDateString; // ได้ "2026-05-03" ถูกต้องแน่นอน
+        key = date;
       } else if (salesView === "weekly") {
-        // คำนวณหาวันจันทร์ของสัปดาห์นั้นๆ โดยอิงจากเวลาไทย
-        const d = new Date(
-          date.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }),
-        );
+        // หาวันจันทร์ของสัปดาห์นั้น
+        const d = new Date(`${date}T00:00:00`);
         const dayOfWeek = d.getDay();
         const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        const monday = new Date(d.setDate(diff));
-        key = monday.toLocaleDateString("en-CA");
+        const monday = new Date(d);
+        monday.setDate(diff);
+        const p = (n: number) => String(n).padStart(2, "0");
+        key = `${monday.getFullYear()}-${p(monday.getMonth() + 1)}-${p(monday.getDate())}`;
       } else if (salesView === "monthly") {
-        key = `${year}-${month}`; // "2026-05"
+        key = `${year}-${month}`;
       } else {
-        key = `${year}`; // "2026"
+        key = `${year}`;
       }
 
       if (!grouped[key]) grouped[key] = { revenue: 0, orders: 0 };
-      grouped[key].revenue += order.total;
-      grouped[key].orders += 1;
+      grouped[key].revenue += revenue;
+      grouped[key].orders += orders;
     });
 
     return Object.entries(grouped)
@@ -379,7 +422,8 @@ export default function ReportsPage() {
       const wb = XLSX.utils.book_new();
 
       if (activeTab === "orders") {
-        const data = filteredOrders.map((order) => ({
+        const exportOrders = await fetchAllForExport();
+        const data = exportOrders.map((order) => ({
           "Order ID":
             order.ordCode ||
             `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`,
@@ -600,16 +644,17 @@ export default function ReportsPage() {
           },
         });
       } else {
+        const exportOrders = await fetchAllForExport();
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(9);
         doc.text(
-          `ORDERS (${filterStatus === "all" ? "ALL" : filterStatus.toUpperCase()}) - ${filteredOrders.length} items`,
+          `ORDERS (${filterStatus === "all" ? "ALL" : filterStatus.toUpperCase()}) - ${exportOrders.length} items`,
           margin,
           y,
         );
         y += 3;
 
-        const ordersTableBody = filteredOrders.map((order) => [
+        const ordersTableBody = exportOrders.map((order) => [
           `#${order.ordCode || `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}`,
           order.receiverName || "-",
           order.items
@@ -763,7 +808,7 @@ export default function ReportsPage() {
               ).map((item) => (
                 <button
                   key={item.key}
-                  onClick={() => setDateRange(item.key)}
+                  onClick={() => onChangeDateRange(item.key)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${dateRange === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                 >
                   {item.label}
@@ -811,12 +856,7 @@ export default function ReportsPage() {
               {totalOrderCount} รายการ
             </p>
             <p className="text-xs text-slate-400 mt-1 hidden md:block">
-              สำเร็จ{" "}
-              {
-                dateFilteredOrders.filter((o) => o.orderStatus === "delivered")
-                  .length
-              }{" "}
-              รายการ
+              สำเร็จ {successCount} รายการ
             </p>
           </div>
           <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-amber-500 flex sm:block items-center justify-between gap-4">
@@ -864,18 +904,12 @@ export default function ReportsPage() {
                 ].map((item) => (
                   <button
                     key={item.key}
-                    onClick={() => setFilterStatus(item.key)}
+                    onClick={() => onChangeStatus(item.key)}
                     className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap ${filterStatus === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
                     {item.label}{" "}
                     <span className="ml-1 opacity-70">
-                      (
-                      {item.key === "all"
-                        ? dateFilteredOrders.length
-                        : dateFilteredOrders.filter(
-                            (o) => o.orderStatus === item.key,
-                          ).length}
-                      )
+                      ({statusTabCount(item.key)})
                     </span>
                   </button>
                 ))}
@@ -965,6 +999,29 @@ export default function ReportsPage() {
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📭</div>
                 <p className="text-slate-500">ไม่พบคำสั่งซื้อ</p>
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page <= 0}
+                  className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  ← ก่อนหน้า
+                </button>
+                <span className="text-sm text-slate-600 font-medium">
+                  หน้า {page + 1} / {totalPages}
+                  <span className="text-slate-400"> ({totalElements} รายการ)</span>
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  ถัดไป →
+                </button>
               </div>
             )}
           </div>
