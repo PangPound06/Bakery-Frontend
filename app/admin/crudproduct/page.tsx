@@ -731,7 +731,7 @@ export default function CrudProductPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-3xl md:text-4xl">📦</span> Manage products
+              <span className="text-3xl md:text-4xl">📦</span> Manage Products
             </h1>
             <p className="text-amber-600 mt-1 text-sm md:text-base">
               สินค้าทั้งหมด {products.length} รายการ

@@ -391,7 +391,7 @@ export default function AdminReservationsPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
-              <span className="text-4xl">📅</span>Manage reservations
+              <span className="text-4xl">📅</span>Manage Reservations
             </h1>
             <p className="text-amber-600 mt-1">
               การจองทั้งหมด {reservations.length} รายการ

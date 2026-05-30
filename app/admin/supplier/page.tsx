@@ -333,28 +333,23 @@ export default function SupplierPage() {
   };
 
   const handleDelete = async (sup: Supplier) => {
-    // เช็คก่อนว่ามี PO ผูกอยู่ไหม (ฝั่ง frontend) — UX ดีขึ้น ไม่ต้องรอ backend
+    // นับ PO ที่ผูกอยู่ เพื่อแจ้งเตือนในกล่องยืนยัน (จะถูกลบตามไปด้วย)
     const poCount = pos.filter((p) => p.supplierId === sup.id).length;
-
-    if (poCount > 0) {
-      await Swal.fire({
-        title: "ไม่สามารถลบได้",
-        html: `Supplier <b>${sup.name}</b> มีคำสั่งซื้อ <b>${poCount}</b> รายการผูกอยู่<br/><br/>กรุณาใช้ปุ่ม "ระงับ" แทน หรือลบ PO ทั้งหมดก่อน`,
-        icon: "warning",
-        confirmButtonColor: "#f97316",
-      });
-      return;
-    }
 
     // ยืนยันการลบ
     const result = await Swal.fire({
-      title: "ยืนยันการลบ?",
-      html: `ลบ <b>${sup.name}</b> ออกจากระบบถาวร<br/><span class="text-sm text-gray-500">การกระทำนี้ไม่สามารถยกเลิกได้</span>`,
+      title: "ลบ Supplier?",
+      html:
+        `ลบ <b>${sup.name}</b> ออกจากระบบถาวร` +
+        (poCount > 0
+          ? `<br/><span class="text-sm text-red-500">คำสั่งซื้อ (PO) ${poCount} รายการที่ผูกอยู่จะถูกลบไปด้วย</span>`
+          : "") +
+        `<br/><span class="text-sm text-gray-500">การกระทำนี้ไม่สามารถยกเลิกได้</span>`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "ลบถาวร",
+      confirmButtonText: "ใช่ ลบ Supplier",
       cancelButtonText: "ยกเลิก",
     });
     if (!result.isConfirmed) return;
@@ -369,8 +364,9 @@ export default function SupplierPage() {
         throw new Error(data.message || "ลบไม่สำเร็จ");
       }
 
-      // ลบออกจาก state
+      // ลบออกจาก state (รวม PO ที่ผูกกับ supplier นี้)
       setSuppliers((prev) => prev.filter((s) => s.id !== sup.id));
+      setPos((prev) => prev.filter((p) => p.supplierId !== sup.id));
       if (selectedSupplier?.id === sup.id) {
         setSelectedSupplier(null);
       }
