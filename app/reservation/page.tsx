@@ -266,20 +266,46 @@ export default function ReservationPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 เลือกโต๊ะ <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-4 gap-2">
-                {TABLES.map((t) => (
-                  <button
-                    type="button"
-                    key={t}
-                    onClick={() => setTableNo(String(t))}
-                    className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-                      tableNo === String(t)
-                        ? "bg-[#8b5e3c] text-white border-[#8b5e3c] shadow"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-[#8b5e3c] hover:text-[#8b5e3c]"
-                    }`}
-                  >
-                    {t}
-                  </button>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    label: "โต๊ะ 2 ที่นั่ง",
+                    tables: TABLES.slice(0, 5),
+                    base: "bg-blue-100 text-stone-600 hover:bg-blue-200",
+                  },
+                  {
+                    label: "โต๊ะ 4 ที่นั่ง",
+                    tables: TABLES.slice(5, 25),
+                    base: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+                  },
+                  {
+                    label: "โต๊ะ 8 ที่นั่ง",
+                    tables: TABLES.slice(25, 30),
+                    base: "bg-red-100 text-orange-700 hover:bg-red-200",
+                  },
+                ].map((group) => (
+                  <div key={group.label}>
+                    <p className="text-xs text-gray-400 font-medium mb-2">
+                      🪑 {group.label}
+                    </p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {group.tables.map((t) => (
+                        <button
+                          type="button"
+                          key={t}
+                          onClick={() => setTableNo(String(t))}
+                          className={`h-11 rounded-xl text-base font-bold transition-all duration-200 ${
+                            tableNo === String(t)
+                              ? "bg-[#8b5e3c] text-white shadow-md"
+                              : group.base
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

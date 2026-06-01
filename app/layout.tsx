@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import DineInBar from "@/components/layout/DineInBar";
+import Chrome from "@/components/layout/Chrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,10 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ fontFamily: "'Prompt', sans-serif" }}
       >
-        <Header />
-        {children }
-        <DineInBar />
-        <Footer />
+        <Chrome>{children}</Chrome>
       </body>
     </html>
   );
