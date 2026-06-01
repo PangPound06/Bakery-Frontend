@@ -105,7 +105,7 @@ export default function OrderModePage() {
   };
 
   return (
-    <div className="min-h-[80vh] bg-amber-50 flex items-center justify-center py-16 px-4">
+    <div className="min-h-screen bg-amber-50 flex items-center justify-center py-16 px-4">
       <div className="w-full max-w-lg">
         {/* Logo & Title */}
         <div className="text-center mb-10">
