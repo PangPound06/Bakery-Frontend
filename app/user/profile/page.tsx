@@ -336,11 +336,11 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-amber-700">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl font-bold text-amber-700 break-words">
                     {formData.fullname || "ผู้ใช้"}
                   </h2>
-                  <p className="text-gray-500">{profile?.email}</p>
+                  <p className="text-gray-500 truncate">{profile?.email}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                       });
                     setIsEditing(!isEditing);
                   }}
-                  className="ml-auto px-4 py-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                  className="flex-shrink-0 self-start px-3 py-2 text-sm text-amber-600 hover:bg-amber-50 rounded-lg transition-colors whitespace-nowrap"
                 >
                   {isEditing ? "ยกเลิก" : "✏️ แก้ไข"}
                 </button>
