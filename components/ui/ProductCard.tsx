@@ -124,15 +124,8 @@ export default function ProductCard({
           )}
 
           <div className="mt-auto pt-3 border-t border-gray-100">
-            <div className="flex items-end justify-between gap-2 mb-4">
-              <div className="min-w-0">
-                <p className="text-[11px] text-gray-400 leading-none mb-1">
-                  ราคา
-                </p>
-                <span className="text-xl sm:text-2xl font-extrabold text-amber-600 leading-none whitespace-nowrap">
-                  ฿{formatPrice(price)}
-                </span>
-              </div>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <p className="text-[11px] text-gray-400 leading-none">ราคา</p>
               {isFresh ? (
                 <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full whitespace-nowrap">
                   🥤 ทำสด
@@ -145,6 +138,9 @@ export default function ProductCard({
                 </span>
               )}
             </div>
+            <span className="block text-2xl font-extrabold text-amber-600 leading-none mb-4">
+              ฿{formatPrice(price)}
+            </span>
 
             <div className="space-y-2">
               <button
