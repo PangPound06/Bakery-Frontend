@@ -94,7 +94,7 @@ export default function ProductCard({
           )}
         </div>
 
-        <div className="p-5 flex flex-col flex-grow">
+        <div className="p-4 sm:p-5 flex flex-col flex-grow">
           <h3 className="text-lg font-bold text-amber-800 mb-2 line-clamp-2 h-14">
             {name}
           </h3>
@@ -123,20 +123,25 @@ export default function ProductCard({
             </div>
           )}
 
-          <div className="mt-auto">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-2xl font-bold text-amber-600">
-                ฿{formatPrice(price)}
-              </span>
+          <div className="mt-auto pt-3 border-t border-gray-100">
+            <div className="flex items-end justify-between gap-2 mb-4">
+              <div className="min-w-0">
+                <p className="text-[11px] text-gray-400 leading-none mb-1">
+                  ราคา
+                </p>
+                <span className="text-xl sm:text-2xl font-extrabold text-amber-600 leading-none whitespace-nowrap">
+                  ฿{formatPrice(price)}
+                </span>
+              </div>
               {isFresh ? (
-                <span className="text-xs text-teal-600 font-semibold">
+                <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full whitespace-nowrap">
                   🥤 ทำสด
                 </span>
               ) : (
                 <span
-                  className={`text-xs ${currentStock <= 5 ? "text-red-500 font-semibold" : "text-gray-500"}`}
+                  className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${currentStock <= 5 ? "text-red-600 bg-red-50" : "text-emerald-700 bg-emerald-50"}`}
                 >
-                  คงเหลือ: {displayStock} ชิ้น
+                  เหลือ {displayStock} ชิ้น
                 </span>
               )}
             </div>
