@@ -83,6 +83,11 @@ export default function AdminOrdersPage() {
     "all" | "online" | "pos" | "dine-in" | "dine-in-alacarte" | "dine-in-buffet"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateRange, setDateRange] = useState<
+    "today" | "7d" | "30d" | "month" | "year" | "all" | "custom"
+  >("all");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -144,16 +149,66 @@ export default function AdminOrdersPage() {
         const headers = { Authorization: `Bearer ${token}` };
         const base = process.env.NEXT_PUBLIC_API_URL;
 
+        // คำนวณช่วงเวลา (from/to) ตามตัวเลือก dateRange
+        const pad2 = (n: number) => String(n).padStart(2, "0");
+        const fmtDt = (d: Date) =>
+          `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+        const nowD = new Date();
+        const dStart = (d: Date) => {
+          const x = new Date(d);
+          x.setHours(0, 0, 0, 0);
+          return x;
+        };
+        const dEnd = (d: Date) => {
+          const x = new Date(d);
+          x.setHours(23, 59, 59, 0);
+          return x;
+        };
+        let rFrom = "";
+        let rTo = "";
+        if (dateRange === "today") {
+          rFrom = fmtDt(dStart(nowD));
+          rTo = fmtDt(dEnd(nowD));
+        } else if (dateRange === "7d") {
+          const x = dStart(nowD);
+          x.setDate(x.getDate() - 6);
+          rFrom = fmtDt(x);
+          rTo = fmtDt(dEnd(nowD));
+        } else if (dateRange === "30d") {
+          const x = dStart(nowD);
+          x.setDate(x.getDate() - 29);
+          rFrom = fmtDt(x);
+          rTo = fmtDt(dEnd(nowD));
+        } else if (dateRange === "month") {
+          rFrom = fmtDt(new Date(nowD.getFullYear(), nowD.getMonth(), 1));
+          rTo = fmtDt(dEnd(nowD));
+        } else if (dateRange === "year") {
+          rFrom = fmtDt(new Date(nowD.getFullYear(), 0, 1));
+          rTo = fmtDt(dEnd(nowD));
+        } else if (dateRange === "custom") {
+          rFrom = customFrom;
+          rTo = customTo;
+        }
+
         const params = new URLSearchParams();
         params.set("page", String(page));
         params.set("size", "50");
         if (filterStatus !== "all") params.set("status", filterStatus);
         if (filterChannel !== "all") params.set("channel", filterChannel);
         if (searchTerm.trim()) params.set("search", searchTerm.trim());
+        if (rFrom) params.set("from", rFrom);
+        if (rTo) params.set("to", rTo);
+
+        // report-summary ใช้ช่วงเวลาเดียวกัน (ให้ตัวเลขบนการ์ด/แท็บตรงช่วง)
+        const sumParams = new URLSearchParams();
+        if (rFrom) sumParams.set("from", rFrom);
+        if (rTo) sumParams.set("to", rTo);
 
         const [pageRes, sumRes] = await Promise.all([
           fetch(`${base}/api/orders/admin/page?${params}`, { headers }),
-          fetch(`${base}/api/orders/admin/report-summary`, { headers }),
+          fetch(`${base}/api/orders/admin/report-summary?${sumParams}`, {
+            headers,
+          }),
         ]);
 
         if (pageRes.ok) {
@@ -195,7 +250,7 @@ export default function AdminOrdersPage() {
         if (!silent) setLoading(false);
       }
     },
-    [page, filterStatus, filterChannel, searchTerm],
+    [page, filterStatus, filterChannel, searchTerm, dateRange, customFrom, customTo],
   );
 
   // โหลดใหม่เมื่อ page/filter/search เปลี่ยน
@@ -764,6 +819,10 @@ export default function AdminOrdersPage() {
     setFilterChannel(key);
     setPage(0);
   };
+  const onChangeDateRange = (key: typeof dateRange) => {
+    setDateRange(key);
+    setPage(0);
+  };
 
   if (loading) {
     return (
@@ -789,6 +848,65 @@ export default function AdminOrdersPage() {
               คำสั่งซื้อทั้งหมด {summaryTotalOrders} รายการ
             </p>
           </div>
+        </div>
+
+        {/* ✅ ช่วงเวลา */}
+        <div className="bg-white rounded-2xl p-4 mb-6 shadow-md">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-amber-800 flex items-center gap-1 mr-1">
+              📅 ช่วงเวลา:
+            </span>
+            {[
+              { key: "today", label: "วันนี้" },
+              { key: "7d", label: "7 วัน" },
+              { key: "30d", label: "30 วัน" },
+              { key: "month", label: "เดือนนี้" },
+              { key: "year", label: "ปีนี้" },
+              { key: "all", label: "ทั้งหมด" },
+              { key: "custom", label: "กำหนดเอง" },
+            ].map((r) => (
+              <button
+                key={r.key}
+                onClick={() => onChangeDateRange(r.key as typeof dateRange)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  dateRange === r.key
+                    ? "bg-amber-500 text-white shadow-md"
+                    : "bg-gray-50 text-gray-600 hover:bg-amber-50 hover:text-amber-700"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          {dateRange === "custom" && (
+            <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100">
+              <label className="text-sm text-gray-600 flex items-center gap-2">
+                จาก
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => {
+                    setCustomFrom(e.target.value);
+                    setPage(0);
+                  }}
+                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </label>
+              <label className="text-sm text-gray-600 flex items-center gap-2">
+                ถึง
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => {
+                    setCustomTo(e.target.value);
+                    setPage(0);
+                  }}
+                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Summary Cards */}
