@@ -95,7 +95,7 @@ export default function ProductCard({
         </div>
 
         <div className="p-4 sm:p-5 flex flex-col flex-grow">
-          <h3 className="text-lg font-bold text-amber-800 mb-2 line-clamp-2 h-14">
+          <h3 className="text-sm sm:text-lg font-bold text-amber-800 mb-2 line-clamp-2 h-14">
             {name}
           </h3>
           <div className="h-10 mb-3">
@@ -124,23 +124,22 @@ export default function ProductCard({
           )}
 
           <div className="mt-auto pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <p className="text-[11px] text-gray-400 leading-none">ราคา</p>
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <span className="text-lg sm:text-xl font-extrabold text-amber-600 leading-none whitespace-nowrap">
+                ฿{formatPrice(price)}
+              </span>
               {isFresh ? (
-                <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full whitespace-nowrap">
+                <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-1 rounded-full whitespace-nowrap">
                   🥤 ทำสด
                 </span>
               ) : (
                 <span
-                  className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${currentStock <= 5 ? "text-red-600 bg-red-50" : "text-emerald-700 bg-emerald-50"}`}
+                  className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${currentStock <= 5 ? "text-red-600 bg-red-50" : "text-emerald-700 bg-emerald-50"}`}
                 >
                   เหลือ {displayStock} ชิ้น
                 </span>
               )}
             </div>
-            <span className="block text-2xl font-extrabold text-amber-600 leading-none mb-4">
-              ฿{formatPrice(price)}
-            </span>
 
             <div className="space-y-2">
               <button
