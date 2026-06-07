@@ -72,7 +72,7 @@ export default function ReportsPage() {
   const [exportType, setExportType] = useState<"pdf" | "excel" | null>(null);
 
   // ✅ Date range filter
-  const [dateRange, setDateRange] = useState<DateRange>("all");
+  const [dateRange, setDateRange] = useState<DateRange>("30d");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 

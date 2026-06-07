@@ -23,6 +23,8 @@ export default function TopProductsPage() {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<"7d" | "30d" | "all">("all"); // ✅ เพิ่ม state
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [summary, setSummary] = useState({
     totalAllRevenue: 0,
     totalAllQty: 0,
@@ -95,6 +97,18 @@ export default function TopProductsPage() {
 
   const medals = ["🥇", "🥈", "🥉"];
   const maxQty = topProducts[0]?.totalQty || 1;
+
+  // ✅ กรองรายการตามคำค้นหา + หมวดหมู่ (คงอันดับเดิมด้วย originalIndex)
+  const filteredProducts = topProducts
+    .map((p, originalIndex) => ({ p, originalIndex }))
+    .filter(({ p }) => {
+      const matchSearch = p.productName
+        .toLowerCase()
+        .includes(search.trim().toLowerCase());
+      const matchCat =
+        categoryFilter === "all" || p.category === categoryFilter;
+      return matchSearch && matchCat;
+    });
 
   const rankColor = (i: number) => {
     if (i === 0) return "from-yellow-400 to-amber-500";
@@ -280,14 +294,47 @@ export default function TopProductsPage() {
             </button>
           </div>
 
+          {/* ✅ ค้นหา + กรองหมวดหมู่ */}
+          <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400">
+                🔍
+              </span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="ค้นหาสินค้า..."
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-amber-50/60 border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder-amber-400/70"
+              />
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-2.5 rounded-xl bg-amber-50/60 border border-amber-200 text-sm text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 sm:w-44"
+            >
+              <option value="all">ทุกหมวดหมู่</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.slug}>
+                  {c.icon} {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {topProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📭</div>
               <p className="text-gray-500">ยังไม่มีข้อมูลการขาย</p>
             </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🔍</div>
+              <p className="text-gray-500">ไม่พบสินค้าที่ตรงกับการค้นหา</p>
+            </div>
           ) : (
             <div className="divide-y divide-gray-50">
-              {topProducts.map((p, i) => {
+              {filteredProducts.map(({ p, originalIndex: i }) => {
                 const badge = getOptionBadge(p.selectedOption);
                 return (
                   <div

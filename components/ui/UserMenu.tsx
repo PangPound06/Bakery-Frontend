@@ -90,8 +90,6 @@ export default function UserMenu({ user }: UserMenuProps) {
   const adminMenuItems = [
     { href: "/admin/account", label: "ข้อมูลส่วนตัว", icon: "profile" },
     { href: "/admin/dashboard", label: "Dashboard", icon: "dashboard" },
-    { href: "/admin/reports", label: "รายงาน", icon: "orders" },
-    { href: "/admin/users", label: "จัดการผู้ใช้", icon: "users" },
   ];
 
   const menuItems = isAdmin ? adminMenuItems : userMenuItems;

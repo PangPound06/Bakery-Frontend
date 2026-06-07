@@ -60,6 +60,11 @@ export default function OrdersPage() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [dateRange, setDateRange] = useState<
+    "today" | "7d" | "30d" | "month" | "year" | "all" | "custom"
+  >("30d");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
   const selectedOrderRef = useRef<Order | null>(null);
 
   useEffect(() => {
@@ -272,12 +277,40 @@ export default function OrdersPage() {
     return `${datePart} ${timePart}`;
   };
 
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  // ✅ กรองตามช่วงเวลาที่เลือก (ดีฟอลต์ 30 วัน)
+  const inDateRange = (orderDate: Date) => {
+    if (dateRange === "all") return true;
+    const now = new Date();
+    if (dateRange === "custom") {
+      if (customFrom && orderDate < new Date(`${customFrom}T00:00:00`))
+        return false;
+      if (customTo && orderDate > new Date(`${customTo}T23:59:59`))
+        return false;
+      return true;
+    }
+    let start: Date;
+    if (dateRange === "today") {
+      start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+    } else if (dateRange === "7d") {
+      start = new Date(now);
+      start.setDate(start.getDate() - 7);
+    } else if (dateRange === "30d") {
+      start = new Date(now);
+      start.setDate(start.getDate() - 30);
+    } else if (dateRange === "month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (dateRange === "year") {
+      start = new Date(now.getFullYear(), 0, 1);
+    } else {
+      return true;
+    }
+    return orderDate >= start;
+  };
 
   const filteredOrders = orders.filter((order) => {
     const orderDate = new Date(order.createdAt);
-    if (orderDate < thirtyDaysAgo) return false;
+    if (!inDateRange(orderDate)) return false;
     if (order.orderType === "pos") return false;
 
     if (filterStatus === "all") return true;
@@ -358,6 +391,58 @@ export default function OrdersPage() {
           </div>
 
           <div className="md:col-span-3 space-y-4">
+            {/* ✅ ช่วงเวลา */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold text-amber-800 flex items-center gap-1 mr-1">
+                  📅 ช่วงเวลา:
+                </span>
+                {[
+                  { key: "today", label: "วันนี้" },
+                  { key: "7d", label: "7 วัน" },
+                  { key: "30d", label: "30 วัน" },
+                  { key: "month", label: "เดือนนี้" },
+                  { key: "year", label: "ปีนี้" },
+                  { key: "all", label: "ทั้งหมด" },
+                  { key: "custom", label: "กำหนดเอง" },
+                ].map((r) => (
+                  <button
+                    key={r.key}
+                    onClick={() => setDateRange(r.key as typeof dateRange)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      dateRange === r.key
+                        ? "bg-amber-500 text-white shadow-md"
+                        : "bg-gray-100 text-amber-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              {dateRange === "custom" && (
+                <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100">
+                  <label className="text-sm text-gray-600 flex items-center gap-2">
+                    จาก
+                    <input
+                      type="date"
+                      value={customFrom}
+                      onChange={(e) => setCustomFrom(e.target.value)}
+                      className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                  </label>
+                  <label className="text-sm text-gray-600 flex items-center gap-2">
+                    ถึง
+                    <input
+                      type="date"
+                      value={customTo}
+                      onChange={(e) => setCustomTo(e.target.value)}
+                      className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <div className="flex flex-wrap gap-2">
                 {[

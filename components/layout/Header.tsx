@@ -461,7 +461,7 @@ export default function Header() {
               )}
             </Link>
 
-            <ul className="hidden lg:flex gap-1 xl:gap-4 text-sm xl:text-base font-medium flex-1 justify-center">
+            <ul className="hidden xl:flex gap-1 xl:gap-4 text-sm xl:text-base font-medium flex-1 justify-center">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -535,18 +535,18 @@ export default function Header() {
               {user ? (
                 <>
                   {isAdmin && (
-                    <span className="hidden lg:inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                    <span className="hidden xl:inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                       Admin
                     </span>
                   )}
-                  <div className="hidden lg:block">
+                  <div className="hidden xl:block">
                     <UserMenu user={user} />
                   </div>
                 </>
               ) : (
                 <Link
                   href="/login"
-                  className="hidden lg:block bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="hidden xl:block bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
                 >
                   🔐 Login
                 </Link>
@@ -557,7 +557,7 @@ export default function Header() {
                 <Link
                   href="/cart"
                   aria-label="ตะกร้าสินค้า"
-                  className={`lg:hidden p-2 rounded-lg transition-colors hover:bg-amber-800 ${isActive("/cart") ? "bg-amber-700" : ""}`}
+                  className={`xl:hidden p-2 rounded-lg transition-colors hover:bg-amber-800 ${isActive("/cart") ? "bg-amber-700" : ""}`}
                 >
                   <svg
                     className="w-6 h-6"
@@ -578,7 +578,7 @@ export default function Header() {
               {/* ✅ Hamburger → เปิดเมนูบัญชีผู้ใช้ */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`lg:hidden p-2 rounded-lg transition-colors ${isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-800"}`}
+                className={`xl:hidden p-2 rounded-lg transition-colors ${isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-800"}`}
                 aria-label="เมนูผู้ใช้"
               >
                 {isMenuOpen ? (
@@ -650,7 +650,7 @@ export default function Header() {
 
           {/* ✅ เมนู hamburger (มือถือ) → ข้อมูล/เมนูบัญชีผู้ใช้ */}
           {isMenuOpen && (
-            <div className="lg:hidden pb-4 border-t border-amber-800">
+            <div className="xl:hidden pb-4 border-t border-amber-800">
               {!isAdmin ? (
                 user ? (
                   <div className="mt-4 bg-white rounded-xl shadow-2xl overflow-hidden">
@@ -746,7 +746,7 @@ export default function Header() {
 
       {/* ✅ Bottom Navigation (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
       {!isAdmin && (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-amber-900 border-t border-amber-800 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
+        <nav className="xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-amber-900 border-t border-amber-800 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
           <div className="flex overflow-x-auto">
             {bottomNavLinks.map((link) => (
               <Link

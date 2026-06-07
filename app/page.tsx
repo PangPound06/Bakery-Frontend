@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link"; // ใช้ Link สำหรับ Next.js
 import ProductCard from "@/components/ui/ProductCard";
+import PopularCarousel from "@/components/ui/PopularCarousel";
 
 // ━━━ TYPES ━━━
 interface Product {
@@ -211,6 +212,7 @@ export default function HomePage() {
     new Set(),
   );
   const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
 
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
@@ -249,19 +251,43 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      const [prodRes, catRes] = await Promise.all([
+      const [prodRes, catRes, topRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/active`),
+        fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=all`,
+        ),
       ]);
 
+      let fmt: Product[] = [];
       if (prodRes.ok) {
         const data = await prodRes.json();
-        const fmt = formatProductData(data);
+        fmt = formatProductData(data);
         setAllProducts(fmt);
         setDisplayProducts(getRandomProductsByCategory(fmt));
       }
       if (catRes.ok) {
         setCategoryList(await catRes.json());
+      }
+      // เมนูยอดนิยม: เอาอันดับจาก top-products มา match สินค้าจริง (เอารูป/ราคา)
+      if (topRes.ok && fmt.length > 0) {
+        const tops: { productName: string }[] = await topRes.json();
+        const seen = new Set<string>();
+        const pop: Product[] = [];
+        for (const t of tops) {
+          const m = fmt.find((p) => p.name === t.productName);
+          if (
+            m &&
+            !seen.has(m.name) &&
+            m.isAvailable &&
+            (m.stockQuantity > 0 || m.stockQuantity === 9999)
+          ) {
+            seen.add(m.name);
+            pop.push(m);
+          }
+          if (pop.length >= 10) break;
+        }
+        setPopularProducts(pop);
       }
     } catch (e) {
       console.error("Fetch error:", e);
@@ -461,6 +487,32 @@ export default function HomePage() {
           <BentoGrid categories={categoryList} />
         </div>
       </section>
+
+      {/* POPULAR (เมนูยอดนิยม) */}
+      {popularProducts.length > 0 && (
+        <section
+          id="popular"
+          ref={setRef("popular")}
+          className="px-4 sm:px-6 lg:px-12 pb-4 sm:pb-10"
+        >
+          <div
+            className={`max-w-7xl mx-auto transition-all duration-[1000ms] ${visible("popular") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          >
+            <div className="mb-8 sm:mb-10">
+              <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
+                Trending
+              </p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-stone-800">
+                เมนู<span className="font-semibold">ยอดนิยม</span>
+              </h2>
+            </div>
+            <PopularCarousel
+              items={popularProducts}
+              onStockUpdate={handleStockUpdate}
+            />
+          </div>
+        </section>
+      )}
 
       {/* PRODUCT LIST */}
       <section
