@@ -48,7 +48,7 @@ function BentoGrid({ categories }: { categories: Category[] }) {
       {/* หมวดแรก — เต็มความกว้าง ใหญ่สุด */}
       <Link
         href={`/${first.slug}`}
-        className="group relative block overflow-hidden rounded-none h-[440px] sm:h-[600px] lg:h-[720px]"
+        className="group relative block overflow-hidden rounded-3xl h-[440px] sm:h-[600px] lg:h-[720px]"
       >
         <img
           src={HERO_IMAGES[first.slug] || FALLBACK}
@@ -87,7 +87,7 @@ function BentoGrid({ categories }: { categories: Category[] }) {
             <Link
               key={cat.id}
               href={`/${cat.slug}`}
-              className="group relative overflow-hidden rounded-none h-[320px] sm:h-[460px] lg:h-[560px]"
+              className="group relative overflow-hidden rounded-3xl h-[320px] sm:h-[460px] lg:h-[560px]"
             >
               <img
                 src={HERO_IMAGES[cat.slug] || FALLBACK}
@@ -375,11 +375,11 @@ export default function HomePage() {
       </section>
 
       {/* BENTO GRID */}
-      <section id="bento" ref={setRef("bento")} className="py-16 sm:py-24">
+      <section id="bento" ref={setRef("bento")} className="px-4 sm:px-6 lg:px-12 py-16 sm:py-24">
         <div
-          className={`transition-all duration-[1000ms] delay-100 ${visible("bento") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          className={`max-w-7xl mx-auto transition-all duration-[1000ms] delay-100 ${visible("bento") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
         >
-          <div className="mb-10 sm:mb-14 px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 sm:mb-14">
             <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
               Browse
             </p>
