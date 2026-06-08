@@ -41,44 +41,86 @@ const HERO_IMAGES: Record<string, string> = {
 function BentoGrid({ categories }: { categories: Category[] }) {
   const FALLBACK =
     "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80";
+  if (categories.length === 0) return null;
+  const [first, ...rest] = categories;
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-      {categories.map((cat) => (
-        <Link
-          key={cat.id}
-          href={`/${cat.slug}`}
-          className="group relative overflow-hidden rounded-3xl h-[280px] sm:h-[360px] lg:h-[420px]"
-        >
-          <img
-            src={HERO_IMAGES[cat.slug] || FALLBACK}
-            alt={cat.name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-          <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
-            <h3 className="font-semibold text-white text-3xl sm:text-4xl">
-              {cat.icon} {cat.name}
-            </h3>
-            <div className="mt-2 flex items-center gap-2 text-white/60 group-hover:text-white/90 transition-colors duration-500">
-              <span className="text-sm">ดูทั้งหมด</span>
-              <svg
-                className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
-            </div>
+    <div className="space-y-4 sm:space-y-5">
+      {/* หมวดแรก — เต็มความกว้าง ใหญ่สุด */}
+      <Link
+        href={`/${first.slug}`}
+        className="group relative block overflow-hidden rounded-3xl h-[360px] sm:h-[480px] lg:h-[580px]"
+      >
+        <img
+          src={HERO_IMAGES[first.slug] || FALLBACK}
+          alt={first.name}
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+        <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
+          <h3 className="font-semibold text-white text-4xl sm:text-6xl">
+            {first.icon} {first.name}
+          </h3>
+          <div className="mt-3 flex items-center gap-2 text-white/70 group-hover:text-white/90 transition-colors duration-500">
+            <span className="text-sm sm:text-base">ดูทั้งหมด</span>
+            <svg
+              className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
           </div>
-        </Link>
-      ))}
+        </div>
+      </Link>
+
+      {/* หมวดที่เหลือ — 2 คอลัมน์ */}
+      {rest.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          {rest.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/${cat.slug}`}
+              className="group relative overflow-hidden rounded-3xl h-[280px] sm:h-[360px] lg:h-[420px]"
+            >
+              <img
+                src={HERO_IMAGES[cat.slug] || FALLBACK}
+                alt={cat.name}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+              <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                <h3 className="font-semibold text-white text-3xl sm:text-4xl">
+                  {cat.icon} {cat.name}
+                </h3>
+                <div className="mt-2 flex items-center gap-2 text-white/60 group-hover:text-white/90 transition-colors duration-500">
+                  <span className="text-sm">ดูทั้งหมด</span>
+                  <svg
+                    className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -228,6 +270,7 @@ export default function HomePage() {
 
   const visible = (id: string) => visibleSections.has(id);
 
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center">
@@ -336,10 +379,10 @@ export default function HomePage() {
       <section
         id="bento"
         ref={setRef("bento")}
-        className="px-4 sm:px-6 lg:px-12 py-16 sm:py-24"
+        className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
       >
         <div
-          className={`max-w-7xl mx-auto transition-all duration-[1000ms] delay-100 ${visible("bento") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          className={`transition-all duration-[1000ms] delay-100 ${visible("bento") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
         >
           <div className="mb-10 sm:mb-14">
             <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
