@@ -271,7 +271,8 @@ export default function HomePage() {
       }
       // เมนูยอดนิยม: เอาอันดับจาก top-products มา match สินค้าจริง (เอารูป/ราคา)
       if (topRes.ok && fmt.length > 0) {
-        const tops: { productName: string }[] = await topRes.json();
+        const topData = await topRes.json();
+        const tops: { productName: string }[] = topData.topProducts || [];
         const seen = new Set<string>();
         const pop: Product[] = [];
         for (const t of tops) {
