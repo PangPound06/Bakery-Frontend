@@ -39,151 +39,31 @@ const HERO_IMAGES: Record<string, string> = {
 
 // ━━━ COMPONENTS ━━━
 function BentoGrid({ categories }: { categories: Category[] }) {
-  // คำนวณ: ตัวแรกใช้ 4 ช่อง, ที่เหลือใช้ 1 ช่อง
-  // แถวละ 4 ช่อง → หาว่าแถวสุดท้ายมีกี่ช่องว่าง แล้วกระจายให้ตัวท้ายๆ
-  const rest = categories.slice(1);
-  const restCount = rest.length;
-  // ช่องที่ใช้ทั้งหมด: Bakery (4) + ที่เหลือ
-  // แถวที่ 1-2: Bakery กิน 4 ช่อง (col-span-2 row-span-2) + ข้างขวา 2 ช่อง x 2 แถว = 4 ช่อง
-  // ดังนั้นแถว 1-2 รับได้ 4 ตัว (ไม่รวม Bakery)
-  // แถวถัดๆ ไป: แถวละ 4 ช่อง
-
-  const rightSide = Math.min(restCount, 4); // ตัวที่อยู่ข้างขวา Bakery (แถว 1-2)
-  const bottomItems = rest.slice(rightSide); // ตัวที่อยู่แถวล่าง
-
-  // คำนวณ span สำหรับแถวล่าง: กระจายให้เต็ม 4 ช่อง
-  const getBottomSpans = (items: Category[]): number[] => {
-    if (items.length === 0) return [];
-    const count = items.length;
-    // หาว่าต้องกี่แถว
-    const rows = Math.ceil(count / 4);
-    const totalSlots = rows * 4;
-    const extraSlots = totalSlots - count;
-
-    // กระจาย extra ให้ตัวท้ายๆ ของแต่ละแถว
-    const spans = new Array(count).fill(1);
-
-    // แจก extra slots ให้ items ตัวสุดท้ายของแต่ละแถว
-    let distributed = 0;
-    for (let r = rows - 1; r >= 0 && distributed < extraSlots; r--) {
-      // หา index ของตัวสุดท้ายในแถวนี้
-      const rowEnd = Math.min((r + 1) * 4, count) - 1;
-      const canAdd = Math.min(3, extraSlots - distributed); // col-span สูงสุด 4
-      spans[rowEnd] += canAdd;
-      distributed += canAdd;
-    }
-
-    return spans;
-  };
-
-  const bottomSpans = getBottomSpans(bottomItems);
-
+  const FALLBACK =
+    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80";
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-      {/* Bakery — ตัวแรก ใหญ่สุด */}
-      {categories.length > 0 && (
-        <Link
-          key={categories[0].id}
-          href={`/${categories[0].slug}`}
-          className="group relative overflow-hidden rounded-2xl col-span-2 md:row-span-2 h-[200px] sm:h-[280px] md:h-[420px]"
-        >
-          <img
-            src={HERO_IMAGES[categories[0].slug] || HERO_IMAGES.bakery}
-            alt={categories[0].name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-          <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-            <h3 className="font-semibold text-white text-2xl sm:text-3xl">
-              {categories[0].icon} {categories[0].name}
-            </h3>
-            <div className="mt-1.5 flex items-center gap-2 text-white/50 group-hover:text-white/80 transition-colors duration-500">
-              <span className="text-xs">ดูทั้งหมด</span>
-              <svg
-                className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
-            </div>
-          </div>
-        </Link>
-      )}
-
-      {/* ข้างขวา Bakery (แถว 1-2) — สูงสุด 4 ตัว */}
-      {rest.slice(0, rightSide).map((cat) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+      {categories.map((cat) => (
         <Link
           key={cat.id}
           href={`/${cat.slug}`}
-          className="group relative overflow-hidden rounded-2xl h-[155px] sm:h-[202px]"
+          className="group relative overflow-hidden rounded-3xl h-[280px] sm:h-[360px] lg:h-[420px]"
         >
           <img
-            src={
-              HERO_IMAGES[cat.slug] ||
-              "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80"
-            }
+            src={HERO_IMAGES[cat.slug] || FALLBACK}
             alt={cat.name}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
           <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-            <h3 className="font-semibold text-white text-lg sm:text-xl">
+          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+            <h3 className="font-semibold text-white text-3xl sm:text-4xl">
               {cat.icon} {cat.name}
             </h3>
-            <div className="mt-1.5 flex items-center gap-2 text-white/50 group-hover:text-white/80 transition-colors duration-500">
-              <span className="text-xs">ดูทั้งหมด</span>
+            <div className="mt-2 flex items-center gap-2 text-white/60 group-hover:text-white/90 transition-colors duration-500">
+              <span className="text-sm">ดูทั้งหมด</span>
               <svg
-                className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
-            </div>
-          </div>
-        </Link>
-      ))}
-
-      {/* แถวล่าง — กระจายเต็ม 4 ช่อง */}
-      {bottomItems.map((cat, i) => (
-        <Link
-          key={cat.id}
-          href={`/${cat.slug}`}
-          className={`group relative overflow-hidden rounded-2xl h-[160px] sm:h-[200px] ${bottomSpans[i] >= 3 ? "md:col-span-3" : bottomSpans[i] === 2 ? "md:col-span-2" : ""}`}
-        >
-          <img
-            src={
-              HERO_IMAGES[cat.slug] ||
-              "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80"
-            }
-            alt={cat.name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-          <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-            <h3 className="font-semibold text-white text-lg sm:text-xl">
-              {cat.icon} {cat.name}
-            </h3>
-            <div className="mt-1.5 flex items-center gap-2 text-white/50 group-hover:text-white/80 transition-colors duration-500">
-              <span className="text-xs">ดูทั้งหมด</span>
-              <svg
-                className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-500"
+                className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -204,7 +84,6 @@ function BentoGrid({ categories }: { categories: Category[] }) {
 }
 
 export default function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]); // สำหรับหน้าแรกสุ่ม
   const [loading, setLoading] = useState(true);
@@ -348,21 +227,6 @@ export default function HomePage() {
   };
 
   const visible = (id: string) => visibleSections.has(id);
-
-  // ━━━ FILTERING ━━━
-  // ถ้าเลือก "ทั้งหมด" ให้ใช้ displayProducts (ที่สุ่มมา)
-  // แต่ถ้าเลือกหมวดหมู่เจาะจง ให้กรองจาก allProducts เพื่อให้เห็นครบทุกชิ้น
-  const filteredProducts =
-    selectedCategory === "all"
-      ? displayProducts
-      : allProducts.filter(
-          (p) => p.category?.toLowerCase() === selectedCategory,
-        );
-
-  const categoriesTab = [
-    { id: "all", name: "ทั้งหมด" },
-    ...categoryList.map((c) => ({ id: c.slug, name: c.name })),
-  ];
 
   if (loading) {
     return (
@@ -514,55 +378,6 @@ export default function HomePage() {
           </div>
         </section>
       )}
-
-      {/* PRODUCT LIST */}
-      <section
-        id="products"
-        ref={setRef("products")}
-        className="px-4 sm:px-6 lg:px-12 pb-16 sm:pb-24"
-      >
-        <div
-          className={`max-w-7xl mx-auto transition-all duration-[1000ms] delay-200 ${visible("products") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-5 mb-8 sm:mb-12">
-            <div>
-              <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
-                Curated
-              </p>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-stone-800">
-                แนะนำ<span className="font-semibold">สำหรับคุณ</span>
-              </h2>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {categoriesTab.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
-                    selectedCategory === cat.id
-                      ? "bg-amber-900 text-amber-50"
-                      : "bg-white text-stone-500 hover:text-stone-700 border border-stone-200"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-            {filteredProducts.map((item, i) => (
-              <div
-                key={item.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <ProductCard {...item} onStockUpdate={handleStockUpdate} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* STORY SECTION */}
       <section
