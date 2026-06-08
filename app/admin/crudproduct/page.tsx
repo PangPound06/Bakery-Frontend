@@ -58,7 +58,7 @@ const MULTIPLIER_OPTIONS: Record<string, { value: number; label: string }[]> = {
     { value: 8, label: "8 ชิ้น (1 ปอนด์)" },
     { value: 16, label: "16 ชิ้น (2 ปอนด์)" },
   ],
-  drink: [{ value: 1, label: "1 แก้ว (ร้อน / เย็น / ปั่น)" }],
+  drink: [{ value: 1, label: "1 แก้ว (ปกติ / ใหญ่)" }],
   bakery: [{ value: 1, label: "1 ชิ้น" }],
   food: [{ value: 1, label: "1 จาน/ชาม" }],
 };
@@ -1446,7 +1446,7 @@ export default function CrudProductPage() {
                         }
                         placeholder={
                           formData.category === "drink"
-                            ? "เช่น ร้อน, เย็น, ปั่น"
+                            ? "เช่น ปกติ, ใหญ่"
                             : formData.category === "cake"
                               ? "เช่น แบบชิ้น, 1 ปอนด์ (8 ชิ้น), 2 ปอนด์ (16 ชิ้น)"
                               : formData.category === "food"

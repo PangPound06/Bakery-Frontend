@@ -129,6 +129,10 @@ export default function TopProductsPage() {
       return { bg: "bg-blue-100 text-blue-700", label: "🧊 " + opt };
     if (opt.includes("ปั่น"))
       return { bg: "bg-purple-100 text-purple-700", label: "🌀 " + opt };
+    if (opt.includes("ปกติ"))
+      return { bg: "bg-sky-100 text-sky-700", label: "🥤 " + opt };
+    if (opt.includes("ใหญ่"))
+      return { bg: "bg-indigo-100 text-indigo-700", label: "🧋 " + opt };
     return { bg: "bg-gray-100 text-gray-600", label: opt };
   };
 
