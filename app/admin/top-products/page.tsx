@@ -110,6 +110,12 @@ export default function TopProductsPage() {
       return matchSearch && matchCat;
     });
 
+  // แสดงแค่ 10 อันดับแรกตอนยังไม่ค้นหา; ถ้ามีคำค้นหา แสดงทั้งหมดที่ตรง
+  const isSearching = search.trim() !== "";
+  const visibleProducts = isSearching
+    ? filteredProducts
+    : filteredProducts.slice(0, 10);
+
   const rankColor = (i: number) => {
     if (i === 0) return "from-yellow-400 to-amber-500";
     if (i === 1) return "from-gray-300 to-gray-400";
@@ -337,71 +343,79 @@ export default function TopProductsPage() {
               <p className="text-gray-500">ไม่พบสินค้าที่ตรงกับการค้นหา</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
-              {filteredProducts.map(({ p, originalIndex: i }) => {
-                const badge = getOptionBadge(p.selectedOption);
-                return (
-                  <div
-                    key={`${p.productName}-${p.selectedOption}-${i}`}
-                    className={`flex items-center gap-4 px-6 py-4 hover:bg-amber-50/50 transition-colors ${i < 3 ? "bg-amber-50/30" : ""}`}
-                  >
-                    <div className="w-10 flex-shrink-0 text-center">
-                      {i < 3 ? (
-                        <span className="text-2xl">{medals[i]}</span>
-                      ) : (
-                        <span className="text-lg font-bold text-gray-400">
-                          {i + 1}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1 gap-2">
-                        <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                          <p className="font-semibold text-gray-800 truncate">
-                            {p.productName}
-                          </p>
-                          {p.category && (
-                            <span className="inline-block px-2 py-0.5 text-[10px] rounded-full font-medium bg-amber-100 text-amber-700 flex-shrink-0">
-                              {getCategoryDisplay(p.category)}
-                            </span>
-                          )}
-                          {badge && (
-                            <span
-                              className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium flex-shrink-0 ${badge.bg}`}
-                            >
-                              {badge.label}
-                            </span>
-                          )}
+            <>
+              <div className="divide-y divide-gray-50">
+                {visibleProducts.map(({ p, originalIndex: i }) => {
+                  const badge = getOptionBadge(p.selectedOption);
+                  return (
+                    <div
+                      key={`${p.productName}-${p.selectedOption}-${i}`}
+                      className={`flex items-center gap-4 px-6 py-4 hover:bg-amber-50/50 transition-colors ${i < 3 ? "bg-amber-50/30" : ""}`}
+                    >
+                      <div className="w-10 flex-shrink-0 text-center">
+                        {i < 3 ? (
+                          <span className="text-2xl">{medals[i]}</span>
+                        ) : (
+                          <span className="text-lg font-bold text-gray-400">
+                            {i + 1}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1 gap-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                            <p className="font-semibold text-gray-800 truncate">
+                              {p.productName}
+                            </p>
+                            {p.category && (
+                              <span className="inline-block px-2 py-0.5 text-[10px] rounded-full font-medium bg-amber-100 text-amber-700 flex-shrink-0">
+                                {getCategoryDisplay(p.category)}
+                              </span>
+                            )}
+                            {badge && (
+                              <span
+                                className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium flex-shrink-0 ${badge.bg}`}
+                              >
+                                {badge.label}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-sm font-bold text-amber-600 flex-shrink-0">
+                            {p.totalQty} ออเดอร์
+                          </span>
                         </div>
-                        <span className="text-sm font-bold text-amber-600 flex-shrink-0">
-                          {p.totalQty} ออเดอร์
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full bg-gradient-to-r ${rankColor(i)} transition-all duration-700`}
-                          style={{ width: `${(p.totalQty / maxQty) * 100}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center gap-4 mt-1">
-                        <p className="text-xs text-gray-400">
-                          รายได้รวม:{" "}
-                          <span className="text-green-600 font-medium">
-                            ฿{formatPrice(p.totalRevenue)}
-                          </span>
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          จำนวนออเดอร์:{" "}
-                          <span className="text-blue-600 font-medium">
-                            {p.orderCount} ครั้ง
-                          </span>
-                        </p>
+                        <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full bg-gradient-to-r ${rankColor(i)} transition-all duration-700`}
+                            style={{ width: `${(p.totalQty / maxQty) * 100}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center gap-4 mt-1">
+                          <p className="text-xs text-gray-400">
+                            รายได้รวม:{" "}
+                            <span className="text-green-600 font-medium">
+                              ฿{formatPrice(p.totalRevenue)}
+                            </span>
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            จำนวนออเดอร์:{" "}
+                            <span className="text-blue-600 font-medium">
+                              {p.orderCount} ครั้ง
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+              {!isSearching && filteredProducts.length > 10 && (
+                <p className="text-center text-xs text-gray-400 py-4 border-t border-gray-50">
+                  แสดง 10 อันดับแรก · พิมพ์ค้นหาเพื่อดูอันดับอื่น (ทั้งหมด{" "}
+                  {filteredProducts.length} รายการ)
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>
