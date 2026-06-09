@@ -54,6 +54,7 @@ export default function Header() {
   const [showResults, setShowResults] = useState(false);
   const [allProducts, setAllProducts] = useState<SearchResult[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
 
   // ✅ Build nav links dynamically (เดสก์ท็อป: Home + หมวดหมู่ + ตะกร้า)
   const userNavLinks = [
@@ -244,7 +245,10 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      const t = e.target as Node;
+      const inDesktop = searchRef.current?.contains(t);
+      const inMobile = mobileSearchRef.current?.contains(t);
+      if (!inDesktop && !inMobile) {
         setShowResults(false);
         setShowSearch(false);
       }
@@ -615,7 +619,7 @@ export default function Header() {
           </div>
 
           {showSearch && !isAdmin && (
-            <div className="sm:hidden pb-3">
+            <div ref={mobileSearchRef} className="sm:hidden pb-3">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
@@ -624,7 +628,7 @@ export default function Header() {
                   onFocus={() => searchQuery.trim() && setShowResults(true)}
                   placeholder="ค้นหาสินค้า, หน้า..."
                   autoFocus
-                  className="w-full px-4 py-2.5 pl-9 rounded-lg bg-amber-800/60 border border-amber-700/50 text-white placeholder-amber-300/60 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-4 py-2.5 pl-9 rounded-lg bg-amber-800/60 border border-amber-700/50 text-white placeholder-amber-300/60 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
                 />
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400/70"
