@@ -1,5 +1,7 @@
 "use client";
 
+import { useStoreStatus } from "@/lib/useStoreStatus";
+
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -161,6 +163,8 @@ export default function ProductDetail({
     const opts = parseOptions(product.options);
     if (opts.length === 1) setSelectedOption(opts[0]);
   }, [product]);
+
+  const { onlineOrdering } = useStoreStatus();
 
   const handleAddToCart = async () => {
     if (!product || adding || added) return;
@@ -572,6 +576,7 @@ export default function ProductDetail({
                 <button
                   onClick={handleAddToCart}
                   disabled={
+                    !onlineOrdering ||
                     adding ||
                     added ||
                     isOutOfStock ||
@@ -580,14 +585,17 @@ export default function ProductDetail({
                   className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
                     added
                       ? "bg-green-500 text-white shadow-lg"
-                      : adding ||
+                      : !onlineOrdering ||
+                          adding ||
                           isOutOfStock ||
                           (hasOptions && !isCake && !selectedOption)
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl"
                   }`}
                 >
-                  {adding ? (
+                  {!onlineOrdering ? (
+                    <span>ปิดรับออเดอร์ออนไลน์ชั่วคราว</span>
+                  ) : adding ? (
                     <>
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                       <span>กำลังเพิ่ม...</span>

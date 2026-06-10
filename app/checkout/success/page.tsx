@@ -63,7 +63,7 @@ export default function CheckoutSuccessPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">✓</span>
-                <span>เราจะเตรียมสินค้าและจัดส่งภายใน 1-2 วันทำการ</span>
+                <span>เราจะเตรียมสินค้าและจัดส่งให้เร็วที่สุด</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">✓</span>

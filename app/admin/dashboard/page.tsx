@@ -1,5 +1,7 @@
 "use client";
 
+import StoreOrderingToggle from "@/components/admin/StoreOrderingToggle";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -390,6 +392,11 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* เปิด/ปิดรับออเดอร์ออนไลน์ */}
+      <div className="mb-6">
+        <StoreOrderingToggle />
       </div>
 
       {/* KPI Cards */}

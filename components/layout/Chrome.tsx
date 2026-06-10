@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import DineInBar from "@/components/layout/DineInBar";
+import StoreClosedBanner from "@/components/ui/StoreClosedBanner";
 
 // หน้าที่ไม่ต้องแสดง Header / Footer / DineInBar
 const HIDE_CHROME_ON = ["/order-mode"];
@@ -21,6 +22,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
+      <StoreClosedBanner />
       {children}
       <DineInBar />
       <Footer />
