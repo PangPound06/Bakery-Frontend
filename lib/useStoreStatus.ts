@@ -8,6 +8,10 @@ export interface StoreStatus {
   message: string;
   reopenAt: string;
   loading: boolean;
+  /** อยู่โหมดทานในร้าน (orderMode === "dinein") */
+  isDineIn: boolean;
+  /** ควรบล็อกการสั่งไหม = ปิดรับออนไลน์ และ ไม่ได้อยู่โหมด dine-in */
+  blockOnline: boolean;
 }
 
 interface StatusResponse {
@@ -17,35 +21,36 @@ interface StatusResponse {
 }
 
 /**
- * อ่านสถานะเปิด/ปิดรับออเดอร์ออนไลน์ (public endpoint)
- * ถ้าเช็คไม่ได้ (network พลาด) จะถือว่า "เปิด" ไว้ก่อน เพื่อไม่บล็อกลูกค้าเกินจำเป็น
- * — ด่านจริงอยู่ที่ backend (POST /api/orders จะตอบ 403 ถ้าปิด)
+ * อ่านสถานะเปิด/ปิดรับออเดอร์ออนไลน์ + รู้ว่ากำลังทานในร้านหรือไม่
+ * การปิดรับ "ออนไลน์" จะไม่กระทบลูกค้าที่นั่งทานในร้าน (dine-in)
+ * ถ้าเช็คสถานะไม่ได้ (network พลาด) ถือว่า "เปิด" ไว้ก่อน — ด่านจริงอยู่ที่ backend
  */
 export function useStoreStatus(): StoreStatus {
-  const [status, setStatus] = useState<StoreStatus>({
+  const [data, setData] = useState({
     onlineOrdering: true,
     message: "",
     reopenAt: "",
     loading: true,
   });
+  const [isDineIn, setIsDineIn] = useState(false);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const data = await api.get<StatusResponse>("/api/store/status", {
+        const d = await api.get<StatusResponse>("/api/store/status", {
           noAuth: true,
         });
         if (alive) {
-          setStatus({
-            onlineOrdering: data.onlineOrdering !== false,
-            message: data.message || "",
-            reopenAt: data.reopenAt || "",
+          setData({
+            onlineOrdering: d.onlineOrdering !== false,
+            message: d.message || "",
+            reopenAt: d.reopenAt || "",
             loading: false,
           });
         }
       } catch {
-        if (alive) setStatus((s) => ({ ...s, loading: false }));
+        if (alive) setData((s) => ({ ...s, loading: false }));
       }
     })();
     return () => {
@@ -53,5 +58,21 @@ export function useStoreStatus(): StoreStatus {
     };
   }, []);
 
-  return status;
+  useEffect(() => {
+    const check = () =>
+      setIsDineIn(localStorage.getItem("orderMode") === "dinein");
+    check();
+    window.addEventListener("storage", check);
+    window.addEventListener("orderModeChanged", check);
+    return () => {
+      window.removeEventListener("storage", check);
+      window.removeEventListener("orderModeChanged", check);
+    };
+  }, []);
+
+  return {
+    ...data,
+    isDineIn,
+    blockOnline: !data.onlineOrdering && !isDineIn,
+  };
 }

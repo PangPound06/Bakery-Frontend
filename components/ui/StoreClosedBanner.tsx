@@ -9,9 +9,9 @@ import { useStoreStatus } from "@/lib/useStoreStatus";
  */
 export default function StoreClosedBanner() {
   const pathname = usePathname();
-  const { onlineOrdering, message, reopenAt, loading } = useStoreStatus();
+  const { blockOnline, message, reopenAt, loading } = useStoreStatus();
 
-  if (loading || onlineOrdering) return null;
+  if (loading || !blockOnline) return null;
   if (pathname?.startsWith("/admin")) return null;
 
   return (

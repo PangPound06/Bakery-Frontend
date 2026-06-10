@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const [processing, setProcessing] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [error, setError] = useState("");
-  const { onlineOrdering: storeOpen } = useStoreStatus();
+  const { blockOnline } = useStoreStatus();
 
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState("");
@@ -1160,7 +1160,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {!storeOpen && (
+              {blockOnline && (
                 <p className="mt-4 text-sm text-red-600 text-center">
                   ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว ไม่สามารถสั่งซื้อได้
                 </p>
@@ -1169,14 +1169,14 @@ export default function CheckoutPage() {
               <button
                 onClick={handlePayment}
                 disabled={
-                  !storeOpen ||
+                  blockOnline ||
                   processing ||
                   uploadingSlip ||
                   slipValidating ||
                   (paymentMethod === "qr" && (!slipFile || !slipValid))
                 }
                 className={`w-full mt-6 py-4 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
-                  !storeOpen ||
+                  blockOnline ||
                   processing ||
                   uploadingSlip ||
                   slipValidating ||

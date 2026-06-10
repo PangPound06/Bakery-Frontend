@@ -164,7 +164,7 @@ export default function ProductDetail({
     if (opts.length === 1) setSelectedOption(opts[0]);
   }, [product]);
 
-  const { onlineOrdering } = useStoreStatus();
+  const { blockOnline } = useStoreStatus();
 
   const handleAddToCart = async () => {
     if (!product || adding || added) return;
@@ -576,7 +576,7 @@ export default function ProductDetail({
                 <button
                   onClick={handleAddToCart}
                   disabled={
-                    !onlineOrdering ||
+                    blockOnline ||
                     adding ||
                     added ||
                     isOutOfStock ||
@@ -585,7 +585,7 @@ export default function ProductDetail({
                   className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
                     added
                       ? "bg-green-500 text-white shadow-lg"
-                      : !onlineOrdering ||
+                      : blockOnline ||
                           adding ||
                           isOutOfStock ||
                           (hasOptions && !isCake && !selectedOption)
@@ -593,7 +593,7 @@ export default function ProductDetail({
                         : "bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl"
                   }`}
                 >
-                  {!onlineOrdering ? (
+                  {blockOnline ? (
                     <span>ปิดรับออเดอร์ออนไลน์ชั่วคราว</span>
                   ) : adding ? (
                     <>
