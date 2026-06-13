@@ -474,7 +474,9 @@ export default function Header() {
                   >
                     <span className="text-sm xl:text-base">{link.icon}</span>
                     <span className="hidden xl:inline">{link.label}</span>
-                    <span className="xl:hidden">{link.label.split(" ")[0]}</span>
+                    <span className="xl:hidden">
+                      {link.label.split(" ")[0]}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -489,7 +491,9 @@ export default function Header() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onFocus={() => searchQuery.trim() && setShowResults(true)}
+                        onFocus={() =>
+                          searchQuery.trim() && setShowResults(true)
+                        }
                         placeholder="ค้นหา"
                         className="w-44 lg:w-56 px-4 py-2 pl-9 rounded-lg bg-amber-800/60 border border-amber-700/50 text-white placeholder-amber-300/60 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-amber-800 transition-all"
                       />
@@ -534,6 +538,33 @@ export default function Header() {
                   )}
                 </div>
               )}
+
+              {/* ที่ตั้งร้าน — เดสก์ท็อป (แถบเดียวกับ UserMenu) */}
+              <Link
+                href="/location"
+                className={`hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-amber-800 ${isActive("/location") ? "bg-amber-700" : ""}`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <span>ที่ตั้งร้าน</span>
+              </Link>
 
               {/* บัญชีผู้ใช้ — เดสก์ท็อปเท่านั้น (มือถือใช้ hamburger) */}
               {user ? (
@@ -743,6 +774,16 @@ export default function Header() {
                   )}
                 </ul>
               )}
+
+              {/* ที่ตั้งร้าน — มือถือ (โชว์ทุกคนในเมนู hamburger) */}
+              <Link
+                href="/location"
+                onClick={() => setIsMenuOpen(false)}
+                className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold transition-colors ${isActive("/location") ? "bg-amber-700 text-white" : "bg-amber-800/60 hover:bg-amber-800 text-amber-50"}`}
+              >
+                <span>📍</span>
+                <span>ที่ตั้งร้าน</span>
+              </Link>
             </div>
           )}
         </div>

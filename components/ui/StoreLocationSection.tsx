@@ -1,22 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import type { Branch } from "./StoreLocationMap";
 
-/* ─────────────────────────────────────────────────────────────
- *  แก้ตรงนี้ให้เป็นข้อมูลร้านจริง
- *  วิธีหาพิกัด lat/lng: เปิด Google Maps → คลิกขวาที่ตำแหน่งร้าน
- *  → ตัวเลขชุดแรกคือ lat ชุดที่สองคือ lng (เช่น 13.7460, 100.5340)
- * ───────────────────────────────────────────────────────────── */
-const STORE = {
-  name: "Pound Bakery",
-  lat: 13.7563, // ← พิกัดร้าน (ตัวอย่าง: กลางกรุงเทพฯ)
-  lng: 100.5018, // ← พิกัดร้าน
-  address: "123 ถนนตัวอย่าง แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
-  phone: "02-123-4567",
-  hours: "ทุกวัน 08:00 – 20:00 น.",
-};
-
-// แผนที่ต้องโหลดฝั่ง client เท่านั้น (Leaflet ใช้ window) → ปิด SSR
 const StoreLocationMap = dynamic(() => import("./StoreLocationMap"), {
   ssr: false,
   loading: () => (
@@ -27,8 +15,25 @@ const StoreLocationMap = dynamic(() => import("./StoreLocationMap"), {
 });
 
 export default function StoreLocationSection() {
-  const directionUrl = `https://www.google.com/maps/dir/?api=1&destination=${STORE.lat},${STORE.lng}`;
-  const viewUrl = `https://www.google.com/maps/search/?api=1&query=${STORE.lat},${STORE.lng}`;
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [focus, setFocus] = useState<Branch | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const d = await api.get<{ branches: Branch[] }>(
+          "/api/store/branches",
+          { noAuth: true },
+        );
+        setBranches(d.branches || []);
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12">
@@ -38,70 +43,76 @@ export default function StoreLocationSection() {
         </p>
         <h2 className="text-2xl sm:text-3xl font-bold text-amber-900 mt-1">
           ที่ตั้งร้าน
+          {branches.length > 1 ? ` (${branches.length} สาขา)` : ""}
         </h2>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* แผนที่ */}
-        <div className="lg:col-span-2 h-[320px] sm:h-[420px] rounded-2xl overflow-hidden shadow-sm border border-amber-100">
-          <StoreLocationMap lat={STORE.lat} lng={STORE.lng} name={STORE.name} />
+      {loading ? (
+        <div className="h-[420px] rounded-2xl bg-amber-50 flex items-center justify-center text-amber-700">
+          กำลังโหลด...
         </div>
+      ) : branches.length === 0 ? (
+        <div className="h-[200px] rounded-2xl bg-amber-50 flex items-center justify-center text-gray-500">
+          ยังไม่มีข้อมูลสาขา
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* แผนที่ */}
+          <div className="lg:col-span-2 h-[320px] sm:h-[460px] rounded-2xl overflow-hidden shadow-sm border border-amber-100">
+            <StoreLocationMap branches={branches} focus={focus} />
+          </div>
 
-        {/* รายละเอียดที่ตั้ง */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 flex flex-col">
-          <h3 className="text-xl font-bold text-amber-900 flex items-center gap-2">
-            <span>🧁</span> {STORE.name}
-          </h3>
-
-          <div className="mt-5 space-y-4 text-sm text-gray-700">
-            <div className="flex gap-3">
-              <span className="text-amber-500 mt-0.5">📍</span>
-              <div>
-                <p className="font-semibold text-gray-800">ที่อยู่</p>
-                <p className="text-gray-600">{STORE.address}</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-amber-500 mt-0.5">🕒</span>
-              <div>
-                <p className="font-semibold text-gray-800">เวลาเปิด-ปิด</p>
-                <p className="text-gray-600">{STORE.hours}</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-amber-500 mt-0.5">📞</span>
-              <div>
-                <p className="font-semibold text-gray-800">โทร</p>
-                <a
-                  href={`tel:${STORE.phone}`}
-                  className="text-amber-600 hover:underline"
+          {/* รายการสาขา */}
+          <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+            {branches.map((b) => {
+              const dir = `https://www.google.com/maps/dir/?api=1&destination=${b.latitude},${b.longitude}`;
+              const isFocus = focus?.id === b.id;
+              return (
+                <div
+                  key={b.id}
+                  onClick={() => setFocus(b)}
+                  className={`cursor-pointer bg-white rounded-2xl p-4 shadow-sm border transition-colors ${
+                    isFocus
+                      ? "border-amber-400 ring-2 ring-amber-200"
+                      : "border-amber-100 hover:border-amber-300"
+                  }`}
                 >
-                  {STORE.phone}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-6 space-y-2">
-            <a
-              href={directionUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
-            >
-              นำทางไปร้าน
-            </a>
-            <a
-              href={viewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center py-2.5 rounded-xl border border-amber-200 text-amber-700 hover:bg-amber-50 text-sm font-semibold transition-colors"
-            >
-              เปิดใน Google Maps
-            </a>
+                  <h3 className="font-bold text-amber-900 flex items-center gap-2">
+                    <span>📍</span> {b.name}
+                  </h3>
+                  {b.address ? (
+                    <p className="text-sm text-gray-600 mt-1">{b.address}</p>
+                  ) : null}
+                  <div className="mt-2 space-y-1 text-sm text-gray-600">
+                    {b.hours ? <p>🕒 {b.hours}</p> : null}
+                    {b.phone ? (
+                      <p>
+                        📞{" "}
+                        <a
+                          href={`tel:${b.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-amber-600 hover:underline"
+                        >
+                          {b.phone}
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
+                  <a
+                    href={dir}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-block mt-3 px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
+                  >
+                    นำทางไปสาขานี้
+                  </a>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

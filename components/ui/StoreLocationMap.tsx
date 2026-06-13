@@ -1,10 +1,11 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// แก้ปัญหา marker icon หายเวลา bundle (ชี้ icon ไป CDN ของ leaflet)
+// แก้ปัญหา marker icon หายเวลา bundle
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
   ._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -14,21 +15,57 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-interface Props {
-  lat: number;
-  lng: number;
+export interface Branch {
+  id: number;
   name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  phone?: string;
+  hours?: string;
 }
 
-/**
- * แผนที่ Leaflet + OpenStreetMap (ฟรี ไม่ต้องใช้ API key)
- * โหลดเฉพาะฝั่ง client เท่านั้น (ดูวิธี import ใน StoreLocationSection)
- */
-export default function StoreLocationMap({ lat, lng, name }: Props) {
+// ปรับ view: ถ้ามี focus → บินไปสาขานั้น, ไม่งั้นซูมให้เห็นทุกสาขา
+function FitBounds({
+  branches,
+  focus,
+}: {
+  branches: Branch[];
+  focus: Branch | null;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    if (focus) {
+      map.setView([focus.latitude, focus.longitude], 17);
+      return;
+    }
+    if (branches.length === 1) {
+      map.setView([branches[0].latitude, branches[0].longitude], 16);
+    } else if (branches.length > 1) {
+      const bounds = branches.map(
+        (b) => [b.latitude, b.longitude] as [number, number],
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [branches, focus, map]);
+  return null;
+}
+
+export default function StoreLocationMap({
+  branches,
+  focus = null,
+}: {
+  branches: Branch[];
+  focus?: Branch | null;
+}) {
+  const center: [number, number] = branches.length
+    ? [branches[0].latitude, branches[0].longitude]
+    : [13.7563, 100.5018];
+
   return (
     <MapContainer
-      center={[lat, lng]}
-      zoom={16}
+      center={center}
+      zoom={13}
       scrollWheelZoom={false}
       style={{ height: "100%", width: "100%" }}
     >
@@ -36,11 +73,20 @@ export default function StoreLocationMap({ lat, lng, name }: Props) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={[lat, lng]}>
-        <Popup>
-          <strong>{name}</strong>
-        </Popup>
-      </Marker>
+      {branches.map((b) => (
+        <Marker key={b.id} position={[b.latitude, b.longitude]}>
+          <Popup>
+            <strong>{b.name}</strong>
+            {b.address ? (
+              <>
+                <br />
+                {b.address}
+              </>
+            ) : null}
+          </Popup>
+        </Marker>
+      ))}
+      <FitBounds branches={branches} focus={focus} />
     </MapContainer>
   );
 }
