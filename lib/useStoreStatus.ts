@@ -20,10 +20,15 @@ interface StatusResponse {
   reopenAt?: string;
 }
 
+// เช็คสถานะซ้ำทุกกี่มิลลิวินาที (ปรับได้ — เลขน้อยลง = อัปเดตไวขึ้นแต่ยิง request ถี่ขึ้น)
+const POLL_MS = 6000;
+
 /**
  * อ่านสถานะเปิด/ปิดรับออเดอร์ออนไลน์ + รู้ว่ากำลังทานในร้านหรือไม่
- * การปิดรับ "ออนไลน์" จะไม่กระทบลูกค้าที่นั่งทานในร้าน (dine-in)
- * ถ้าเช็คสถานะไม่ได้ (network พลาด) ถือว่า "เปิด" ไว้ก่อน — ด่านจริงอยู่ที่ backend
+ *  - poll ซ้ำทุก POLL_MS วินาที และเช็คซ้ำทันทีเมื่อกลับมาโฟกัสที่แท็บ
+ *    → admin กดเปิด/ปิด แล้วฝั่งลูกค้าอัปเดตเองโดยไม่ต้อง refresh
+ *  - การปิดรับ "ออนไลน์" ไม่กระทบลูกค้าที่นั่งทานในร้าน (dine-in)
+ *  - ถ้าเช็คไม่ได้ (network พลาด) ถือว่า "เปิด" ไว้ก่อน — ด่านจริงอยู่ที่ backend
  */
 export function useStoreStatus(): StoreStatus {
   const [data, setData] = useState({
@@ -36,7 +41,8 @@ export function useStoreStatus(): StoreStatus {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+
+    const fetchStatus = async () => {
       try {
         const d = await api.get<StatusResponse>("/api/store/status", {
           noAuth: true,
@@ -52,9 +58,24 @@ export function useStoreStatus(): StoreStatus {
       } catch {
         if (alive) setData((s) => ({ ...s, loading: false }));
       }
-    })();
+    };
+
+    fetchStatus(); // ครั้งแรกตอน mount
+
+    const interval = setInterval(fetchStatus, POLL_MS); // เช็คซ้ำเรื่อยๆ
+
+    // กลับมาที่แท็บ/โฟกัสหน้าต่าง → เช็คทันที (รู้สึกอัปเดตทันที)
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchStatus();
+    };
+    window.addEventListener("focus", fetchStatus);
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       alive = false;
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchStatus);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
