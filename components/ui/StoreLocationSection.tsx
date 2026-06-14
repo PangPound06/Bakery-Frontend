@@ -41,7 +41,7 @@ export default function StoreLocationSection() {
       <div className="mb-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700 mb-2"
+          className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 mb-4"
         >
           ← กลับหน้าหลัก
         </Link>
@@ -51,7 +51,7 @@ export default function StoreLocationSection() {
             ที่ตั้งร้าน
           </span>
         </h1>
-        <p className="text-sm text-amber-700/70 mt-1">
+        <p className="text-amber-600 mt-1">
           ทั้งหมด {branches.length} สาขา
         </p>
       </div>
