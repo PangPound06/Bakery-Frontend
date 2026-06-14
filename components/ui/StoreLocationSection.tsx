@@ -23,10 +23,9 @@ export default function StoreLocationSection() {
   useEffect(() => {
     (async () => {
       try {
-        const d = await api.get<{ branches: Branch[] }>(
-          "/api/store/branches",
-          { noAuth: true },
-        );
+        const d = await api.get<{ branches: Branch[] }>("/api/store/branches", {
+          noAuth: true,
+        });
         setBranches(d.branches || []);
       } catch {
         // ignore
@@ -37,22 +36,22 @@ export default function StoreLocationSection() {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 bg-amber-50">
-      {/* ── Header (สไตล์เดียวกับหน้ารายการสั่งซื้อ) ── */}
-      <div className="mb-8">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-6 pb-12 bg-amber-50">
+      {/* ── Header ── */}
+      <div className="mb-4">
         <Link
-            href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-20"
-          >
-            ← กลับหน้าหลัก
-          </Link>
+          href="/"
+          className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700 mb-2"
+        >
+          ← กลับหน้าหลัก
+        </Link>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <span>📍</span>
           <span className="bg-gradient-to-r from-amber-700 to-orange-500 bg-clip-text text-transparent">
             ที่ตั้งร้าน
           </span>
         </h1>
-        <p className="text-sm text-amber-700/70 mt-2">
+        <p className="text-sm text-amber-700/70 mt-1">
           ทั้งหมด {branches.length} สาขา
         </p>
       </div>
