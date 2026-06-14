@@ -205,7 +205,7 @@ export default function AdminBranchesPage() {
     "w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400";
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] p-6">
+    <div className="min-h-screen bg-amber-50 p-6">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
           Manage Branches

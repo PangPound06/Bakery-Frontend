@@ -36,12 +36,12 @@ export default function StoreLocationSection() {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 bg-amber-50">
       <div className="mb-8">
-        <p className="text-xs tracking-[0.2em] text-amber-500 font-semibold">
+        <p className="text-2xl sm:text-3xl font-bold text-amber-900 mt-1">
           LOCATION
         </p>
-        <h2 className="text-2xl sm:text-3xl font-bold text-amber-900 mt-1">
+        <h2 className="text-xl tracking-[0.2em] text-amber-500 font-semibold">
           ที่ตั้งร้าน
           {branches.length > 1 ? ` (${branches.length} สาขา)` : ""}
         </h2>
