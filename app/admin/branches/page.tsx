@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
+import dynamic from "next/dynamic";
 
 interface Branch {
   id: number;
@@ -40,6 +41,18 @@ const EMPTY: FormState = {
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+
+const BranchLocationPicker = dynamic(
+  () => import("@/components/ui/BranchLocationPicker"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full flex items-center justify-center bg-amber-50 text-amber-700 text-sm">
+        กำลังโหลดแผนที่...
+      </div>
+    ),
+  },
+);
 
 function authHeaders(): HeadersInit {
   const token =
@@ -88,6 +101,15 @@ export default function AdminBranchesPage() {
       sortOrder: b.sortOrder,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // คลิก/ลากหมุดบนแผนที่ → เติมพิกัดอัตโนมัติ
+  const handlePick = (lat: number, lng: number) => {
+    setForm((prev) => ({
+      ...prev,
+      latitude: lat.toFixed(6),
+      longitude: lng.toFixed(6),
+    }));
   };
 
   const save = async () => {
@@ -185,10 +207,11 @@ export default function AdminBranchesPage() {
   return (
     <div className="min-h-screen bg-[#faf7f2] p-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-amber-900 mb-1">จัดการสาขาร้าน</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+          Manage Branches
+        </h1>
         <p className="text-sm text-gray-500 mb-6">
-          เพิ่ม/แก้ไข/ลบสาขา — สาขาที่ &quot;เปิดใช้งาน&quot;
-          จะแสดงบนหน้าที่ตั้งร้านของลูกค้า
+          เพิ่ม/แก้ไข/ลบสาขา — สาขาที่ "เปิดใช้งาน" จะแสดงบนหน้าที่ตั้งร้านของลูกค้า
         </p>
 
         {/* ฟอร์มเพิ่ม/แก้ไข */}
@@ -206,15 +229,28 @@ export default function AdminBranchesPage() {
                 placeholder="เช่น สาขาสีลม"
               />
             </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">
+                ตำแหน่งบนแผนที่ — คลิก/ลากหมุดเพื่อปักตำแหน่งสาขา *
+              </label>
+              <div className="h-[300px] rounded-lg overflow-hidden border border-gray-200">
+                <BranchLocationPicker
+                  key={form.id ?? "new"}
+                  lat={form.latitude ? parseFloat(form.latitude) : null}
+                  lng={form.longitude ? parseFloat(form.longitude) : null}
+                  onChange={handlePick}
+                />
+              </div>
+            </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">
                 Latitude *
               </label>
               <input
-                className={input}
+                readOnly
+                className={`${input} bg-gray-50`}
                 value={form.latitude}
-                onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                placeholder="13.7460"
+                placeholder="คลิกบนแผนที่"
               />
             </div>
             <div>
@@ -222,12 +258,10 @@ export default function AdminBranchesPage() {
                 Longitude *
               </label>
               <input
-                className={input}
+                readOnly
+                className={`${input} bg-gray-50`}
                 value={form.longitude}
-                onChange={(e) =>
-                  setForm({ ...form, longitude: e.target.value })
-                }
-                placeholder="100.5340"
+                placeholder="คลิกบนแผนที่"
               />
             </div>
             <div className="sm:col-span-2">
@@ -287,7 +321,7 @@ export default function AdminBranchesPage() {
           </div>
 
           <p className="text-xs text-gray-400 mt-3">
-            หาพิกัด: เปิด Google Maps → คลิกขวาที่จุดสาขา → คัดลอกเลข lat, lng
+            คลิกตำแหน่งร้านบนแผนที่ ระบบจะกรอกพิกัดให้อัตโนมัติ (ลากหมุดเพื่อปรับละเอียดได้)
           </p>
 
           <div className="flex gap-2 mt-4">

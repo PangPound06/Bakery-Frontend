@@ -197,7 +197,7 @@ const adminNavLinks = [
   },
   {
     href: "/admin/branches",
-    label: "จัดการสาขา",
+    label: "Manage Branches",
     icon: (
       <svg
         className="w-5 h-5"
