@@ -171,16 +171,24 @@ export default function OrderDetailPage() {
     };
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-orange-600 font-medium">กำลังโหลดออเดอร์...</p>
+          <div
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{
+              borderWidth: 3,
+              borderStyle: "solid",
+              borderColor: "#f59e0b transparent transparent transparent",
+            }}
+          ></div>
+          <p className="text-amber-700 text-sm font-medium">
+            กำลังโหลดข้อมูล...
+          </p>
         </div>
       </div>
     );
-  }
 
   // ✅ ถ้าทุก order ที่ไม่ถูกยกเลิก ชำระเงินแล้ว → แสดงหน้าขอบคุณ
   const nonCancelledOrders = orders.filter(

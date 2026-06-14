@@ -197,20 +197,24 @@ export default function CategoryPage() {
   const displayName = categoryInfo?.name || categorySlug;
   const displayIcon = categoryInfo?.icon || "";
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-1 border-2 border-stone-800 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-          <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase">
-            Loading
+      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{
+              borderWidth: 3,
+              borderStyle: "solid",
+              borderColor: "#f59e0b transparent transparent transparent",
+            }}
+          ></div>
+          <p className="text-amber-700 text-sm font-medium">
+            กำลังโหลดข้อมูล...
           </p>
         </div>
       </div>
     );
-  }
 
   return (
     <div

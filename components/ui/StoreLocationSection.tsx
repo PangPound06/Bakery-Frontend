@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Branch } from "./StoreLocationMap";
@@ -37,22 +38,31 @@ export default function StoreLocationSection() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 bg-amber-50">
+      {/* ── Header (สไตล์เดียวกับหน้ารายการสั่งซื้อ) ── */}
       <div className="mb-8">
-        <p className="text-2xl sm:text-3xl font-bold text-amber-900 mt-1">
-          LOCATION
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700 mb-3"
+        >
+          ← กลับหน้าหลัก
+        </Link>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <span>📍</span>
+          <span className="bg-gradient-to-r from-amber-700 to-orange-500 bg-clip-text text-transparent">
+            ที่ตั้งร้าน
+          </span>
+        </h1>
+        <p className="text-sm text-amber-700/70 mt-1">
+          ทั้งหมด {branches.length} สาขา
         </p>
-        <h2 className="text-xl tracking-[0.2em] text-amber-500 font-semibold">
-          ที่ตั้งร้าน
-          {branches.length > 1 ? ` (${branches.length} สาขา)` : ""}
-        </h2>
       </div>
 
       {loading ? (
-        <div className="h-[420px] rounded-2xl bg-amber-50 flex items-center justify-center text-amber-700">
+        <div className="h-[420px] rounded-2xl bg-white/60 flex items-center justify-center text-amber-700">
           กำลังโหลด...
         </div>
       ) : branches.length === 0 ? (
-        <div className="h-[200px] rounded-2xl bg-amber-50 flex items-center justify-center text-gray-500">
+        <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-gray-500">
           ยังไม่มีข้อมูลสาขา
         </div>
       ) : (
