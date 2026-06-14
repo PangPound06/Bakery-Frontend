@@ -39,7 +39,7 @@ export default function StoreLocationSection() {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 bg-amber-50">
       {/* ── Header (สไตล์เดียวกับหน้ารายการสั่งซื้อ) ── */}
-      <div className="mb-10">
+      <div className="mb-20">
         <Link
             href="/"
             className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-6"
@@ -52,7 +52,7 @@ export default function StoreLocationSection() {
             ที่ตั้งร้าน
           </span>
         </h1>
-        <p className="text-sm text-amber-700/70 mt-2">
+        <p className="text-sm text-amber-700/70 mt-6">
           ทั้งหมด {branches.length} สาขา
         </p>
       </div>
