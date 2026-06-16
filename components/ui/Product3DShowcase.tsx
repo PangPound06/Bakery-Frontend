@@ -16,28 +16,32 @@ interface Category {
   icon?: string;
 }
 
+const FALLBACK =
+  "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80";
+
 /**
- * โชว์เคสสินค้า 1 ชิ้น/หมวด แบบ 3 มิติ (CSS perspective)
- *  - ทั้งแถวเอียงตามเมาส์ (parallax) + การ์ดลอยเบาๆ
- *  - subtle/มินิมอล ไม่ใช้ WebGL เลยไม่ติด CORS ของรูป
+ * โชว์ทุกหมวด (5 หมวด) เรียงแถวเดียว แบบ 3 มิติ (CSS perspective)
+ *  - แต่ละการ์ด = 1 หมวด ใช้รูปสินค้าที่ match ได้ ถ้าไม่เจอใช้รูปหมวด (categoryImages) → ไม่มีช่องว่าง
+ *  - ทั้งแถวเอียงตามเมาส์ + การ์ดลอยเบาๆ (subtle)
  */
 export default function Product3DShowcase({
   products,
   categories,
+  categoryImages = {},
 }: {
   products: Product[];
   categories: Category[];
+  categoryImages?: Record<string, string>;
 }) {
-  const items = categories
-    .map((cat) => {
-      const slugKey = (cat.slug || "").toLowerCase();
-      const nameKey = (cat.name || "").toLowerCase();
-      const p =
-        products.find((pr) => pr.category?.toLowerCase() === slugKey) ||
-        products.find((pr) => pr.category?.toLowerCase() === nameKey);
-      return p ? { product: p, cat } : null;
-    })
-    .filter((x): x is { product: Product; cat: Category } => x !== null);
+  const items = categories.map((cat) => {
+    const slugKey = (cat.slug || "").toLowerCase();
+    const nameKey = (cat.name || "").toLowerCase();
+    const product =
+      products.find((p) => p.category?.toLowerCase() === slugKey) ||
+      products.find((p) => p.category?.toLowerCase() === nameKey);
+    const img = product?.img || categoryImages[cat.slug] || FALLBACK;
+    return { cat, product, img };
+  });
 
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
@@ -48,7 +52,7 @@ export default function Product3DShowcase({
     const r = el.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
-    setTilt({ rx: py * -7, ry: px * 9 });
+    setTilt({ rx: py * -6, ry: px * 7 });
   };
   const reset = () => setTilt({ rx: 0, ry: 0 });
 
@@ -59,12 +63,12 @@ export default function Product3DShowcase({
       ref={ref}
       onMouseMove={onMove}
       onMouseLeave={reset}
-      className="flex flex-wrap justify-center gap-6 sm:gap-9 py-6"
+      className="grid grid-cols-5 gap-2 sm:gap-4 py-6"
       style={{ perspective: "1200px" }}
     >
-      {items.map(({ product, cat }, i) => (
+      {items.map(({ cat, product, img }, i) => (
         <Link
-          key={product.id}
+          key={cat.id}
           href={`/${cat.slug}`}
           className="group block"
           style={{
@@ -74,24 +78,26 @@ export default function Product3DShowcase({
           }}
         >
           <div
-            className="card3d relative w-40 sm:w-48 rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-white"
-            style={{ animationDelay: `${i * 0.5}s` }}
+            className="card3d relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-white"
+            style={{ animationDelay: `${i * 0.4}s` }}
           >
-            <div className="relative h-52 sm:h-60 overflow-hidden">
+            <div className="relative aspect-[3/4] overflow-hidden">
               <img
-                src={product.img}
-                alt={product.name}
+                src={img}
+                alt={cat.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-              <span className="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/90 text-amber-700 backdrop-blur-sm">
-                {cat.icon ? `${cat.icon} ` : ""}
-                {cat.name}
-              </span>
-              <div className="absolute bottom-0 left-0 right-0 p-3">
-                <p className="text-white font-semibold text-sm leading-tight line-clamp-2">
-                  {product.name}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
+                <p className="text-white font-semibold text-xs sm:text-base leading-tight flex items-center gap-1">
+                  <span>{cat.icon}</span>
+                  <span className="truncate">{cat.name}</span>
                 </p>
+                {product && (
+                  <p className="hidden sm:block text-white/70 text-[11px] mt-0.5 truncate">
+                    {product.name}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -102,19 +108,19 @@ export default function Product3DShowcase({
         @keyframes float3d {
           0%,
           100% {
-            transform: translateY(0) translateZ(0);
+            transform: translateY(0);
           }
           50% {
-            transform: translateY(-10px) translateZ(20px);
+            transform: translateY(-8px);
           }
         }
         .card3d {
-          animation: float3d 5.5s ease-in-out infinite;
+          animation: float3d 5s ease-in-out infinite;
           will-change: transform;
         }
         .group:hover .card3d {
           animation-play-state: paused;
-          transform: translateZ(40px) scale(1.04);
+          transform: translateZ(30px) scale(1.05);
           transition: transform 0.3s ease-out;
         }
       `}</style>

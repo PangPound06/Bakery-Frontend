@@ -5,11 +5,6 @@ import Link from "next/link"; // ใช้ Link สำหรับ Next.js
 import ProductCard from "@/components/ui/ProductCard";
 import PopularCarousel from "@/components/ui/PopularCarousel";
 import Product3DShowcase from "@/components/ui/Product3DShowcase";
-import dynamic from "next/dynamic";
-
-const Background3D = dynamic(() => import("../components/ui/Background3D"), {
-  ssr: false,
-});
 
 // ━━━ TYPES ━━━
 interface Product {
@@ -145,7 +140,7 @@ export default function HomePage() {
   // parallax: เลื่อนภาพ hero ช้ากว่าการ scroll
   useEffect(() => {
     const onScroll = () =>
-      setHeroOffset(Math.min(window.scrollY * 0.15, 150));
+      setHeroOffset(Math.min(window.scrollY * 0.12, 110));
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -315,7 +310,7 @@ export default function HomePage() {
       >
         {/* ภาพ hero — parallax (เลื่อนช้าตอน scroll) */}
         <div
-          className="absolute left-0 right-0 -top-[15%] h-[130%]"
+          className="absolute left-0 right-0 -top-[20%] h-[140%]"
           style={{
             transform: `translateY(${heroOffset}px)`,
             willChange: "transform",
@@ -332,11 +327,6 @@ export default function HomePage() {
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-transparent to-[#faf8f5]" />
-
-        {/* 3D orbs — ลอยจางๆ เหนือภาพ ใต้ตัวอักษร (subtle) */}
-        <div className="absolute inset-0 opacity-40 pointer-events-none mix-blend-screen">
-          <Background3D />
-        </div>
 
         <div
           className={`absolute inset-0 flex flex-col justify-end pb-16 sm:pb-24 px-5 sm:px-8 lg:px-16 transition-all duration-[1200ms] ease-out ${visible("hero") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
@@ -448,7 +438,7 @@ export default function HomePage() {
       )}
 
       {/* 3D SHOWCASE — 1 ชิ้น/หมวด */}
-      {categoryList.length > 0 && allProducts.length > 0 && (
+      {categoryList.length > 0 && (
         <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-20">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8 sm:mb-10 text-center">
@@ -459,7 +449,11 @@ export default function HomePage() {
                 ไฮไลต์<span className="font-semibold">แต่ละหมวด</span>
               </h2>
             </div>
-            <Product3DShowcase products={allProducts} categories={categoryList} />
+            <Product3DShowcase
+              products={allProducts}
+              categories={categoryList}
+              categoryImages={HERO_IMAGES}
+            />
           </div>
         </section>
       )}
