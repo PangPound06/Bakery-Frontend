@@ -359,7 +359,7 @@ export default function Header() {
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <nav className="bg-amber-900 h-14" />;
+  if (!mounted) return <nav className="sticky top-0 z-50 h-14 bg-amber-900/70 backdrop-blur-xl" />;
   if (pathname?.startsWith("/admin")) return null;
 
   const SearchDropdown = () => {
@@ -448,7 +448,7 @@ export default function Header() {
 
   return (
     <>
-      <nav className="bg-amber-900 text-white shadow-lg">
+      <nav className="sticky top-0 z-50 bg-amber-900/70 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 text-white shadow-lg">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <Link
@@ -791,7 +791,7 @@ export default function Header() {
 
       {/* ✅ Bottom Navigation (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
       {!isAdmin && (
-        <nav className="xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-amber-900 border-t border-amber-800 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
+        <nav className="xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-amber-900/70 backdrop-blur-xl backdrop-saturate-150 border-t border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
           <div className="flex overflow-x-auto">
             {bottomNavLinks.map((link) => (
               <Link

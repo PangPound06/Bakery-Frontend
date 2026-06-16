@@ -32,7 +32,7 @@ export default function Footer() {
   if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="bg-amber-900 text-white">
+    <footer className="bg-amber-900/80 backdrop-blur-xl border-t border-white/10 text-white">
       <div className="w-full mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-center sm:text-left">
           <div>
