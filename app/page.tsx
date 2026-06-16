@@ -4,6 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link"; // ใช้ Link สำหรับ Next.js
 import ProductCard from "@/components/ui/ProductCard";
 import PopularCarousel from "@/components/ui/PopularCarousel";
+import Product3DShowcase from "@/components/ui/Product3DShowcase";
+import dynamic from "next/dynamic";
+
+const Background3D = dynamic(() => import("../components/ui/Background3D"), {
+  ssr: false,
+});
 
 // ━━━ TYPES ━━━
 interface Product {
@@ -134,6 +140,16 @@ export default function HomePage() {
   );
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const [heroOffset, setHeroOffset] = useState(0);
+
+  // parallax: เลื่อนภาพ hero ช้ากว่าการ scroll
+  useEffect(() => {
+    const onScroll = () =>
+      setHeroOffset(Math.min(window.scrollY * 0.15, 150));
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
@@ -297,16 +313,30 @@ export default function HomePage() {
         ref={setRef("hero")}
         className="relative h-[92vh] overflow-hidden"
       >
-        <img
-          src="https://www.orchardhotel.com.au/wp-content/uploads/2024/10/The-Orchard-Hotel-Chatswood-Restaurant-Bar-48.jpg"
-          alt="Bakery Hero"
-          className="w-full h-full object-cover"
+        {/* ภาพ hero — parallax (เลื่อนช้าตอน scroll) */}
+        <div
+          className="absolute left-0 right-0 -top-[15%] h-[130%]"
           style={{
-            transform: visible("hero") ? "scale(1)" : "scale(1.05)",
-            transition: "transform 8000ms ease-out",
+            transform: `translateY(${heroOffset}px)`,
+            willChange: "transform",
           }}
-        />
+        >
+          <img
+            src="https://www.orchardhotel.com.au/wp-content/uploads/2024/10/The-Orchard-Hotel-Chatswood-Restaurant-Bar-48.jpg"
+            alt="Bakery Hero"
+            className="w-full h-full object-cover"
+            style={{
+              transform: visible("hero") ? "scale(1)" : "scale(1.05)",
+              transition: "transform 8000ms ease-out",
+            }}
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-transparent to-[#faf8f5]" />
+
+        {/* 3D orbs — ลอยจางๆ เหนือภาพ ใต้ตัวอักษร (subtle) */}
+        <div className="absolute inset-0 opacity-40 pointer-events-none mix-blend-screen">
+          <Background3D />
+        </div>
 
         <div
           className={`absolute inset-0 flex flex-col justify-end pb-16 sm:pb-24 px-5 sm:px-8 lg:px-16 transition-all duration-[1200ms] ease-out ${visible("hero") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
@@ -413,6 +443,23 @@ export default function HomePage() {
               items={popularProducts}
               onStockUpdate={handleStockUpdate}
             />
+          </div>
+        </section>
+      )}
+
+      {/* 3D SHOWCASE — 1 ชิ้น/หมวด */}
+      {categoryList.length > 0 && allProducts.length > 0 && (
+        <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-20">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-8 sm:mb-10 text-center">
+              <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
+                Featured
+              </p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-stone-800">
+                ไฮไลต์<span className="font-semibold">แต่ละหมวด</span>
+              </h2>
+            </div>
+            <Product3DShowcase products={allProducts} categories={categoryList} />
           </div>
         </section>
       )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import TiltCard from "@/components/ui/TiltCard";
 
 interface ProductOption {
   name: string;
@@ -70,7 +71,8 @@ export default function ProductCard({
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group flex flex-col h-full">
+      <TiltCard>
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group flex flex-col h-full">
         <div className="relative overflow-hidden h-56 shrink-0">
           <img
             src={img}
@@ -174,6 +176,7 @@ export default function ProductCard({
           </div>
         </div>
       </div>
+      </TiltCard>
     </>
   );
 }
