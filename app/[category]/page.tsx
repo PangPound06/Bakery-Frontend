@@ -28,7 +28,7 @@ interface Category {
 
 // Hero images per category slug (fallback for new categories)
 const HERO_IMAGES: Record<string, string> = {
-  // "/images/hero/category.jpg", สำหรับรูปภาพที่มาจากเครื่อง อยยู่ใน public/images/hero/
+  // "/images/hero/category.jpg", สำหรับรูปภาพที่มาจากเครื่อง อยู่ใน public/images/hero/
   bakery: "/images/hero/Bakery.jpg",
   cake: "/images/hero/Cake.jpg",
   drink: "/images/hero/Drink.jpg",
@@ -267,7 +267,7 @@ export default function CategoryPage() {
 
   return (
     <div
-      className="bg-amber-50 min-h-screen"
+      className="bg-white min-h-screen"
       style={{ fontFamily: "'Prompt', sans-serif" }}
     >
       <section
@@ -306,14 +306,14 @@ export default function CategoryPage() {
 
       {/* ── STORY: เล่าความเป็นมาของหมวด ── */}
       {story && (
-        <div className="bg-white">
+        <div className="bg-amber-50">
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-14 sm:py-24">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
               <div className="order-2 lg:order-1">
-                <p className="text-amber-500 text-[11px] tracking-[0.3em] uppercase mb-4">
+                <p className="text-amber-500 sm:text-lg tracking-[0.3em] uppercase mb-4">
                   {story.tagline}
                 </p>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-800 leading-[1.1] mb-5">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-700 leading-[1.1] mb-5">
                   {story.title}
                 </h2>
                 <p className="text-stone-500 text-base sm:text-lg leading-relaxed max-w-xl">
@@ -335,7 +335,7 @@ export default function CategoryPage() {
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-amber-900 leading-snug">
                 {story.highlight}
               </h2>
-              <p className="mt-3 text-stone-400 text-sm tracking-wide">
+              <p className="mt-3 text-stone-500 text-sm tracking-wide">
                 {story.highlightBody}
               </p>
             </div>

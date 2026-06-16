@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link"; // ใช้ Link สำหรับ Next.js
 import ProductCard from "@/components/ui/ProductCard";
 import PopularCarousel from "@/components/ui/PopularCarousel";
-import Product3DShowcase from "@/components/ui/Product3DShowcase";
 
 // ━━━ TYPES ━━━
 interface Product {
@@ -43,85 +42,46 @@ function BentoGrid({ categories }: { categories: Category[] }) {
   const FALLBACK =
     "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80";
   if (categories.length === 0) return null;
-  const [first, ...rest] = categories;
   return (
-    <div className="space-y-4 sm:space-y-5">
-      {/* หมวดแรก — เต็มความกว้าง ใหญ่สุด */}
-      <Link
-        href={`/${first.slug}`}
-        className="group relative block overflow-hidden rounded-3xl h-[440px] sm:h-[600px] lg:h-[720px]"
-      >
-        <img
-          src={HERO_IMAGES[first.slug] || FALLBACK}
-          alt={first.name}
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-        <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
-          <h3 className="font-semibold text-white text-4xl sm:text-6xl">
-            {first.icon} {first.name}
-          </h3>
-          <div className="mt-3 flex items-center gap-2 text-white/70 group-hover:text-white/90 transition-colors duration-500">
-            <span className="text-sm sm:text-base">ดูทั้งหมด</span>
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </div>
-        </div>
-      </Link>
-
-      {/* หมวดที่เหลือ — 2 คอลัมน์ */}
-      {rest.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-          {rest.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/${cat.slug}`}
-              className="group relative overflow-hidden rounded-3xl h-[320px] sm:h-[460px] lg:h-[560px]"
-            >
-              <img
-                src={HERO_IMAGES[cat.slug] || FALLBACK}
-                alt={cat.name}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-              <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/15 transition-colors duration-500" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
-                <h3 className="font-semibold text-white text-3xl sm:text-4xl">
-                  {cat.icon} {cat.name}
-                </h3>
-                <div className="mt-2 flex items-center gap-2 text-white/60 group-hover:text-white/90 transition-colors duration-500">
-                  <span className="text-sm">ดูทั้งหมด</span>
-                  <svg
-                    className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </div>
+    <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory lg:grid lg:grid-cols-5 lg:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {categories.map((cat) => (
+        <Link
+          key={cat.id}
+          href={`/${cat.slug}`}
+          className="group snap-start shrink-0 w-[68%] sm:w-[40%] md:w-[30%] lg:w-auto"
+        >
+          <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-lg ring-1 ring-black/5 transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:shadow-2xl">
+            <img
+              src={HERO_IMAGES[cat.slug] || FALLBACK}
+              alt={cat.name}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+              <h3 className="font-bold text-white text-xl sm:text-2xl flex items-center gap-2 leading-tight">
+                <span>{cat.icon}</span>
+                <span className="truncate">{cat.name}</span>
+              </h3>
+              <div className="mt-1.5 flex items-center gap-1.5 text-white/80 group-hover:text-white text-xs sm:text-sm font-medium transition-colors">
+                ดูทั้งหมด
+                <svg
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
               </div>
-            </Link>
-          ))}
-        </div>
-      )}
+            </div>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 }
@@ -432,27 +392,6 @@ export default function HomePage() {
             <PopularCarousel
               items={popularProducts}
               onStockUpdate={handleStockUpdate}
-            />
-          </div>
-        </section>
-      )}
-
-      {/* 3D SHOWCASE — 1 ชิ้น/หมวด */}
-      {categoryList.length > 0 && (
-        <section className="px-4 sm:px-6 lg:px-12 py-12 sm:py-20">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-8 sm:mb-10 text-center">
-              <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
-                Featured
-              </p>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-stone-800">
-                ไฮไลต์<span className="font-semibold">แต่ละหมวด</span>
-              </h2>
-            </div>
-            <Product3DShowcase
-              products={allProducts}
-              categories={categoryList}
-              categoryImages={HERO_IMAGES}
             />
           </div>
         </section>
