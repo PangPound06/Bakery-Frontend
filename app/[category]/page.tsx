@@ -267,7 +267,7 @@ export default function CategoryPage() {
 
   return (
     <div
-      className="bg-white min-h-screen"
+      className="bg-amber-50 min-h-screen"
       style={{ fontFamily: "'Prompt', sans-serif" }}
     >
       <section
@@ -306,7 +306,7 @@ export default function CategoryPage() {
 
       {/* ── STORY: เล่าความเป็นมาของหมวด ── */}
       {story && (
-        <div className="bg-amber-50">
+        <div className="bg-white">
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-14 sm:py-24">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
               <div className="order-2 lg:order-1">
