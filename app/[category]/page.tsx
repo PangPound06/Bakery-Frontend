@@ -37,6 +37,54 @@ const HERO_IMAGES: Record<string, string> = {
   // ใส่เพิ่มตรงนี้ได้เลยถ้ามีหมวดใหม่
 };
 
+// เรื่องเล่าประจำแต่ละหมวด (เล่าความเป็นมา สไตล์ storytelling)
+const CATEGORY_STORY: Record<
+  string,
+  {
+    tagline: string;
+    title: string;
+    body: string;
+    highlight: string;
+    highlightBody: string;
+  }
+> = {
+  bakery: {
+    tagline: "FRESHLY BAKED",
+    title: "อบสดใหม่ทุกเช้า ด้วยมือ",
+    body: "ขนมปังและเพสตรีทุกชิ้นของเรานวด พัก และอบใหม่ทุกเช้า คัดแป้งและเนยคุณภาพ เพื่อกลิ่นหอมและเนื้อสัมผัสที่ดีที่สุดในทุกคำ",
+    highlight: "เพราะขนมปังที่ดี เริ่มจากความใส่ใจตั้งแต่ก้อนแป้ง",
+    highlightBody: "ไม่มีทางลัด มีแต่เวลาและความตั้งใจ",
+  },
+  cake: {
+    tagline: "MADE TO CELEBRATE",
+    title: "เค้กสำหรับทุกช่วงเวลาพิเศษ",
+    body: "ตั้งแต่เลเยอร์เค้กเนื้อนุ่มไปจนถึงชีสเค้กเนียนละมุน เรารังสรรค์ทุกชิ้นให้สวยและอร่อยสมการเฉลิมฉลอง ไม่ว่าจะวันเกิด วันครบรอบ หรือวันธรรมดาที่อยากให้พิเศษ",
+    highlight: "ทุกชิ้นคือความสุขที่ตัดแบ่งกันได้",
+    highlightBody: "หวานกำลังดี สวยกำลังงาม",
+  },
+  drink: {
+    tagline: "SIP & RELAX",
+    title: "เครื่องดื่มที่ใช่ ในทุกอารมณ์",
+    body: "ตั้งแต่กาแฟคั่วสด ชาหอมกลมกล่อม ไปจนถึงเครื่องดื่มเย็นชื่นใจ เราคัดเมล็ดและวัตถุดิบอย่างพิถีพิถัน เพื่อจิบแรกที่ลงตัวและจิบสุดท้ายที่ยังประทับใจ",
+    highlight: "ช้าลงสักครู่ แล้วดื่มด่ำกับแก้วโปรดของคุณ",
+    highlightBody: "ทุกแก้วชงสดเพื่อคุณ",
+  },
+  food: {
+    tagline: "REAL, HEARTY FOOD",
+    title: "อิ่มอร่อย ด้วยวัตถุดิบคัดสรร",
+    body: "จานอาหารของเราปรุงจากวัตถุดิบสดใหม่ คัดเลือกอย่างตั้งใจ ตั้งแต่จานเบาๆ ไปจนถึงมื้อเต็มอิ่ม เพื่อความอร่อยที่จริงใจในทุกคำ",
+    highlight: "อาหารดีๆ ทำให้ทุกวันดีขึ้น",
+    highlightBody: "สดใหม่ ปรุงเมื่อสั่ง",
+  },
+  appetizer: {
+    tagline: "SHARE THE JOY",
+    title: "ของทานเล่น ที่แชร์กันได้ทั้งโต๊ะ",
+    body: "ของว่างกรอบนอกนุ่มใน เสิร์ฟร้อนๆ พร้อมซอสเด็ด เหมาะกับการแบ่งปันความอร่อยกับคนที่คุณรักในทุกช่วงเวลาดีๆ",
+    highlight: "ความอร่อยยิ่งแชร์ ยิ่งสนุก",
+    highlightBody: "เสิร์ฟร้อน อร่อยทันที",
+  },
+};
+
 const RESERVED_PATHS = [
   "bill",
   "order-detail",
@@ -196,6 +244,7 @@ export default function CategoryPage() {
   const heroImage = HERO_IMAGES[categorySlug];
   const displayName = categoryInfo?.name || categorySlug;
   const displayIcon = categoryInfo?.icon || "";
+  const story = CATEGORY_STORY[categorySlug];
 
   if (loading)
     return (
@@ -254,6 +303,45 @@ export default function CategoryPage() {
           </div>
         </div>
       </section>
+
+      {/* ── STORY: เล่าความเป็นมาของหมวด ── */}
+      {story && (
+        <div className="bg-white">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-14 sm:py-24">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
+              <div className="order-2 lg:order-1">
+                <p className="text-amber-500 text-[11px] tracking-[0.3em] uppercase mb-4">
+                  {story.tagline}
+                </p>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-800 leading-[1.1] mb-5">
+                  {story.title}
+                </h2>
+                <p className="text-stone-500 text-base sm:text-lg leading-relaxed max-w-xl">
+                  {story.body}
+                </p>
+              </div>
+              <div className="order-1 lg:order-2 relative h-60 sm:h-80 lg:h-[460px] rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5">
+                <img
+                  src={heroImage}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="px-4 sm:px-6 lg:px-12 pb-14 sm:pb-24">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-amber-900 leading-snug">
+                {story.highlight}
+              </h2>
+              <p className="mt-3 text-stone-400 text-sm tracking-wide">
+                {story.highlightBody}
+              </p>
+            </div>
+          </section>
+        </div>
+      )}
 
       <section
         ref={contentRef}
