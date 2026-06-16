@@ -264,10 +264,19 @@ export default function ProductDetail({
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-amber-600 font-medium">กำลังโหลด...</p>
+          <div
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{
+              borderWidth: 3,
+              borderStyle: "solid",
+              borderColor: "#f59e0b transparent transparent transparent",
+            }}
+          ></div>
+          <p className="text-amber-700 text-sm font-medium">
+            กำลังโหลดข้อมูล...
+          </p>
         </div>
       </div>
     );
@@ -369,12 +378,12 @@ export default function ProductDetail({
             </div>
 
             <div className="p-8 lg:p-10 flex flex-col">
-              <h1 className="text-3xl lg:text-4xl font-bold text-amber-800 mb-3">
+              <h1 className="text-2xl lg:text-2xl font-bold text-amber-800 mb-3">
                 {product.name}
               </h1>
 
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-4xl font-bold text-amber-600">
+                <span className="text-3xl font-bold text-amber-600">
                   ฿{formatPrice(pricePerOrder)}
                   {selectedOption?.extraPrice ? (
                     <span className="text-lg text-green-600 ml-1">

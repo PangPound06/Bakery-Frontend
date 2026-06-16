@@ -97,7 +97,7 @@ export default function ProductCard({
         </div>
 
         <div className="p-4 sm:p-5 flex flex-col flex-grow">
-          <h3 className="text-sm sm:text-lg font-bold text-amber-800 mb-2 line-clamp-2 h-14">
+          <h3 className="text-base sm:text-xl font-bold text-amber-800 mb-2 line-clamp-2 h-14">
             {name}
           </h3>
           <div className="h-10 mb-3">
