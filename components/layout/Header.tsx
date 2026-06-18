@@ -706,7 +706,7 @@ export default function Header() {
                         <p className="text-sm font-semibold text-amber-700 truncate">
                           {user.fullname || "ผู้ใช้งาน"}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="text-xs text-amber-600 truncate">
                           {user.email}
                         </p>
                       </div>
@@ -789,24 +789,31 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* ✅ Bottom Navigation (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
+      {/* ✅ Bottom Navigation — แถบลอยทรงแคปซูล (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
       {!isAdmin && (
-        <nav className="xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-amber-100/80 backdrop-blur-xl backdrop-saturate-150 border-t border-amber-900/10 shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
-          <div className="flex overflow-x-auto">
-            {bottomNavLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex-1 min-w-[58px] flex flex-col items-center gap-0.5 py-2 transition-colors ${isActive(link.href) ? "text-white bg-amber-500" : "text-amber-700 hover:text-amber-900 hover:bg-amber-200/60"}`}
-              >
-                <span className="text-lg leading-none">{link.icon}</span>
-                <span className="text-[10px] font-medium truncate max-w-full px-0.5">
-                  {link.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </nav>
+        <div className="xl:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pointer-events-none">
+          <nav className="pointer-events-auto max-w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-full bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.4)] px-2 py-2">
+            <div className="flex items-center gap-1">
+              {bottomNavLinks.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-label={link.label}
+                    className={`flex items-center justify-center rounded-full w-12 h-12 text-2xl transition-all duration-200 active:scale-95 ${
+                      active
+                        ? "bg-white/20 text-white scale-105"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="leading-none">{link.icon}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
       )}
     </>
   );
