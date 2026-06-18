@@ -792,7 +792,7 @@ export default function Header() {
       {/* ✅ Bottom Navigation — แถบลอยทรงแคปซูล (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
       {!isAdmin && (
         <div className="xl:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pointer-events-none">
-          <nav className="pointer-events-auto max-w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-full bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.4)] px-2 py-2">
+          <nav className="pointer-events-auto max-w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-full bg-white/80 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-amber-900/10 shadow-[0_10px_30px_rgba(0,0,0,0.18)] px-2 py-2">
             <div className="flex items-center gap-1">
               {bottomNavLinks.map((link) => {
                 const active = isActive(link.href);
@@ -803,8 +803,8 @@ export default function Header() {
                     aria-label={link.label}
                     className={`flex items-center justify-center rounded-full w-12 h-12 text-2xl transition-all duration-200 active:scale-95 ${
                       active
-                        ? "bg-white/20 text-white scale-105"
-                        : "text-white/80 hover:text-white hover:bg-white/10"
+                        ? "bg-amber-500/15 text-amber-700 scale-105"
+                        : "text-amber-800 hover:text-amber-900 hover:bg-amber-500/10"
                     }`}
                   >
                     <span className="leading-none">{link.icon}</span>

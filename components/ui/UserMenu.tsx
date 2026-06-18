@@ -240,7 +240,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-          isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-800"
+          isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-200/70"
         }`}
       >
         <div
@@ -260,11 +260,11 @@ export default function UserMenu({ user }: UserMenuProps) {
             getInitials()
           )}
         </div>
-        <span className="text-white text-sm font-medium hidden md:block max-w-[150px] truncate">
+        <span className="text-amber-800 text-sm font-medium hidden md:block max-w-[150px] truncate">
           {user.email}
         </span>
         <svg
-          className={`w-4 h-4 text-white transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-amber-700 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
