@@ -27,22 +27,56 @@ export default function UserManagementPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("all");
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalAll, setTotalAll] = useState(0);
+  const [roleCounts, setRoleCounts] = useState<Record<string, number>>({});
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const PAGE_SIZE = 10;
 
+  // โหลดจำนวนต่อบทบาทครั้งแรก
   useEffect(() => {
-    fetchAdmins();
+    fetchRoleCounts();
   }, []);
 
-  const fetchAdmins = async () => {
+  // ค้นหาแบบ debounce → รีเซ็ตไปหน้าแรก
+  useEffect(() => {
+    const tmr = setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+      setPage(0);
+    }, 350);
+    return () => clearTimeout(tmr);
+  }, [searchTerm]);
+
+  // ดึงข้อมูลเมื่อ หน้า/บทบาท/คำค้น เปลี่ยน
+  useEffect(() => {
+    fetchAdmins(page, selectedRole, debouncedSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, selectedRole, debouncedSearch]);
+
+  // ✅ ดึงทีละหน้า + กรองบทบาท/ค้นหาที่ server (ไม่ดึง admin ทั้งหมด)
+  const fetchAdmins = async (
+    pageArg = page,
+    roleArg = selectedRole,
+    searchArg = debouncedSearch,
+  ) => {
     try {
       const token = localStorage.getItem("token");
+      const params = new URLSearchParams();
+      params.set("page", String(pageArg));
+      params.set("size", String(PAGE_SIZE));
+      if (roleArg && roleArg !== "all") params.set("role", roleArg);
+      if (searchArg.trim()) params.set("search", searchArg.trim());
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/list`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/page?${params}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       const data = await response.json();
-      setAdmins(Array.isArray(data) ? data : []);
+      setAdmins(Array.isArray(data.content) ? data.content : []);
+      setTotalPages(data.totalPages ?? 1);
+      setTotalElements(data.totalElements ?? 0);
     } catch (err) {
       console.error("Error fetching admins:", err);
     } finally {
@@ -50,11 +84,43 @@ export default function UserManagementPage() {
     }
   };
 
-  const filteredAdmins = admins.filter(
-    (admin) =>
-      admin.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.email?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // ✅ จำนวนต่อบทบาท + ทั้งหมด (สำหรับ badge บนแท็บ)
+  const fetchRoleCounts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/role-counts`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setRoleCounts(data.counts || {});
+        setTotalAll(data.total || 0);
+      }
+    } catch (err) {
+      console.error("Error fetching role counts:", err);
+    }
+  };
+
+  const ROLE_ORDER = [
+    "owner",
+    "admin",
+    "manager",
+    "waiter",
+    "bartender",
+    "cashier",
+    "chef",
+    "commis_chef",
+    "steward",
+  ];
+  // ✅ แท็บจาก roleCounts ของ server (เรียงตามกลุ่ม แล้วต่อด้วยบทบาทอื่น ๆ ที่มี)
+  const roleTabs = [
+    ...ROLE_ORDER.filter((r) => roleCounts[r]),
+    ...Object.keys(roleCounts).filter((r) => !ROLE_ORDER.includes(r)),
+  ];
+
+  // ✅ server กรอง/แบ่งหน้ามาให้แล้ว ใช้ผลลัพธ์ตรง ๆ
+  const filteredAdmins = admins;
 
   const openAddModal = () => {
     setEditingAdmin(null);
@@ -168,6 +234,7 @@ export default function UserManagementPage() {
       if (data.success) {
         setShowModal(false);
         fetchAdmins();
+        fetchRoleCounts();
         await Swal.fire({
           title: "สำเร็จ!",
           text: editingAdmin ? "แก้ไขข้อมูลสำเร็จ" : "เพิ่ม Admin สำเร็จ",
@@ -278,6 +345,7 @@ export default function UserManagementPage() {
           window.location.href = "/login";
         } else {
           fetchAdmins();
+          fetchRoleCounts();
           await Swal.fire({
             title: "ลบสำเร็จ!",
             icon: "success",
@@ -376,7 +444,7 @@ export default function UserManagementPage() {
               👥 User Management
             </h1>
             <p className="text-amber-600 mt-1 text-sm md:text-base">
-              จัดการผู้ใช้งานระบบ Admin ({admins.length} คน)
+              จัดการผู้ใช้งานระบบ Admin ({totalAll} คน)
             </p>
           </div>
           <button
@@ -400,6 +468,31 @@ export default function UserManagementPage() {
               className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"
             />
           </div>
+        </div>
+
+        {/* ✅ แท็บกรองตามบทบาท — แยกดูทีละบทบาทเวลามีพนักงานเยอะ */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setSelectedRole("all");
+              setPage(0);
+            }}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedRole === "all" ? "bg-amber-600 text-white" : "bg-white text-amber-700 border border-amber-200 hover:border-amber-400"}`}
+          >
+            ทั้งหมด ({totalAll})
+          </button>
+          {roleTabs.map((r) => (
+            <button
+              key={r}
+              onClick={() => {
+                setSelectedRole(r);
+                setPage(0);
+              }}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedRole === r ? "bg-amber-600 text-white" : "bg-white text-amber-700 border border-amber-200 hover:border-amber-400"}`}
+            >
+              {getRoleDisplayName(r)} ({roleCounts[r]})
+            </button>
+          ))}
         </div>
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -517,6 +610,31 @@ export default function UserManagementPage() {
             </table>
           </div>
         </div>
+
+        {/* ✅ แบ่งหน้า (server-side) */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 text-sm">
+            <span className="text-amber-700">
+              ทั้งหมด {totalElements} รายการ · หน้า {page + 1}/{totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                disabled={page <= 0}
+                className="px-3 py-1.5 rounded-lg border border-amber-200 bg-white text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition-colors"
+              >
+                ← ก่อนหน้า
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
+                disabled={page >= totalPages - 1}
+                className="px-3 py-1.5 rounded-lg border border-amber-200 bg-white text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition-colors"
+              >
+                ถัดไป →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}

@@ -124,6 +124,20 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (isReserved) return; // ← ไม่ fetch ถ้าเป็น reserved
+
+    // ✅ เผยทันทีถ้า element อยู่ในจอแล้ว — กัน IntersectionObserver พลาด initial fire
+    //    (เดิมทำให้ chip ประเภท/เนื้อหาเหนือ fold ค้างที่ opacity-0 จนกว่าจะ scroll/แตะ)
+    const revealIfInView = (
+      el: HTMLElement | null,
+      set: (v: boolean) => void,
+    ) => {
+      if (!el) return;
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      if (el.getBoundingClientRect().top < vh * 0.9) set(true);
+    };
+    revealIfInView(heroRef.current, setHeroVisible);
+    revealIfInView(contentRef.current, setContentVisible);
+
     const obs = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
