@@ -34,6 +34,23 @@ interface TopProduct {
   orderCount: number;
 }
 
+interface Summary {
+  totalRevenue: number;
+  validOrderCount: number;
+  totalOrderCount: number;
+  successCount: number;
+  avgOrderValue: number;
+  statusCounts: Record<string, number>;
+  channelCounts: Record<string, number>;
+  salesDaily: { date: string; revenue: number; orders: number }[];
+}
+
+// local datetime "YYYY-MM-DDTHH:mm:ss" (รูปแบบที่ backend parseDateTime รับ)
+const toParam = (d: Date) => {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
 function MiniBarChart({ data, color }: { data: number[]; color: string }) {
   const max = Math.max(...data, 1);
   return (
@@ -99,7 +116,9 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [prevSummary, setPrevSummary] = useState<Summary | null>(null);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [timeFilter, setTimeFilter] = useState<"7d" | "30d" | "all">("all");
@@ -139,36 +158,90 @@ export default function AdminDashboard() {
         .then((r) => (r.ok ? r.json() : { topProducts: [] }))
         .then((data) => setTopProducts(data.topProducts || []))
         .catch(console.error);
+      fetchSummary(timeFilter); // ✅ KPI/กราฟ/สถานะ refetch ตามช่วงเวลา
     }
   }, [timeFilter]);
+
+  // ช่วงเวลาของ timeFilter → from/to (prev = ช่วงก่อนหน้า)
+  const rangeFor = (tf: "7d" | "30d" | "all", prev = false) => {
+    if (tf === "all") return null;
+    const n = new Date();
+    const days = tf === "7d" ? 7 : 30;
+    const endOfDay = new Date(
+      n.getFullYear(),
+      n.getMonth(),
+      n.getDate(),
+      23,
+      59,
+      59,
+    );
+    if (!prev) return { from: new Date(n.getTime() - days * 86400000), to: endOfDay };
+    return {
+      from: new Date(n.getTime() - 2 * days * 86400000),
+      to: new Date(n.getTime() - days * 86400000),
+    };
+  };
+
+  const summaryUrl = (r: { from: Date; to: Date } | null) => {
+    const p = new URLSearchParams();
+    if (r) {
+      p.set("from", toParam(r.from));
+      p.set("to", toParam(r.to));
+    }
+    return `${process.env.NEXT_PUBLIC_API_URL}/api/orders/admin/report-summary?${p}`;
+  };
+
+  // ✅ สรุปยอดจาก backend (คำนวณใน SQL) — ไม่ดึงออเดอร์ทั้งหมดมานับเอง
+  const fetchSummary = async (tf: "7d" | "30d" | "all") => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const prevRange = rangeFor(tf, true);
+      const [curRes, prevRes] = await Promise.all([
+        fetch(summaryUrl(rangeFor(tf)), { headers }),
+        prevRange
+          ? fetch(summaryUrl(prevRange), { headers })
+          : Promise.resolve(null),
+      ]);
+      if (curRes.ok) setSummary(await curRes.json());
+      if (prevRes && prevRes.ok) setPrevSummary(await prevRes.json());
+      else setPrevSummary(null);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const base = process.env.NEXT_PUBLIC_API_URL;
 
-      const [productsRes, ordersRes, usersRes, topProdRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+      const [productsRes, usersRes, recentRes, topProdRes] = await Promise.all([
+        fetch(`${base}/api/products`),
+        fetch(`${base}/api/auth/users`, { headers }),
+        // ✅ 6 ออเดอร์ล่าสุดจาก endpoint แบ่งหน้า (ไม่ดึงทั้งหมด)
+        fetch(`${base}/api/orders/admin/page?page=0&size=6`, { headers }),
         fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all"}`,
+          `${base}/api/orders/stats/top-products?days=${timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all"}`,
         ),
       ]);
 
       if (productsRes.ok) setProducts(await productsRes.json());
-      if (ordersRes.ok) setOrders(await ordersRes.json());
       if (usersRes.ok) {
         const u = await usersRes.json();
-        setTotalUsers(u.length);
+        setTotalUsers(Array.isArray(u) ? u.length : (u.count ?? 0));
+      }
+      if (recentRes.ok) {
+        const d = await recentRes.json();
+        setRecentOrders(Array.isArray(d) ? d : (d.content ?? []));
       }
       if (topProdRes.ok) {
         const topData = await topProdRes.json();
         setTopProducts(topData.topProducts || []);
       }
+
+      await fetchSummary(timeFilter); // ✅ KPI/กราฟ/สถานะ ครั้งแรก
     } catch (e) {
       console.error(e);
     } finally {
@@ -177,73 +250,47 @@ export default function AdminDashboard() {
   };
 
   const now = new Date();
-  const cutoff =
-    timeFilter === "7d"
-      ? new Date(now.getTime() - 7 * 86400000)
-      : timeFilter === "30d"
-        ? new Date(now.getTime() - 30 * 86400000)
-        : new Date(0);
-  const filteredOrders = orders.filter((o) => new Date(o.createdAt) >= cutoff);
-  // ใหม่ ✅ — นับตั้งแต่ confirmed ขึ้นไป
-  const totalRevenue = filteredOrders
-    .filter((o) =>
-      ["confirmed", "preparing", "shipping", "delivered"].includes(
-        o.orderStatus,
-      ),
-    )
-    .reduce((s, o) => s + o.total, 0);
-  const totalOrders = filteredOrders.filter((o) =>
-    ["confirmed", "preparing", "shipping", "delivered"].includes(o.orderStatus),
-  ).length;
-  const pendingOrders = filteredOrders.filter(
-    (o) => o.orderStatus === "pending",
-  ).length;
+
+  // ✅ ค่าทั้งหมดมาจาก report-summary (คำนวณใน SQL) — ไม่ดึงออเดอร์ทั้งหมดมานับเองแล้ว
+  const sc = summary?.statusCounts ?? {};
+  const cc = summary?.channelCounts ?? {};
+
+  const totalRevenue = summary?.totalRevenue ?? 0;
+  const totalOrders = summary?.validOrderCount ?? 0; // confirmed+preparing+shipping+delivered
+  const totalAllOrders = summary?.totalOrderCount ?? 0; // ทุกสถานะในช่วงเวลา
+  const pendingOrders = sc.pending ?? 0;
   const lowStock = products.filter(
     (p) => p.stockQuantity <= 5 && p.stockQuantity !== 9999,
   ).length;
-  const posOrders = filteredOrders.filter((o) => o.orderType === "pos").length;
-  const dineInOrders = filteredOrders.filter(
-    (o) => o.orderType === "dine-in",
-  ).length;
-  const onlineOrders = filteredOrders.filter(
-    (o) => o.orderType !== "pos" && o.orderType !== "dine-in",
-  ).length;
+  const posOrders = cc.pos ?? 0;
+  const dineInOrders = cc.dineIn ?? 0;
+  const onlineOrders = cc.online ?? 0;
 
-  const dailyRevenue = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now.getTime() - (6 - i) * 86400000);
-    return orders
-      .filter(
-        (o) =>
-          new Date(o.createdAt).toDateString() === d.toDateString() &&
-          ["confirmed", "preparing", "shipping", "delivered"].includes(
-            o.orderStatus,
-          ),
-      )
-      .reduce((s, o) => s + o.total, 0);
-  });
-
-  const prevCutoff =
-    timeFilter === "7d"
-      ? new Date(now.getTime() - 14 * 86400000)
-      : timeFilter === "30d"
-        ? new Date(now.getTime() - 60 * 86400000)
-        : new Date(0);
-  const prevOrders = orders.filter(
-    (o) =>
-      new Date(o.createdAt) >= prevCutoff && new Date(o.createdAt) < cutoff,
+  // ✅ กราฟ 7 วันล่าสุด จาก salesDaily (อิงวัน Asia/Bangkok ให้ตรงกับ backend)
+  const dayKey = (d: Date) =>
+    d.toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
+  const revByDay: Record<string, number> = Object.fromEntries(
+    (summary?.salesDaily ?? []).map((s) => [s.date, s.revenue] as [string, number]),
   );
-  const prevRevenue = prevOrders
-    .filter((o) => o.orderStatus !== "cancelled")
-    .reduce((s, o) => s + o.total, 0);
+  const ordByDay: Record<string, number> = Object.fromEntries(
+    (summary?.salesDaily ?? []).map((s) => [s.date, s.orders] as [string, number]),
+  );
+  const last7Keys = Array.from({ length: 7 }, (_, i) =>
+    dayKey(new Date(now.getTime() - (6 - i) * 86400000)),
+  );
+  const dailyRevenue = last7Keys.map((k) => revByDay[k] ?? 0);
+  const dailyOrderCount = last7Keys.map((k) => ordByDay[k] ?? 0);
+
+  // ✅ เทียบช่วงก่อนหน้า จาก report-summary ของช่วงก่อน (นิยามเดียวกับช่วงปัจจุบัน)
+  const prevRevenue = prevSummary?.totalRevenue ?? 0;
+  const prevOrderCount = prevSummary?.validOrderCount ?? 0;
   const revChange =
     prevRevenue > 0
       ? Math.round(((totalRevenue - prevRevenue) / prevRevenue) * 100)
       : 0;
   const ordChange =
-    prevOrders.length > 0
-      ? Math.round(
-          ((totalOrders - prevOrders.length) / prevOrders.length) * 100,
-        )
+    prevOrderCount > 0
+      ? Math.round(((totalOrders - prevOrderCount) / prevOrderCount) * 100)
       : 0;
 
   const catCount = products.reduce((acc: Record<string, number>, p) => {
@@ -290,15 +337,10 @@ export default function AdminDashboard() {
         delivered: "สำเร็จ",
         cancelled: "ยกเลิก",
       }[key] || key,
-    count: filteredOrders.filter((o) => o.orderStatus === key).length,
+    count: sc[key] ?? 0,
   }));
 
-  const recentOrders = [...orders]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 6);
+  // ✅ recentOrders มาจาก state (ดึงจาก /admin/page?size=6) — ไม่ sort จากทั้งก้อนแล้ว
   const formatDate = (dateStr: string) => {
     console.log("formatDate:", dateStr);
     const dateObj = new Date(dateStr);
@@ -440,19 +482,7 @@ export default function AdminDashboard() {
             border: "border-green-400",
             bg: "from-green-50 to-emerald-50",
             chart: (
-              <MiniBarChart
-                data={dailyRevenue.map(
-                  (_, i) =>
-                    orders.filter((o) => {
-                      const d = new Date(now.getTime() - (6 - i) * 86400000);
-                      return (
-                        new Date(o.createdAt).toDateString() ===
-                        d.toDateString()
-                      );
-                    }).length,
-                )}
-                color="#10b981"
-              />
+              <MiniBarChart data={dailyOrderCount} color="#10b981" />
             ),
             delay: "60ms",
           },
@@ -580,7 +610,7 @@ export default function AdminDashboard() {
         >
           <h2 className="font-bold text-amber-700 mb-1">สถานะออเดอร์</h2>
           <p className="text-xs text-gray-400 mb-4">
-            ทั้งหมด {filteredOrders.length} รายการ
+            ทั้งหมด {totalAllOrders} รายการ
           </p>
           <div className="flex flex-col gap-2">
             {statusBreakdown.map((s) => (
@@ -593,7 +623,7 @@ export default function AdminDashboard() {
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
-                      width: `${filteredOrders.length > 0 ? (s.count / filteredOrders.length) * 100 : 0}%`,
+                      width: `${totalAllOrders > 0 ? (s.count / totalAllOrders) * 100 : 0}%`,
                       backgroundColor: s.color,
                     }}
                   />

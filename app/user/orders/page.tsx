@@ -94,10 +94,14 @@ export default function OrdersPage() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}?size=100`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (response.ok) setOrders(await response.json());
+      if (response.ok) {
+        const data = await response.json();
+        // ✅ response เป็น envelope { content, ... } รองรับของเดิม (array) ด้วย
+        setOrders(Array.isArray(data) ? data : (data.content ?? []));
+      }
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -111,10 +115,14 @@ export default function OrdersPage() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}?size=100`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (response.ok) setOrders(await response.json());
+      if (response.ok) {
+        const data = await response.json();
+        // ✅ response เป็น envelope { content, ... } รองรับของเดิม (array) ด้วย
+        setOrders(Array.isArray(data) ? data : (data.content ?? []));
+      }
     } catch (error) {}
   };
 
