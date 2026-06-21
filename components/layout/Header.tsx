@@ -264,10 +264,13 @@ export default function Header() {
     let ticking = false;
     const update = () => {
       const y = window.scrollY;
-      if (y < 10) {
-        setHideBars(false); // ใกล้สุดบน → แสดงเสมอ
-      } else if (Math.abs(y - lastY) > 6) {
-        setHideBars(y > lastY); // เลื่อนลง → ซ่อน, เลื่อนขึ้น → แสดง
+      // ใกล้ขอบบน (ยังไม่พ้นความสูงแถบ) → แสดงเสมอ กันสะดุดช่วงเริ่มเลื่อน
+      if (y < 64) {
+        setHideBars(false);
+      } else if (y - lastY > 8) {
+        setHideBars(true); // เลื่อนลงชัดเจน → ซ่อนทั้งบน+ล่างรวดเดียว
+      } else if (lastY - y > 8) {
+        setHideBars(false); // เลื่อนขึ้นชัดเจน → แสดงทั้งบนและล่างพร้อมกัน
       }
       lastY = y;
       ticking = false;
