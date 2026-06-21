@@ -52,7 +52,6 @@ export default function Header() {
   const [pageResults, setPageResults] = useState<PageResult[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [hideBars, setHideBars] = useState(false);
   const [allProducts, setAllProducts] = useState<SearchResult[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
@@ -258,33 +257,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ ซ่อน/แสดง แถบบน+ล่าง ตามทิศทางการเลื่อน (มือถือ/แท็บเล็ต)
-  useEffect(() => {
-    let lastY = window.scrollY;
-    let ticking = false;
-    const update = () => {
-      const y = window.scrollY;
-      // ใกล้ขอบบน (ยังไม่พ้นความสูงแถบ) → แสดงเสมอ กันสะดุดช่วงเริ่มเลื่อน
-      if (y < 64) {
-        setHideBars(false);
-      } else if (y - lastY > 8) {
-        setHideBars(true); // เลื่อนลงชัดเจน → ซ่อนทั้งบน+ล่างรวดเดียว
-      } else if (lastY - y > 8) {
-        setHideBars(false); // เลื่อนขึ้นชัดเจน → แสดงทั้งบนและล่างพร้อมกัน
-      }
-      lastY = y;
-      ticking = false;
-    };
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        window.requestAnimationFrame(update);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   useEffect(() => {
     if (!user || isAdmin) return;
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
@@ -390,9 +362,6 @@ export default function Header() {
   if (!mounted) return <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />;
   if (pathname?.startsWith("/admin")) return null;
 
-  // พักเมื่อเลื่อนลง — แต่ถ้าเมนู/ช่องค้นหาเปิดอยู่ให้คงแสดงไว้
-  const effectiveHidden = hideBars && !isMenuOpen && !showSearch;
-
   const SearchDropdown = () => {
     if (!showResults || searchQuery.trim() === "") return null;
     return (
@@ -479,9 +448,7 @@ export default function Header() {
 
   return (
     <>
-      <nav
-        className={`sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg transition-transform duration-300 ease-in-out will-change-transform ${effectiveHidden ? "-translate-y-full xl:translate-y-0" : "translate-y-0"}`}
-      >
+      <nav className="sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <Link
@@ -824,9 +791,7 @@ export default function Header() {
 
       {/* ✅ Bottom Navigation — แบบปกติ ไอคอน + ชื่อหมวดหมู่ (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
       {!isAdmin && (
-        <nav
-          className={`xl:hidden fixed inset-x-0 bottom-0 z-40 bg-amber-100/90 backdrop-blur-xl backdrop-saturate-150 border-t border-amber-900/10 shadow-[0_-2px_10px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-in-out will-change-transform ${effectiveHidden ? "translate-y-full" : "translate-y-0"}`}
-        >
+        <nav className="xl:hidden fixed inset-x-0 bottom-0 z-40 bg-amber-100/90 backdrop-blur-xl backdrop-saturate-150 border-t border-amber-900/10 shadow-[0_-2px_10px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)]">
           <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {bottomNavLinks.map((link) => {
               const active = isActive(link.href);
