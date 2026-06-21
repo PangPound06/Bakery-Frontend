@@ -789,31 +789,35 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* ✅ Bottom Navigation — แถบลอยทรงแคปซูล (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
+      {/* ✅ Bottom Navigation — แบบปกติ ไอคอน + ชื่อหมวดหมู่ (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
       {!isAdmin && (
-        <div className="xl:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pointer-events-none">
-          <nav className="pointer-events-auto max-w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-full bg-white/80 backdrop-blur-xl backdrop-saturate-150 ring-1 ring-amber-900/10 shadow-[0_10px_30px_rgba(0,0,0,0.18)] px-2 py-2">
-            <div className="flex items-center gap-1">
-              {bottomNavLinks.map((link) => {
-                const active = isActive(link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    aria-label={link.label}
-                    className={`flex items-center justify-center rounded-full w-12 h-12 text-2xl transition-all duration-200 active:scale-95 ${
-                      active
-                        ? "bg-amber-500/15 text-amber-700 scale-105"
-                        : "text-amber-800 hover:text-amber-900 hover:bg-amber-500/10"
-                    }`}
-                  >
-                    <span className="leading-none">{link.icon}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-        </div>
+        <nav className="xl:hidden fixed inset-x-0 bottom-0 z-40 bg-amber-100/90 backdrop-blur-xl backdrop-saturate-150 border-t border-amber-900/10 shadow-[0_-2px_10px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {bottomNavLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-label={link.label}
+                  className={`relative flex-1 min-w-[64px] flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+                    active
+                      ? "text-amber-700"
+                      : "text-amber-800/60 hover:text-amber-900 hover:bg-amber-200/40"
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+                  )}
+                  <span className="text-xl leading-none">{link.icon}</span>
+                  <span className="text-[10px] font-medium leading-tight truncate max-w-[64px] px-0.5">
+                    {link.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       )}
     </>
   );
