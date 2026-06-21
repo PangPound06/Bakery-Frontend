@@ -124,33 +124,18 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (isReserved) return; // ← ไม่ fetch ถ้าเป็น reserved
+    if (loading) return; // รอข้อมูลโหลดเสร็จก่อนค่อยเผย
 
-    // ✅ เผยทันทีถ้า element อยู่ในจอแล้ว — กัน IntersectionObserver พลาด initial fire
-    //    (เดิมทำให้ chip ประเภท/เนื้อหาเหนือ fold ค้างที่ opacity-0 จนกว่าจะ scroll/แตะ)
-    const revealIfInView = (
-      el: HTMLElement | null,
-      set: (v: boolean) => void,
-    ) => {
-      if (!el) return;
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      if (el.getBoundingClientRect().top < vh * 0.9) set(true);
+    // ✅ เผยเนื้อหาแบบ fade-in หลังโหลดเสร็จ — ไม่พึ่ง IntersectionObserver
+    //    เหตุผล: เมื่อสินค้าเยอะ section เนื้อหาจะสูงเกิน 10 เท่าของจอ ทำให้
+    //    threshold 0.1 (ต้องเห็น 10% ของ section) ไม่มีวันถึง → chip ค้างที่ opacity-0
+    //    (อาการที่เกิดเฉพาะหน้าที่ข้อมูลเยอะ เช่น /food)
+    const t1 = setTimeout(() => setHeroVisible(true), 50);
+    const t2 = setTimeout(() => setContentVisible(true), 150);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
     };
-    revealIfInView(heroRef.current, setHeroVisible);
-    revealIfInView(contentRef.current, setContentVisible);
-
-    const obs = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.target === heroRef.current && e.isIntersecting)
-            setHeroVisible(true);
-          if (e.target === contentRef.current && e.isIntersecting)
-            setContentVisible(true);
-        }),
-      { threshold: 0.1 },
-    );
-    if (heroRef.current) obs.observe(heroRef.current);
-    if (contentRef.current) obs.observe(contentRef.current);
-    return () => obs.disconnect();
   }, [loading, isReserved]);
 
   useEffect(() => {
