@@ -88,6 +88,7 @@ export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("All");
+  const [loading, setLoading] = useState(true);
 
   // โหลดหมวดหมู่ แล้วเลือกอันแรกเป็นค่าเริ่มต้น
   useEffect(() => {
@@ -100,9 +101,13 @@ export default function MenuPage() {
           const data: Category[] = await res.json();
           setCategories(data);
           if (data.length > 0) setSelectedSlug(data[0].slug);
+          else setLoading(false);
+        } else {
+          setLoading(false);
         }
       } catch (e) {
         console.error(e);
+        setLoading(false);
       }
     };
     fetchCategories();
@@ -137,6 +142,7 @@ export default function MenuPage() {
       console.error(e);
     } finally {
       setLoadingProducts(false);
+      setLoading(false);
     }
   };
 
@@ -161,6 +167,25 @@ export default function MenuPage() {
     selectedType === "All"
       ? products
       : products.filter((p) => p.type === selectedType);
+
+  if (loading)
+    return (
+      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{
+              borderWidth: 3,
+              borderStyle: "solid",
+              borderColor: "#f59e0b transparent transparent transparent",
+            }}
+          ></div>
+          <p className="text-amber-700 text-sm font-medium">
+            กำลังโหลดข้อมูล...
+          </p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-[#faf7f2]">
