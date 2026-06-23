@@ -346,14 +346,14 @@ export default function Header() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
   const onMenuPage = pathname?.startsWith("/menu") ?? false;
+  // หน้า Menu/Cart/Search (ปลายทาง Bottom Nav) → Header เหลือแค่ hamburger
+  const minimalHeader =
+    onMenuPage || (pathname?.startsWith("/cart") ?? false) || showSearch;
   const hasAnyResults = searchResults.length > 0 || pageResults.length > 0;
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted)
-    return (
-      <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />
-    );
+  if (!mounted) return <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />;
   if (pathname?.startsWith("/admin")) return null;
 
   const SearchDropdown = () => {
@@ -442,9 +442,7 @@ export default function Header() {
 
   return (
     <>
-      <nav
-        className={`sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg ${onMenuPage && !showSearch ? "hidden xl:block" : ""}`}
-      >
+      <nav className="sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <Link
@@ -510,7 +508,7 @@ export default function Header() {
                   </div>
                   <button
                     onClick={() => setShowSearch(!showSearch)}
-                    className="xl:hidden p-2 rounded-lg hover:bg-amber-200/70 transition-colors"
+                    className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-lg hover:bg-amber-200/70 transition-colors`}
                     aria-label="ค้นหา"
                   >
                     <svg
@@ -588,7 +586,7 @@ export default function Header() {
                 <Link
                   href="/cart"
                   aria-label="ตะกร้าสินค้า"
-                  className={`xl:hidden p-2 rounded-lg transition-colors hover:bg-amber-200/70 hover:text-amber-900 ${isActive("/cart") ? "bg-amber-500 text-white" : ""}`}
+                  className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-lg transition-colors hover:bg-amber-200/70 hover:text-amber-900 ${isActive("/cart") ? "bg-amber-500 text-white" : ""}`}
                 >
                   <svg
                     className="w-6 h-6"
@@ -798,18 +796,8 @@ export default function Header() {
               {pathname === "/" && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
               )}
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-9"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-9" />
               </svg>
               <span className="text-[10px] font-medium leading-none">Home</span>
             </Link>
@@ -823,18 +811,11 @@ export default function Header() {
               {onMenuPage && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
               )}
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-6 h-6 transition-transform active:scale-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3.5 18.5h17" />
+                <path d="M5.5 18.5C5.5 12 8.4 8.5 12 8.5C15.6 8.5 18.5 12 18.5 18.5" />
+                <path d="M12 8.5V6" />
+                <circle cx="12" cy="4.9" r="1.15" fill="currentColor" stroke="none" />
               </svg>
               <span className="text-[10px] font-medium leading-none">Menu</span>
             </Link>
@@ -848,18 +829,8 @@ export default function Header() {
               {isActive("/cart") && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
               )}
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="text-[10px] font-medium leading-none">Cart</span>
             </Link>
@@ -874,22 +845,10 @@ export default function Header() {
               aria-label="Search"
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors text-amber-800/60 hover:text-amber-900"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <span className="text-[10px] font-medium leading-none">
-                Search
-              </span>
+              <span className="text-[10px] font-medium leading-none">Search</span>
             </button>
           </div>
         </nav>
