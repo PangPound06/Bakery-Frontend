@@ -67,16 +67,6 @@ export default function Header() {
     { href: "/cart", label: "Cart", icon: "🛒" },
   ];
 
-  // ✅ Bottom nav (มือถือ): Home + หมวดหมู่ (ไม่รวมตะกร้า เพราะย้ายไป header)
-  const bottomNavLinks = [
-    { href: "/", label: "Home", icon: "🏠" },
-    ...categories.map((cat) => ({
-      href: `/${cat.slug}`,
-      label: cat.name,
-      icon: cat.icon,
-    })),
-  ];
-
   // ✅ เมนูบัญชีผู้ใช้ (แสดงเมื่อกด hamburger บนมือถือ) — ตรงกับ UserMenu
   const accountMenuItems = [
     { href: "/user/profile", label: "ข้อมูลส่วนตัว", icon: "👤" },
@@ -355,11 +345,15 @@ export default function Header() {
   const navLinks = isAdmin ? adminNavLinks : userNavLinks;
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
+  const onMenuPage = pathname?.startsWith("/menu") ?? false;
   const hasAnyResults = searchResults.length > 0 || pageResults.length > 0;
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />;
+  if (!mounted)
+    return (
+      <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />
+    );
   if (pathname?.startsWith("/admin")) return null;
 
   const SearchDropdown = () => {
@@ -448,7 +442,9 @@ export default function Header() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg">
+      <nav
+        className={`sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg ${onMenuPage && !showSearch ? "hidden xl:block" : ""}`}
+      >
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <Link
@@ -485,7 +481,7 @@ export default function Header() {
             <div className="flex items-center gap-2 sm:gap-3">
               {!isAdmin && (
                 <div ref={searchRef} className="relative">
-                  <div className="hidden sm:block">
+                  <div className="hidden xl:block">
                     <form onSubmit={handleSearchSubmit} className="relative">
                       <input
                         type="text"
@@ -514,7 +510,7 @@ export default function Header() {
                   </div>
                   <button
                     onClick={() => setShowSearch(!showSearch)}
-                    className="sm:hidden p-2 rounded-lg hover:bg-amber-200/70 transition-colors"
+                    className="xl:hidden p-2 rounded-lg hover:bg-amber-200/70 transition-colors"
                     aria-label="ค้นหา"
                   >
                     <svg
@@ -532,7 +528,7 @@ export default function Header() {
                     </svg>
                   </button>
                   {showResults && (
-                    <div className="absolute right-0 sm:left-0 top-full mt-2 w-80 z-50 hidden sm:block">
+                    <div className="absolute right-0 xl:left-0 top-full mt-2 w-80 z-50 hidden xl:block">
                       <SearchDropdown />
                     </div>
                   )}
@@ -650,7 +646,7 @@ export default function Header() {
           </div>
 
           {showSearch && !isAdmin && (
-            <div ref={mobileSearchRef} className="sm:hidden pb-3">
+            <div ref={mobileSearchRef} className="xl:hidden pb-3">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
@@ -789,33 +785,112 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* ✅ Bottom Navigation — แบบปกติ ไอคอน + ชื่อหมวดหมู่ (มือถือ/แท็บเล็ต, เฉพาะผู้ใช้ทั่วไป) */}
+      {/* ✅ Bottom Navigation — Home / Menu / Cart / Search (มือถือ/แท็บเล็ต) */}
       {!isAdmin && (
         <nav className="xl:hidden fixed inset-x-0 bottom-0 z-40 bg-amber-100/90 backdrop-blur-xl backdrop-saturate-150 border-t border-amber-900/10 shadow-[0_-2px_10px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {bottomNavLinks.map((link) => {
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  aria-label={link.label}
-                  className={`relative flex-1 min-w-[64px] flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
-                    active
-                      ? "text-amber-700"
-                      : "text-amber-800/60 hover:text-amber-900 hover:bg-amber-200/40"
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
-                  )}
-                  <span className="text-xl leading-none">{link.icon}</span>
-                  <span className="text-[10px] font-medium leading-tight truncate max-w-[64px] px-0.5">
-                    {link.label}
-                  </span>
-                </Link>
-              );
-            })}
+          <div className="flex">
+            {/* Home */}
+            <Link
+              href="/"
+              aria-label="Home"
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${pathname === "/" ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+            >
+              {pathname === "/" && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+              )}
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-9"
+                />
+              </svg>
+              <span className="text-[10px] font-medium leading-none">Home</span>
+            </Link>
+
+            {/* Menu */}
+            <Link
+              href="/menu"
+              aria-label="Menu"
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${onMenuPage ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+            >
+              {onMenuPage && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+              )}
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              <span className="text-[10px] font-medium leading-none">Menu</span>
+            </Link>
+
+            {/* Cart */}
+            <Link
+              href="/cart"
+              aria-label="Cart"
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${isActive("/cart") ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+            >
+              {isActive("/cart") && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+              )}
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              <span className="text-[10px] font-medium leading-none">Cart</span>
+            </Link>
+
+            {/* Search */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowSearch(true);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              aria-label="Search"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors text-amber-800/60 hover:text-amber-900"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <span className="text-[10px] font-medium leading-none">
+                Search
+              </span>
+            </button>
           </div>
         </nav>
       )}

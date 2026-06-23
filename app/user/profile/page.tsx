@@ -348,7 +348,7 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-2xl font-bold text-amber-700 break-words">
+                  <h2 className="text-xl font-bold text-amber-700 break-words">
                     {formData.fullname || "ผู้ใช้"}
                   </h2>
                   <p className="text-gray-500 truncate">{profile?.email}</p>
