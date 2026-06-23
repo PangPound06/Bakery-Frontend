@@ -87,6 +87,7 @@ export default function MenuPage() {
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [selectedType, setSelectedType] = useState<string>("All");
 
   // โหลดหมวดหมู่ แล้วเลือกอันแรกเป็นค่าเริ่มต้น
   useEffect(() => {
@@ -140,7 +141,10 @@ export default function MenuPage() {
   };
 
   useEffect(() => {
-    if (selectedSlug) fetchProducts(selectedSlug);
+    if (selectedSlug) {
+      setSelectedType("All");
+      fetchProducts(selectedSlug);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSlug]);
 
@@ -148,12 +152,21 @@ export default function MenuPage() {
   const heroImage = HERO_IMAGES[selectedSlug];
   const displayName =
     categories.find((c) => c.slug === selectedSlug)?.name || selectedSlug;
+  // ประเภทย่อยในหมวด (All + type ที่มีจริง)
+  const types = [
+    "All",
+    ...new Set(products.map((p) => p.type).filter(Boolean)),
+  ];
+  const filtered =
+    selectedType === "All"
+      ? products
+      : products.filter((p) => p.type === selectedType);
 
   return (
     <div className="min-h-screen bg-[#faf7f2]">
       {/* ส่วนหัว — sticky บนมือถือ, ปกติบนเดสก์ท็อป (เลี่ยงทับ Header หลัก) */}
       <div className="bg-[#faf7f2] border-b border-stone-200/70">
-        {/* แท็บหมวดหมู่ — มือถือ/แท็บเล็ตชิดซ้าย, เดสก์ท็อปกึ่งกลาง */}
+        {/* แท็บหมวดหมู่ — มือถือชิดซ้าย(เลื่อนได้), แท็บเล็ต/คอมพ์จัดกลาง */}
         <div className="flex gap-2 overflow-x-auto px-3 pt-2 pb-3 xl:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((cat) => {
             const active = cat.slug === selectedSlug;
@@ -234,15 +247,33 @@ export default function MenuPage() {
             ไม่พบสินค้าในหมวดหมู่นี้
           </p>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-            {products.map((p) => (
-              <ProductCard
-                key={p.id}
-                {...p}
-                onStockUpdate={() => fetchProducts(selectedSlug)}
-              />
-            ))}
-          </div>
+          <>
+            {/* แถวกรองประเภท + จำนวนรายการ */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+              <div className="flex flex-wrap gap-2">
+                {types.map((tp) => (
+                  <button
+                    key={tp}
+                    onClick={() => setSelectedType(tp)}
+                    className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${selectedType === tp ? "bg-amber-900 text-amber-50" : "bg-white text-stone-500 hover:text-stone-700 border border-stone-200 hover:border-stone-400"}`}
+                  >
+                    {tp}
+                  </button>
+                ))}
+              </div>
+              <p className="text-stone-400 text-xs">{filtered.length} รายการ</p>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+              {filtered.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  {...p}
+                  onStockUpdate={() => fetchProducts(selectedSlug)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
