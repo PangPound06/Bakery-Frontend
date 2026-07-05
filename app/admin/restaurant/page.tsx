@@ -55,10 +55,11 @@ function getStatus(status: string) {
   );
 }
 
-function getTableNo(note?: string) {
-  if (!note) return null;
-  const match = note.match(/โต๊ะ\s*(\S+)/);
-  return match ? match[1] : null;
+function getTableNo(tableNo?: string) {
+  if (!tableNo) return null;
+  // รองรับทั้งค่าดิบ ("3") และรูปแบบเก่า ("โต๊ะ 3")
+  const match = tableNo.match(/โต๊ะ\s*(\S+)/);
+  return match ? match[1] : tableNo.trim() || null;
 }
 
 function formatDateTime(dateStr: string) {
@@ -536,7 +537,10 @@ export default function AdminRestaurantPage() {
                     #ID
                   </th>
                   <th className="px-4 py-4 text-left text-sm font-semibold text-white">
-                    โต๊ะ / ลูกค้า
+                    โต๊ะ
+                  </th>
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-white">
+                    ลูกค้า
                   </th>
                   <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                     ยอดรวม
@@ -566,12 +570,16 @@ export default function AdminRestaurantPage() {
                         #{order.ordCode || order.id}
                       </td>
                       <td className="px-4 py-4">
-                        {tNo && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full mb-1">
+                        {tNo ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
                             🪑 โต๊ะ {tNo}
                           </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
                         )}
-                        <p className="text-xs text-gray-500">{order.email}</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="text-sm text-gray-700">{order.email}</p>
                       </td>
                       <td className="px-4 py-4 font-semibold text-amber-600">
                         ฿{formatPrice(order.total)}
