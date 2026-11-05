@@ -19,6 +19,7 @@ export default function StoreLocationSection() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [focus, setFocus] = useState<Branch | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -28,7 +29,8 @@ export default function StoreLocationSection() {
         });
         setBranches(d.branches || []);
       } catch {
-        // ignore
+        // แยกกรณี "โหลดไม่ได้" ออกจาก "ไม่มีสาขา" — ไม่งั้น backend ล่มจะดูเหมือนร้านไม่มีสาขา
+        setLoadFailed(true);
       } finally {
         setLoading(false);
       }
@@ -59,6 +61,10 @@ export default function StoreLocationSection() {
       {loading ? (
         <div className="h-[420px] rounded-2xl bg-white/60 flex items-center justify-center text-amber-700">
           กำลังโหลด...
+        </div>
+      ) : loadFailed ? (
+        <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-red-500">
+          โหลดข้อมูลสาขาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง
         </div>
       ) : branches.length === 0 ? (
         <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-gray-500">
