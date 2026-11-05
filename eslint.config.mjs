@@ -5,6 +5,13 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      // รูปสินค้า/โปรไฟล์/สลิป/QR มาจาก Cloudinary, Stripe และ data URL ขนาดไม่แน่นอน
+      // จึงตั้งใจใช้ <img> ธรรมดา แทน next/image ที่ต้องรู้ขนาดล่วงหน้า
+      "@next/next/no-img-element": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

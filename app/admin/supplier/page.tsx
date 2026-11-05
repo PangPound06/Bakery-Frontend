@@ -20,6 +20,20 @@ interface Supplier {
   createdAt: string;
 }
 
+/** ช่องข้อความในฟอร์มเพิ่ม/แก้ไข Supplier (ใช้ทั้งสองฟอร์ม) */
+const SUPPLIER_TEXT_FIELDS: {
+  label: string;
+  key: "name" | "contactName" | "phone" | "email" | "taxId" | "address";
+  placeholder: string;
+}[] = [
+  { label: "ชื่อบริษัท *", key: "name", placeholder: "บ.ชื่อบริษัท จำกัด" },
+  { label: "ชื่อผู้ติดต่อ *", key: "contactName", placeholder: "คุณชื่อ นามสกุล" },
+  { label: "โทรศัพท์ *", key: "phone", placeholder: "0XX-XXX-XXXX" },
+  { label: "อีเมล", key: "email", placeholder: "email@company.com" },
+  { label: "เลขผู้เสียภาษี", key: "taxId", placeholder: "13 หลัก" },
+  { label: "ที่อยู่", key: "address", placeholder: "ที่อยู่บริษัท" },
+];
+
 interface PurchaseOrder {
   id: number;
   supplierId: number;
@@ -124,7 +138,7 @@ export default function SupplierPage() {
       const data = await res.json();
       const list: Supplier[] = Array.isArray(data) ? data : [];
       setSuppliers(list);
-      if (!selectedSupplier && list.length > 0) setSelectedSupplier(list[0]);
+      setSelectedSupplier((current) => current ?? list[0] ?? null);
     } catch (e) {
       console.error("fetch suppliers error", e);
     }
@@ -197,10 +211,10 @@ export default function SupplierPage() {
         timer: 1500,
         showConfirmButton: false,
       });
-    } catch (err: any) {
+    } catch (err) {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: err?.message || "ไม่สามารถเชื่อมต่อ Backend ได้",
+        text: err instanceof Error && err.message ? err.message : "ไม่สามารถเชื่อมต่อ Backend ได้",
         icon: "error",
         confirmButtonColor: "#f97316",
       });
@@ -377,10 +391,10 @@ export default function SupplierPage() {
         timer: 1500,
         showConfirmButton: false,
       });
-    } catch (err: any) {
+    } catch (err) {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: err?.message || "ไม่สามารถลบได้",
+        text: err instanceof Error && err.message ? err.message : "ไม่สามารถลบได้",
         icon: "error",
         confirmButtonColor: "#f97316",
       });
@@ -1286,38 +1300,7 @@ export default function SupplierPage() {
               </button>
             </div>
             <div className="p-5 space-y-4">
-              {[
-                {
-                  label: "ชื่อบริษัท *",
-                  key: "name",
-                  placeholder: "บ.ชื่อบริษัท จำกัด",
-                },
-                {
-                  label: "ชื่อผู้ติดต่อ *",
-                  key: "contactName",
-                  placeholder: "คุณชื่อ นามสกุล",
-                },
-                {
-                  label: "โทรศัพท์ *",
-                  key: "phone",
-                  placeholder: "0XX-XXX-XXXX",
-                },
-                {
-                  label: "อีเมล",
-                  key: "email",
-                  placeholder: "email@company.com",
-                },
-                {
-                  label: "เลขผู้เสียภาษี",
-                  key: "taxId",
-                  placeholder: "13 หลัก",
-                },
-                {
-                  label: "ที่อยู่",
-                  key: "address",
-                  placeholder: "ที่อยู่บริษัท",
-                },
-              ].map((field) => (
+              {SUPPLIER_TEXT_FIELDS.map((field) => (
                 <div key={field.key}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     {field.label}
@@ -1337,7 +1320,7 @@ export default function SupplierPage() {
                           ? 13
                           : undefined
                     }
-                    value={(newSupplier as any)[field.key]}
+                    value={newSupplier[field.key]}
                     onChange={(e) => {
                       let val = e.target.value;
                       if (field.key === "phone")
@@ -1677,38 +1660,7 @@ export default function SupplierPage() {
               </button>
             </div>
             <div className="p-5 space-y-4">
-              {[
-                {
-                  label: "ชื่อบริษัท *",
-                  key: "name",
-                  placeholder: "บ.ชื่อบริษัท จำกัด",
-                },
-                {
-                  label: "ชื่อผู้ติดต่อ *",
-                  key: "contactName",
-                  placeholder: "คุณชื่อ นามสกุล",
-                },
-                {
-                  label: "โทรศัพท์ *",
-                  key: "phone",
-                  placeholder: "0XX-XXX-XXXX",
-                },
-                {
-                  label: "อีเมล",
-                  key: "email",
-                  placeholder: "email@company.com",
-                },
-                {
-                  label: "เลขผู้เสียภาษี",
-                  key: "taxId",
-                  placeholder: "13 หลัก",
-                },
-                {
-                  label: "ที่อยู่",
-                  key: "address",
-                  placeholder: "ที่อยู่บริษัท",
-                },
-              ].map((field) => (
+              {SUPPLIER_TEXT_FIELDS.map((field) => (
                 <div key={field.key}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     {field.label}
@@ -1728,7 +1680,7 @@ export default function SupplierPage() {
                           ? 13
                           : undefined
                     }
-                    value={(editSupplierForm as any)[field.key]}
+                    value={editSupplierForm[field.key]}
                     onChange={(e) => {
                       let val = e.target.value;
                       if (field.key === "phone")

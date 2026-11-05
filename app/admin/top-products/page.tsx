@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 interface TopProduct {
@@ -49,28 +49,7 @@ export default function TopProductsPage() {
     return cat ? `${cat.icon} ${cat.name}` : slug;
   };
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      router.replace("/login");
-      return;
-    }
-    const user = JSON.parse(userData);
-    if (!user.email?.endsWith("@empbakery.com")) {
-      router.replace("/");
-      return;
-    }
-    fetchTopProducts("all"); // ✅ ส่ง default filter ตอน mount
-  }, [router]);
-
-  // ✅ refetch เมื่อ filter เปลี่ยน (ยกเว้นครั้งแรก loading=true)
-  useEffect(() => {
-    if (!loading) {
-      fetchTopProducts(timeFilter);
-    }
-  }, [timeFilter]);
-
-  const fetchTopProducts = async (filter: "7d" | "30d" | "all") => {
+  const fetchTopProducts = useCallback(async (filter: "7d" | "30d" | "all") => {
     setLoading(true);
     try {
       const days = filter === "7d" ? "7" : filter === "30d" ? "30" : "all";
@@ -93,7 +72,23 @@ export default function TopProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // ตรวจสิทธิ์แล้วโหลดข้อมูลตามช่วงเวลา — ทำซ้ำทุกครั้งที่เปลี่ยนตัวกรอง
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.replace("/login");
+      return;
+    }
+    const user = JSON.parse(userData);
+    if (!user.email?.endsWith("@empbakery.com")) {
+      router.replace("/");
+      return;
+    }
+    fetchTopProducts(timeFilter);
+  }, [router, timeFilter, fetchTopProducts]);
+
 
   const medals = ["🥇", "🥈", "🥉"];
   const maxQty = topProducts[0]?.totalQty || 1;

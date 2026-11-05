@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface Category {
@@ -51,18 +52,18 @@ export default function Footer() {
             <ul className="space-y-1.5 sm:space-y-2 text-amber-700 text-xs sm:text-sm">
               {categories.map((cat) => (
                 <li key={cat.id}>
-                  <a
+                  <Link
                     href={`/${cat.slug}`}
                     className="hover:text-amber-600 transition"
                   >
                     {cat.icon} {cat.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>
-                <a href="/cart" className="hover:text-amber-600 transition">
+                <Link href="/cart" className="hover:text-amber-600 transition">
                   🛒 Cart
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

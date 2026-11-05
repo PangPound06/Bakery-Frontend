@@ -4,6 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+/** ฟิลด์ที่หน้านี้ใช้จาก GET /api/dinein/my-orders */
+interface DineInOrderSummary {
+  tableNo?: string;
+  orderStatus?: string;
+  paymentStatus?: string | null;
+}
+
 export default function OrderModePage() {
   const router = useRouter();
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
@@ -29,10 +36,11 @@ export default function OrderModePage() {
     })
       .then((r) => r.json())
       .then((data) => {
-        const list = Array.isArray(data) ? data : (data.orders ?? []);
+        const list: DineInOrderSummary[] = Array.isArray(data)
+          ? data
+          : (data.orders ?? []);
         const active = list.filter(
-          (o: any) =>
-            o.orderStatus !== "cancelled" && o.paymentStatus !== "paid",
+          (o) => o.orderStatus !== "cancelled" && o.paymentStatus !== "paid",
         );
         if (active.length > 0) {
           const tableNoFromOrder = active[0].tableNo || "";

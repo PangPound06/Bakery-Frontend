@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-12 px-4"
-      style={{ fontFamily: "'Prompt', sans-serif" }}
+      style={{ fontFamily: "var(--font-prompt), sans-serif" }}
     >
       <div className="max-w-3xl mx-auto">
         {/* Back */}

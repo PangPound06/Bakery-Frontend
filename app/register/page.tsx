@@ -100,9 +100,13 @@ export default function RegisterPage() {
       });
 
       router.push("/login");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Register error:", err);
-      setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+      );
     } finally {
       setLoading(false);
     }

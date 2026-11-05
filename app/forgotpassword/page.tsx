@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err: any) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อ server ได้ กรุณาลองใหม่");
     } finally {
       setLoading(false);
@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.message || "รหัส OTP ไม่ถูกต้อง");
       }
-    } catch (err: any) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อ server ได้");
     } finally {
       setLoading(false);
@@ -189,7 +189,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err: any) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อ server ได้");
     } finally {
       setLoading(false);
@@ -232,7 +232,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.message || "ไม่สามารถส่ง OTP ใหม่ได้");
       }
-    } catch (err) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อ server ได้");
     } finally {
       setLoading(false);

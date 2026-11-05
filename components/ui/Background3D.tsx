@@ -8,23 +8,35 @@ import * as THREE from "three";
 // โทนสีเบเกอรี่ (amber/orange/cream)
 const COLORS = ["#f59e0b", "#fbbf24", "#fdba74", "#fcd34d", "#fb923c"];
 
+/**
+ * ตัวเลขสุ่มเทียมแบบกำหนดผลได้ (0 ≤ x < 1) — ค่าเดิมทุกครั้งที่ render
+ * React ไม่อนุญาตให้เรียก Math.random() ระหว่าง render เพราะผลลัพธ์ไม่คงที่
+ */
+const pseudoRandom = (seed: number) => {
+  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+};
+
 function Orbs({ count = 14 }: { count?: number }) {
   const group = useRef<THREE.Group>(null);
 
-  // สุ่มตำแหน่ง/ขนาด/สี ครั้งเดียว (ไม่สุ่มใหม่ทุกเฟรม)
+  // ตำแหน่ง/ขนาด/สี คำนวณครั้งเดียว (ไม่สุ่มใหม่ทุกเฟรม)
   const items = useMemo(
     () =>
-      Array.from({ length: count }).map((_, i) => ({
-        position: [
-          (Math.random() - 0.5) * 18,
-          (Math.random() - 0.5) * 11,
-          (Math.random() - 0.5) * 6,
-        ] as [number, number, number],
-        scale: 0.4 + Math.random() * 1.0,
-        color: COLORS[i % COLORS.length],
-        speed: 0.5 + Math.random() * 1.2,
-        rot: Math.random() * Math.PI,
-      })),
+      Array.from({ length: count }).map((_, i) => {
+        const r = (k: number) => pseudoRandom(i * 6 + k);
+        return {
+          position: [
+            (r(0) - 0.5) * 18,
+            (r(1) - 0.5) * 11,
+            (r(2) - 0.5) * 6,
+          ] as [number, number, number],
+          scale: 0.4 + r(3) * 1.0,
+          color: COLORS[i % COLORS.length],
+          speed: 0.5 + r(4) * 1.2,
+          rot: r(5) * Math.PI,
+        };
+      }),
     [count],
   );
 

@@ -122,8 +122,12 @@ function LoginContent() {
       window.location.href =
         data.redirectUrl ||
         (data.userType === "admin" ? "/admin/dashboard" : "/order-mode");
-    } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+      );
     } finally {
       setLoading(false);
     }

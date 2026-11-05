@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import Pagination from "@/components/ui/Pagination";
 
 interface Product {
   id: number;
@@ -76,6 +77,8 @@ export default function CrudProductPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
@@ -659,6 +662,20 @@ export default function CrudProductPage() {
       (filterCategory === "all" || p.category === filterCategory),
   );
 
+  /*
+   * ตัดหน้าฝั่ง client เพราะ GET /api/products ส่งมาทั้งก้อน
+   * ค้นหากับกรองหมวดจึงทำงานกับข้อมูลทั้งหมด ไม่ใช่เฉพาะหน้าที่เห็น
+   *
+   * ถ้าวันหนึ่งสินค้ามีเป็นหมื่น ต้องเปลี่ยน endpoint ให้รับ page/size
+   * แล้วย้ายการค้นหาไปฝั่ง server — ตอนนี้หลักร้อยยังรับไหว
+   */
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const safePage = Math.min(page, totalPages - 1);
+  const pagedProducts = filteredProducts.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize,
+  );
+
   const CATEGORY_COLORS = [
     "bg-amber-100 text-amber-700",
     "bg-pink-100 text-pink-700",
@@ -900,7 +917,10 @@ export default function CrudProductPage() {
               type="text"
               placeholder="ค้นหาสินค้า..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(0);
+              }}
               className="w-full px-4 py-2.5 md:py-3 pl-10 md:pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base"
             />
             <svg
@@ -920,7 +940,10 @@ export default function CrudProductPage() {
           {/* ✅ Dynamic category filter */}
           <select
             value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
+            onChange={(e) => {
+              setFilterCategory(e.target.value);
+              setPage(0);
+            }}
             className="px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base"
           >
             <option value="all">ทุกหมวดหมู่</option>
@@ -957,7 +980,7 @@ export default function CrudProductPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((product, index) => {
+                {pagedProducts.map((product, index) => {
                   const status = getAvailabilityStatus(product);
                   const stockDisplay = getStockDisplay(product);
                   const opts = parseOptions(product.options);
@@ -1105,6 +1128,20 @@ export default function CrudProductPage() {
               <div className="text-6xl mb-4">📦</div>
               <p className="text-gray-500">ไม่พบสินค้า</p>
             </div>
+          )}
+
+          {filteredProducts.length > 0 && (
+            <Pagination
+              page={safePage}
+              totalPages={totalPages}
+              totalElements={filteredProducts.length}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(0);
+              }}
+            />
           )}
         </div>
       </div>
@@ -1368,7 +1405,7 @@ export default function CrudProductPage() {
                   />
                   {formData.stockQuantity === 0 && (
                     <p className="text-xs text-red-500 mt-1">
-                      ⚠️ สถานะจะเปลี่ยนเป็น "สินค้าหมด" อัตโนมัติ
+                      ⚠️ สถานะจะเปลี่ยนเป็น &quot;สินค้าหมด&quot; อัตโนมัติ
                     </p>
                   )}
                 </div>
@@ -1617,7 +1654,7 @@ export default function CrudProductPage() {
                     )}
                     {productOptions.length === 0 && (
                       <p className="text-xs text-gray-400 text-center py-2">
-                        ยังไม่มี option — กด "+ เพิ่ม" เพื่อเริ่มต้น
+                        ยังไม่มี option — กด &quot;+ เพิ่ม&quot; เพื่อเริ่มต้น
                       </p>
                     )}
                   </div>

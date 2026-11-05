@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { Config } from "@/app/Config";
@@ -50,6 +50,31 @@ export default function ReservationPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
+  const fetchMyReservations = useCallback(async () => {
+    setLoadingMy(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/my`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      const data = await res.json();
+      setMyReservations(Array.isArray(data) ? data : []);
+    } catch {
+      // เครือข่ายสะดุด — ปล่อยรายการเดิมไว้ กดรีเฟรชได้
+    } finally {
+      setLoadingMy(false);
+    }
+  }, [router]);
+
   // ── Auth check ──────────────────────────────────────────────────────────
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -58,7 +83,7 @@ export default function ReservationPage() {
       return;
     }
     fetchMyReservations();
-  }, [router]);
+  }, [router, fetchMyReservations]);
 
   // ── Fetch time slots ────────────────────────────────────────────────────
   useEffect(() => {
@@ -81,30 +106,6 @@ export default function ReservationPage() {
       .finally(() => setLoadingSlots(false));
   }, [tableNo, date]);
 
-  async function fetchMyReservations() {
-    setLoadingMy(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/my`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      if (res.status === 401) {
-        router.replace("/login");
-        return;
-      }
-      const data = await res.json();
-      setMyReservations(Array.isArray(data) ? data : []);
-    } catch {
-      // ignore
-    } finally {
-      setLoadingMy(false);
-    }
-  }
 
   // ── Submit ──────────────────────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
@@ -31,6 +31,13 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/cart`;
+
+const getToken = () => {
+  if (typeof window !== "undefined") return localStorage.getItem("token");
+  return null;
+};
+
 export default function CartPage() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,13 +46,6 @@ export default function CartPage() {
   const [tableNo, setTableNo] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-
-  const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/cart`;
-
-  const getToken = () => {
-    if (typeof window !== "undefined") return localStorage.getItem("token");
-    return null;
-  };
 
   const getShippingFee = (total: number) => {
     if (total < 100) return 50;
@@ -56,7 +56,7 @@ export default function CartPage() {
   const isPoundOption = (opt?: string | null) =>
     opt?.includes("ปอนด์") ?? false;
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     const token = getToken();
     if (!token) {
       router.replace("/login");
@@ -77,7 +77,7 @@ export default function CartPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   const updateQuantity = async (cartId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -160,7 +160,6 @@ export default function CartPage() {
     setSubmitting(true);
 
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
       const items = cart.items.map((item) => ({
         productId: item.productId,
         productName: item.productName,
@@ -236,7 +235,7 @@ export default function CartPage() {
     const table = localStorage.getItem("tableNo") || "";
     setOrderMode(mode);
     setTableNo(table);
-  }, []);
+  }, [fetchCart]);
 
   const isDineIn = orderMode === "dinein";
 

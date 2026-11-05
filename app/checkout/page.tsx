@@ -1,26 +1,53 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useStoreStatus } from "@/lib/useStoreStatus";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import PromptPayPanel from "@/components/checkout/PromptPayPanel";
+import CardPaymentPanel from "@/components/checkout/CardPaymentPanel";
 
-interface CartItem {
-  id: number;
+/**
+ * หน้าชำระเงิน — ทุกอย่างจบในเว็บเรา ไม่ redirect ออกไปหา Stripe
+ *
+ * ═══ สองสถานะของหน้านี้ ═══
+ * "form"    → กรอกที่อยู่ + เลือกวิธีจ่าย
+ * "paying"  → แสดง QR หรือช่องกรอกบัตร (สลับมาแบบไม่เปลี่ยนหน้า)
+ *
+ * ═══ ยอดเงินมาจากไหน ═══
+ * จาก GET /api/checkout/summary ซึ่ง backend คำนวณใหม่จาก tb_products
+ * หน้านี้ไม่คำนวณราคาเองแม้แต่ตัวเดียว ตัวเลขที่เห็นเป็นแค่ "การแสดงผล"
+ * ยอดที่เรียกเก็บจริงมาจาก PaymentIntent ที่ backend สร้าง
+ */
+
+type PaymentMethod = "promptpay" | "card";
+type Phase = "form" | "paying";
+
+interface SummaryItem {
   productId: number;
   productName: string;
-  productImage: string;
-  price: number;
+  image: string | null;
+  selectedOption: string | null;
+  unitPrice: number;
   quantity: number;
-  category: string;
-  selectedOption?: string | null;
+  lineTotal: number;
 }
 
-interface OrderSummary {
-  items: CartItem[];
+interface Summary {
+  items: SummaryItem[];
   subtotal: number;
   shipping: number;
   total: number;
+}
+
+interface ActiveIntent {
+  method: PaymentMethod;
+  orderId: number;
+  ordCode: string;
+  total: number;
+  qrImageUrl?: string;
+  hostedUrl?: string;
+  clientSecret?: string;
 }
 
 const formatPrice = (price: number) =>
@@ -30,29 +57,48 @@ const formatPrice = (price: number) =>
   });
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CheckoutInner />
+    </Suspense>
+  );
+}
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div
+        className="w-12 h-12 rounded-full animate-spin"
+        style={{
+          borderWidth: 3,
+          borderStyle: "solid",
+          borderColor: "#f59e0b transparent transparent transparent",
+        }}
+      />
+    </div>
+  );
+}
+
+function CheckoutInner() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
+  const { blockOnline, message: closedMessage, reopenAt } = useStoreStatus();
 
-  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
+  const [phase, setPhase] = useState<Phase>("form");
+  const [intent, setIntent] = useState<ActiveIntent | null>(null);
+
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState<"qr" | "card">("qr");
-  const [processing, setProcessing] = useState(false);
-  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [pending, setPending] = useState<PaymentMethod | null>(null);
+  /**
+   * กันกดซ้ำก่อนที่ React จะ re-render
+   *
+   * ปุ่ม disabled อิงกับ state ที่อัปเดตไม่ทันการดับเบิ้ลเร็วๆ
+   * ถ้าหลุดไปจะยิง /intent สองครั้งพร้อมกัน แล้วได้ order สองใบ
+   */
+  const startingRef = useRef(false);
   const [error, setError] = useState("");
-  const { blockOnline } = useStoreStatus();
-
-  const [slipFile, setSlipFile] = useState<File | null>(null);
-  const [slipPreview, setSlipPreview] = useState("");
-  const [uploadingSlip, setUploadingSlip] = useState(false);
-  const [slipValidating, setSlipValidating] = useState(false);
-  const [slipValid, setSlipValid] = useState(false);
-
-  const [cardData, setCardData] = useState({
-    cardNumber: "",
-    expiry: "",
-    cvc: "",
-    name: "",
-  });
+  const [notice, setNotice] = useState("");
 
   const [shippingData, setShippingData] = useState({
     fullname: "",
@@ -61,649 +107,217 @@ export default function CheckoutPage() {
     note: "",
   });
 
-  const PROMPTPAY_ID = "0931253748";
-
-  // ═══ Shipping Fee — เหมือนกับ Cart ═══
-  const getShippingFee = (total: number) => {
-    if (total < 100) return 50;
-    if (total <= 500) return 20;
-    return 0;
-  };
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    fetchCartData();
-    loadUserData();
+    if (searchParams.get("canceled") === "1") {
+      setNotice("ยกเลิกการชำระเงินแล้ว สินค้ายังอยู่ในตะกร้า");
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    loadSummary();
+    loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadUserData = async () => {
+  /** ดึงยอดที่ server คำนวณให้ */
+  const loadSummary = async () => {
     const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-    // เติมชื่อจาก localStorage ก่อน (เร็ว)
-    if (user.fullname) {
-      setShippingData((prev) => ({ ...prev, fullname: user.fullname }));
+    if (!token) {
+      router.replace("/login");
+      return;
     }
 
-    // ดึง phone และ address จาก Profile API
-    if (token) {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.profile) {
-            setShippingData((prev) => ({
-              ...prev,
-              fullname: data.profile.fullname || prev.fullname,
-              phone: data.profile.phone || "",
-              address: data.profile.address || "",
-            }));
-          }
-        }
-      } catch (e) {
-        console.error("load profile error", e);
-      }
-    }
-  };
-
-  const fetchCartData = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.replace("/login");
-        return;
-      }
+      const res = await fetch(`${apiUrl}/api/checkout/summary`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
-      const data = await response.json();
-
-      if (data.items && data.items.length > 0) {
-        const subtotal = data.items.reduce(
-          (sum: number, item: CartItem) => sum + item.price * item.quantity,
-          0,
-        );
-        const shipping = getShippingFee(subtotal); // ✅ คิดค่าส่งตามยอด
-        const total = subtotal + shipping;
-
-        setOrderSummary({ items: data.items, subtotal, shipping, total });
-        generateQRCode(total);
+      if (res.ok && data.success) {
+        setSummary(data.summary);
       } else {
-        router.push("/cart");
+        if (data.error?.includes("ว่าง")) {
+          router.replace("/cart");
+          return;
+        }
+        setError(data.error || "ไม่สามารถโหลดข้อมูลคำสั่งซื้อได้");
       }
-    } catch (err) {
-      console.error("Error fetching cart:", err);
+    } catch {
+      setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
     } finally {
       setLoading(false);
     }
   };
 
-  const generateQRCode = async (amount: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount }),
-        },
-      );
-      const data = await response.json();
+  /** เติมชื่อ/เบอร์/ที่อยู่จากโปรไฟล์ให้อัตโนมัติ */
+  const loadProfile = async () => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-      if (data.success && data.qrCodeBase64) {
-        setQrCodeUrl(`data:image/png;base64,${data.qrCodeBase64}`);
-      } else {
-        setQrCodeUrl(`https://promptpay.io/${PROMPTPAY_ID}/${amount}.png`);
-      }
-    } catch (err) {
-      setQrCodeUrl(`https://promptpay.io/${PROMPTPAY_ID}/${amount}.png`);
+    if (user.fullname) {
+      setShippingData((prev) => ({ ...prev, fullname: user.fullname }));
     }
-  };
-
-  const loadJsQR = (): Promise<typeof import("jsqr").default> => {
-    return new Promise((resolve, reject) => {
-      if ((window as any).jsQR) {
-        resolve((window as any).jsQR);
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
-      script.onload = () => resolve((window as any).jsQR);
-      script.onerror = () => reject(new Error("ไม่สามารถโหลด QR scanner ได้"));
-      document.head.appendChild(script);
-    });
-  };
-
-  const detectQRCode = async (
-    img: HTMLImageElement,
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
-  ): Promise<boolean> => {
-    try {
-      const jsQR = await loadJsQR();
-
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      const fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const fullResult = jsQR(fullImageData.data, canvas.width, canvas.height);
-      if (fullResult) return true;
-
-      const regions = [
-        { x: 0, y: 0, w: 0.5, h: 0.5 },
-        { x: 0.5, y: 0, w: 0.5, h: 0.5 },
-        { x: 0, y: 0.5, w: 0.5, h: 0.5 },
-        { x: 0.5, y: 0.5, w: 0.5, h: 0.5 },
-        { x: 0.15, y: 0.15, w: 0.7, h: 0.7 },
-        { x: 0.25, y: 0, w: 0.5, h: 0.5 },
-        { x: 0.25, y: 0.5, w: 0.5, h: 0.5 },
-      ];
-
-      for (const region of regions) {
-        const sx = Math.floor(img.width * region.x);
-        const sy = Math.floor(img.height * region.y);
-        const sw = Math.floor(img.width * region.w);
-        const sh = Math.floor(img.height * region.h);
-
-        if (sw < 50 || sh < 50) continue;
-
-        canvas.width = sw;
-        canvas.height = sh;
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-        const regionData = ctx.getImageData(0, 0, sw, sh);
-        const regionResult = jsQR(regionData.data, sw, sh);
-        if (regionResult) return true;
-      }
-
-      const scales = [1.5, 2];
-      for (const scale of scales) {
-        const scaledW = Math.floor(img.width * scale);
-        const scaledH = Math.floor(img.height * scale);
-
-        if (scaledW > 4000 || scaledH > 4000) continue;
-
-        canvas.width = scaledW;
-        canvas.height = scaledH;
-        ctx.drawImage(img, 0, 0, scaledW, scaledH);
-        const scaledData = ctx.getImageData(0, 0, scaledW, scaledH);
-        const scaledResult = jsQR(scaledData.data, scaledW, scaledH);
-        if (scaledResult) return true;
-      }
-
-      return false;
-    } catch {
-      console.warn("QR detection unavailable, skipping QR check");
-      return false;
-    }
-  };
-
-  const validateSlipImage = (
-    file: File,
-  ): Promise<{ valid: boolean; reason?: string }> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        img.onload = async () => {
-          const width = img.width;
-          const height = img.height;
-          const aspectRatio = height / width;
-
-          if (width < 200 || height < 300) {
-            resolve({
-              valid: false,
-              reason: "รูปภาพมีขนาดเล็กเกินไป กรุณาอัพโหลดสลิปที่ชัดเจน",
-            });
-            return;
-          }
-
-          if (aspectRatio < 0.8) {
-            resolve({
-              valid: false,
-              reason: "สลิปโอนเงินควรเป็นภาพแนวตั้ง กรุณาตรวจสอบรูปภาพ",
-            });
-            return;
-          }
-
-          if (file.size < 10000) {
-            resolve({
-              valid: false,
-              reason: "ไฟล์มีขนาดเล็กเกินไป กรุณาอัพโหลดสลิปที่ชัดเจน",
-            });
-            return;
-          }
-
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-
-            const samplePoints = [
-              { x: 10, y: 10 },
-              { x: width - 10, y: 10 },
-              { x: width / 2, y: 10 },
-              { x: 10, y: height - 10 },
-              { x: width - 10, y: height - 10 },
-            ];
-
-            let lightPixelCount = 0;
-            for (const point of samplePoints) {
-              const pixel = ctx.getImageData(point.x, point.y, 1, 1).data;
-              const brightness = (pixel[0] + pixel[1] + pixel[2]) / 3;
-              if (brightness > 150) lightPixelCount++;
-            }
-
-            if (lightPixelCount < 2) {
-              resolve({
-                valid: false,
-                reason:
-                  "รูปภาพไม่เหมือนสลิปโอนเงิน สลิปควรมีพื้นหลังสีขาวหรือสีอ่อน",
-              });
-              return;
-            }
-
-            const hasQR = await detectQRCode(img, canvas, ctx);
-            if (!hasQR) {
-              resolve({
-                valid: false,
-                reason:
-                  "ไม่พบ QR Code ในรูปภาพ สลิปโอนเงินจากแอปธนาคารจะต้องมี QR Code กรุณาอัพโหลดสลิปที่มี QR Code",
-              });
-              return;
-            }
-          }
-
-          // ✅ เช็คยอดเงินผ่าน Backend → QR Code Reader (ZXing)
-          try {
-            const slipFormData = new FormData();
-            slipFormData.append("file", file);
-
-            const slipRes = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/slip/verify`,
-              {
-                method: "POST",
-                body: slipFormData,
-              },
-            );
-
-            const slipData = await slipRes.json();
-            console.log("Slip verify response:", slipData);
-
-            if (slipData.success && slipData.amount != null) {
-              const detectedAmount = slipData.amount;
-              const expectedAmount = orderSummary!.total;
-              const diff = Math.abs(detectedAmount - expectedAmount);
-
-              if (diff > 1) {
-                resolve({
-                  valid: false,
-                  reason: `ยอดเงินในสลิป (฿${detectedAmount.toLocaleString()}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toLocaleString()})`,
-                });
-                return;
-              }
-            }
-            // ถ้าอ่านยอดไม่ได้ → ผ่าน ให้ Admin ตรวจ
-          } catch (slipErr) {
-            console.warn("QR verify failed, skipping amount check:", slipErr);
-          }
-
-          resolve({ valid: true });
-        };
-
-        img.onerror = () => {
-          resolve({ valid: false, reason: "ไม่สามารถอ่านรูปภาพได้" });
-        };
-
-        img.src = e.target?.result as string;
-      };
-
-      reader.onerror = () => {
-        resolve({ valid: false, reason: "ไม่สามารถอ่านไฟล์ได้" });
-      };
-
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleSlipSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setError("");
-    setSlipValid(false);
-
-    if (!file.type.startsWith("image/")) {
-      setError("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError("ขนาดไฟล์ต้องไม่เกิน 10MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setSlipPreview(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    setSlipFile(file);
-
-    setSlipValidating(true);
-    const validation = await validateSlipImage(file);
-    setSlipValidating(false);
-
-    if (!validation.valid) {
-      setError(validation.reason || "รูปภาพไม่ถูกต้อง");
-      setSlipValid(false);
-    } else {
-      setSlipValid(true);
-    }
-  };
-
-  const uploadSlip = async (): Promise<string | null> => {
-    if (!slipFile) return null;
-
-    setUploadingSlip(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", slipFile);
-
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/slip/upload`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        },
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        return data.path;
-      } else {
-        setError(data.message || "อัพโหลดสลิปไม่สำเร็จ");
-        return null;
-      }
-    } catch (err) {
-      setError("ไม่สามารถอัพโหลดสลิปได้");
-      return null;
-    } finally {
-      setUploadingSlip(false);
-    }
-  };
-
-  const removeSlip = () => {
-    setSlipFile(null);
-    setSlipPreview("");
-    setSlipValid(false);
-    setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleCardInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    let formattedValue = value;
-
-    if (name === "name") {
-      // ตัวอักษรและช่องว่างเท่านั้น (A-Z, a-z, ไทย, space)
-      formattedValue = value.replace(/[^a-zA-Zก-๙\s]/g, "").toUpperCase();
-    } else if (name === "cardNumber") {
-      // ตัวเลขเท่านั้น จัดรูปแบบ xxxx xxxx xxxx xxxx
-      const digits = value.replace(/\D/g, "").slice(0, 16);
-      formattedValue = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-    } else if (name === "expiry") {
-      const digits = value.replace(/\D/g, "").slice(0, 4);
-      if (digits.length === 0) {
-        formattedValue = "";
-      } else if (digits.length <= 2) {
-        // ตรวจสอบเดือนขณะพิมพ์
-        const month = parseInt(digits, 10);
-        if (digits.length === 2) {
-          if (month < 1) formattedValue = "01";
-          else if (month > 12) formattedValue = "12";
-          else formattedValue = digits;
-        } else {
-          formattedValue = digits;
-        }
-      } else {
-        // มีส่วนปีแล้ว → ตรวจเดือนก่อน
-        const monthPart = digits.slice(0, 2);
-        const yearPart = digits.slice(2);
-        const month = parseInt(monthPart, 10);
-        const validMonth = month < 1 ? "01" : month > 12 ? "12" : monthPart;
-        formattedValue = `${validMonth}/${yearPart}`;
-      }
-    } else if (name === "cvc") {
-      formattedValue = value.replace(/\D/g, "").slice(0, 3);
-    }
-
-    setCardData({ ...cardData, [name]: formattedValue });
-  };
-
-  const handleCardPayment = async (): Promise<{
-    success: boolean;
-    paymentId?: string;
-    cardLast4?: string;
-  }> => {
-    try {
-      const [expMonth, expYear] = cardData.expiry.split("/");
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/payment/card/charge`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: orderSummary?.total,
-            cardNumber: cardData.cardNumber.replace(/\s/g, ""),
-            expMonth: expMonth,
-            expYear: "20" + expYear,
-            cvc: cardData.cvc,
-            cardName: cardData.name,
-          }),
-        },
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        return {
-          success: true,
-          paymentId: data.paymentId,
-          cardLast4: data.cardLast4,
-        };
-      } else {
-        setError(data.message || "การชำระเงินล้มเหลว");
-        return { success: false };
-      }
-    } catch (err) {
-      setError("ไม่สามารถเชื่อมต่อ Payment Gateway ได้");
-      return { success: false };
-    }
-  };
-
-  const handlePayment = async () => {
-    setError("");
-
-    if (
-      !shippingData.fullname ||
-      !shippingData.phone ||
-      !shippingData.address
-    ) {
-      setError("กรุณากรอกข้อมูลการจัดส่งให้ครบถ้วน");
-      return;
-    }
-
-    if (paymentMethod === "qr") {
-      if (!slipFile) {
-        setError("กรุณาอัพโหลดสลิปการโอนเงิน");
-        return;
-      }
-      if (!slipValid) {
-        setError("กรุณาอัพโหลดสลิปโอนเงินที่ถูกต้อง");
-        return;
-      }
-    }
-
-    if (paymentMethod === "card") {
-      if (
-        !cardData.cardNumber ||
-        !cardData.expiry ||
-        !cardData.cvc ||
-        !cardData.name
-      ) {
-        setError("กรุณากรอกข้อมูลบัตรให้ครบถ้วน");
-        return;
-      }
-    }
-
-    setProcessing(true);
+    if (!token) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      let paymentId: string | null = null;
-      let paymentStatus = "pending";
-      let slipImagePath: string | null = null;
-      let cardLast4: string | null = null;
-
-      if (paymentMethod === "qr") {
-        slipImagePath = await uploadSlip();
-        if (!slipImagePath) {
-          setProcessing(false);
-          return;
-        }
-        paymentStatus = "pending";
-      }
-
-      if (paymentMethod === "card") {
-        const cardResult = await handleCardPayment();
-        if (!cardResult.success) {
-          setProcessing(false);
-          return;
-        }
-        paymentId = cardResult.paymentId || null;
-        cardLast4 = cardResult.cardLast4 || null;
-        paymentStatus = "paid";
-      }
-
-      const orderResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            email: user.email,
-            items: orderSummary?.items.map((item) => {
-              const opt = (item as any).selectedOption;
-              const isCakeItem = item.category === "cake";
-              const deduct = opt?.includes("2 ปอนด์")
-                ? 16
-                : opt?.includes("1 ปอนด์")
-                  ? 8
-                  : 1;
-              // ✅ ถ้าเป็น cake แต่ไม่มี option → "แบบชิ้น"
-              const finalOption = opt ?? (isCakeItem ? "แบบชิ้น" : null);
-              return {
-                productId: item.productId,
-                productName: item.productName,
-                price: item.price,
-                quantity: item.quantity * deduct,
-                selectedOption: finalOption,
-              };
-            }),
-            subtotal: orderSummary?.subtotal,
-            shipping: orderSummary?.shipping,
-            total: orderSummary?.total,
-            paymentMethod: paymentMethod === "qr" ? "qr_promptpay" : "card",
-            paymentStatus: paymentStatus,
-            paymentId: paymentId,
-            slipImage: slipImagePath,
-            // ✅ ส่งแบบ flat ให้ตรงกับที่ backend อ่าน (receiverName/Phone/Address + note)
-            // เดิมส่งห่อใน shippingInfo → backend หาไม่เจอ เลยบันทึกเป็น null
-            receiverName: shippingData.fullname,
-            receiverPhone: shippingData.phone,
-            receiverAddress: shippingData.address,
-            note: shippingData.note,
-            cardName: paymentMethod === "card" ? cardData.name : null,
-            cardLast4: cardLast4,
-          }),
-        },
-      );
-
-      const orderData = await orderResponse.json();
-
-      if (orderResponse.status === 403 && orderData.storeClosed) {
-        setError(
-          (orderData.error || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว") +
-            (orderData.reopenAt ? ` (เปิดอีกครั้ง ${orderData.reopenAt})` : ""),
-        );
-        setProcessing(false);
-        return;
-      }
-
-      if (!orderData.success) {
-        setError(orderData.message || "ไม่สามารถสร้างคำสั่งซื้อได้");
-        setProcessing(false);
-        return;
-      }
-
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart/clear`, {
-        method: "DELETE",
+      const res = await fetch(`${apiUrl}/api/profile/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      window.dispatchEvent(new Event("cartUpdated"));
-      localStorage.setItem("lastOrderId", orderData.orderId.toString());
-
-      router.push("/checkout/success");
-    } catch (err) {
-      setError("เกิดข้อผิดพลาด กรุณาลองใหม่");
-    } finally {
-      setProcessing(false);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success && data.profile) {
+        setShippingData((prev) => ({
+          ...prev,
+          fullname: data.profile.fullname || prev.fullname,
+          phone: data.profile.phone || "",
+          address: data.profile.address || "",
+        }));
+      }
+    } catch {
+      /* โปรไฟล์โหลดไม่ได้ก็ให้กรอกเองได้ */
     }
   };
 
-  if (loading)
+  /** สร้าง PaymentIntent แล้วสลับหน้าไปโหมดจ่ายเงิน */
+  const startPayment = async (method: PaymentMethod) => {
+    if (startingRef.current) return;
+    setError("");
+    setNotice("");
+
+    if (!shippingData.fullname || !shippingData.phone || !shippingData.address) {
+      setError("กรุณากรอกข้อมูลการจัดส่งให้ครบถ้วน");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (shippingData.phone.length < 9) {
+      setError("เบอร์โทรศัพท์ไม่ถูกต้อง");
+      return;
+    }
+
+    startingRef.current = true;
+    setPending(method);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${apiUrl}/api/checkout/intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        // ส่งแค่ข้อมูลจัดส่ง + วิธีจ่าย ไม่ส่งราคาหรือสถานะใดๆ
+        body: JSON.stringify({
+          receiverName: shippingData.fullname,
+          receiverPhone: shippingData.phone,
+          receiverAddress: shippingData.address,
+          note: shippingData.note,
+          paymentMethod: method,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 403 && data.storeClosed) {
+        setError(
+          (data.error || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว") +
+            (data.reopenAt ? ` (เปิดอีกครั้ง ${data.reopenAt})` : ""),
+        );
+        setPending(null);
+        return;
+      }
+
+      if (!res.ok || !data.success) {
+        setError(data.error || "ไม่สามารถเริ่มการชำระเงินได้");
+        setPending(null);
+        return;
+      }
+
+      localStorage.setItem("lastOrderId", String(data.orderId));
+
+      setIntent({
+        method,
+        orderId: data.orderId,
+        ordCode: data.ordCode ?? "",
+        total: data.total ?? summary?.total ?? 0,
+        qrImageUrl: data.qrImageUrl,
+        hostedUrl: data.hostedUrl,
+        clientSecret: data.clientSecret,
+      });
+      setPhase("paying");
+      setPending(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
+      setPending(null);
+    } finally {
+      startingRef.current = false;
+    }
+  };
+
+  const handlePaid = () => {
+    window.dispatchEvent(new Event("cartUpdated"));
+    router.push(`/checkout/success?order_id=${intent?.orderId ?? ""}`);
+  };
+
+  /** กลับมาหน้าฟอร์ม — order เดิมถูกยกเลิกไปแล้วจาก panel */
+  const handleCancelPayment = () => {
+    setIntent(null);
+    setPhase("form");
+    setNotice("ยกเลิกแล้ว สินค้ายังอยู่ในตะกร้า เลือกวิธีชำระเงินใหม่ได้เลย");
+    loadSummary();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ─── UI ───────────────────────────────────────────────────
+
+  if (loading) return <PageLoader />;
+
+  // ═══ โหมดจ่ายเงิน ═══
+  if (phase === "paying" && intent) {
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-full animate-spin"
-            style={{
-              borderWidth: 3,
-              borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
-            }}
-          ></div>
-          <p className="text-amber-700 text-sm font-medium">
-            กำลังโหลดข้อมูล...
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+        <div className="max-w-lg mx-auto px-4">
+          {intent.method === "promptpay" && intent.qrImageUrl ? (
+            <PromptPayPanel
+              orderId={intent.orderId}
+              ordCode={intent.ordCode}
+              qrImageUrl={intent.qrImageUrl}
+              hostedUrl={intent.hostedUrl}
+              total={intent.total}
+              apiUrl={apiUrl}
+              onPaid={handlePaid}
+              onCancel={handleCancelPayment}
+            />
+          ) : intent.clientSecret ? (
+            <CardPaymentPanel
+              orderId={intent.orderId}
+              ordCode={intent.ordCode}
+              clientSecret={intent.clientSecret}
+              total={intent.total}
+              apiUrl={apiUrl}
+              onPaid={handlePaid}
+              onCancel={handleCancelPayment}
+            />
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
+              <p className="text-red-600">ข้อมูลการชำระเงินไม่ครบ</p>
+              <button
+                onClick={handleCancelPayment}
+                className="mt-4 text-amber-600 font-medium"
+              >
+                ← กลับไปเริ่มใหม่
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
+  }
+
+  // ═══ โหมดกรอกฟอร์ม ═══
+  const disabled = pending !== null || blockOnline || !summary;
+  const totalText = `฿${formatPrice(summary?.total ?? 0)}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
@@ -720,6 +334,19 @@ export default function CheckoutPage() {
           </h1>
         </div>
 
+        {blockOnline && (
+          <div className="mb-6 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+            🔒 {closedMessage || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว"}
+            {reopenAt ? ` (เปิดอีกครั้ง ${reopenAt})` : ""}
+          </div>
+        )}
+
+        {notice && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
+            ℹ️ {notice}
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
             ⚠️ {error}
@@ -728,7 +355,6 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* ข้อมูลการจัดส่ง */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-amber-800 mb-4">
                 📦 ข้อมูลการจัดส่ง
@@ -781,457 +407,150 @@ export default function CheckoutPage() {
                         address: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     rows={3}
-                    placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
                   />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     หมายเหตุ
                   </label>
-                  <input
-                    type="text"
+                  <textarea
                     value={shippingData.note}
                     onChange={(e) =>
                       setShippingData({ ...shippingData, note: e.target.value })
                     }
+                    rows={2}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="เช่น ฝากไว้ที่ป้อม รปภ."
+                    placeholder="เช่น ไม่ใส่เทียน / โทรก่อนส่ง"
                   />
                 </div>
               </div>
             </div>
 
-            {/* วิธีชำระเงิน */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-amber-800 mb-4">
-                💰 เลือกวิธีชำระเงิน
+                🔐 วิธีชำระเงิน
               </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <button
-                  onClick={() => setPaymentMethod("qr")}
-                  className={`p-4 border-2 rounded-xl transition-all ${paymentMethod === "qr" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
-                      📱
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-amber-700">
-                        QR PromptPay
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        สแกนจ่ายผ่านแอปธนาคาร
-                      </p>
-                    </div>
-                    {paymentMethod === "qr" && (
-                      <span className="ml-auto text-amber-500 text-xl">✓</span>
-                    )}
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setPaymentMethod("card")}
-                  className={`p-4 border-2 rounded-xl transition-all ${paymentMethod === "card" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl">
-                      💳
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-amber-700">
-                        บัตรเดบิต/เครดิต
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Visa, Mastercard, JCB
-                      </p>
-                    </div>
-                    {paymentMethod === "card" && (
-                      <span className="ml-auto text-amber-500 text-xl">✓</span>
-                    )}
-                  </div>
-                </button>
+              <div className="border-2 border-amber-200 bg-amber-50 rounded-xl p-5">
+                <p className="text-sm text-amber-700">
+                  เลือกวิธีที่ต้องการจากปุ่มด้านขวา QR หรือ ช่องกรอกบัตร
+                </p>
               </div>
-
-              {/* QR PromptPay */}
-              {paymentMethod === "qr" && (
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 text-center">
-                    <h3 className="text-lg font-semibold text-amber-700 mb-4">
-                      ขั้นตอนที่ 1: สแกน QR Code เพื่อชำระเงิน
-                    </h3>
-                    <div className="bg-white p-4 rounded-xl inline-block shadow-md mb-4">
-                      {qrCodeUrl ? (
-                        <img
-                          src={qrCodeUrl}
-                          alt="PromptPay QR Code"
-                          className="w-48 h-48 mx-auto"
-                        />
-                      ) : (
-                        <div className="w-48 h-48 bg-gray-100 flex items-center justify-center">
-                          <span className="text-gray-400">
-                            กำลังสร้าง QR...
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-2xl font-bold text-amber-600">
-                      ฿{formatPrice(orderSummary?.total ?? 0)}
-                    </p>
-                    <p className="text-sm text-amber-800">
-                      PromptPay: {PROMPTPAY_ID}
-                    </p>
-                  </div>
-
-                  {/* อัพโหลดสลิป */}
-                  <div
-                    className={`rounded-xl p-6 ${slipValid ? "bg-gradient-to-br from-green-50 to-emerald-50" : "bg-gradient-to-br from-yellow-50 to-orange-50"}`}
-                  >
-                    <h3 className="text-lg font-semibold text-amber-700 mb-2">
-                      📤 ขั้นตอนที่ 2: อัพโหลดสลิปการโอนเงิน{" "}
-                      <span className="text-red-500">*</span>
-                    </h3>
-                    <p className="text-sm text-amber-800 mb-4">
-                      ⚠️ กรุณาอัพโหลดสลิปโอนเงินจากแอปธนาคารเท่านั้น
-                      ระบบจะตรวจสอบความถูกต้อง
-                    </p>
-
-                    {!slipPreview ? (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-amber-300 rounded-xl p-8 text-center cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-all"
-                      >
-                        <div className="text-5xl mb-3">🧾</div>
-                        <p className="text-gray-700 font-medium mb-2">
-                          คลิกเพื่อเลือกรูปสลิป
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 10MB
-                        </p>
-                        <p className="text-xs text-amber-600 mt-2">
-                          📌 ต้องเป็นสลิปโอนเงินจากแอปธนาคารเท่านั้น
-                        </p>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleSlipSelect}
-                          className="hidden"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <div
-                          className={`p-4 rounded-xl shadow-md ${slipValid ? "bg-white" : "bg-red-50"}`}
-                        >
-                          <img
-                            src={slipPreview}
-                            alt="Slip Preview"
-                            className="max-h-64 mx-auto rounded-lg"
-                          />
-                        </div>
-                        <div className="mt-4">
-                          {slipValidating ? (
-                            <div className="flex items-center justify-center gap-2 text-amber-600">
-                              <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-                              <span>กำลังตรวจสอบสลิป...</span>
-                            </div>
-                          ) : slipValid ? (
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 text-green-600">
-                                <span className="text-xl">✅</span>
-                                <span className="font-medium">
-                                  สลิปถูกต้อง - {slipFile?.name}
-                                </span>
-                              </div>
-                              <button
-                                onClick={removeSlip}
-                                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              >
-                                🗑️ ลบ
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 text-red-600">
-                                <span className="text-xl">❌</span>
-                                <span className="font-medium">
-                                  รูปภาพไม่ถูกต้อง
-                                </span>
-                              </div>
-                              <button
-                                onClick={removeSlip}
-                                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              >
-                                🗑️ เลือกใหม่
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Card Payment */}
-              {paymentMethod === "card" && (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-amber-700 mb-4">
-                    กรอกข้อมูลบัตร
-                  </h3>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm font-medium text-yellow-800">
-                      🧪 ทดสอบด้วย Test Card:
-                    </p>
-                    <p className="text-xs text-yellow-700 mt-1">
-                      Card:{" "}
-                      <span className="font-mono">4242 4242 4242 4242</span> |
-                      Exp: <span className="font-mono">12/28</span> | CVC:{" "}
-                      <span className="font-mono">123</span>
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ชื่อบนบัตร
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={cardData.name}
-                        onChange={handleCardInput}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="JOHN DOE"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        หมายเลขบัตร
-                      </label>
-                      <input
-                        type="text"
-                        name="cardNumber"
-                        value={cardData.cardNumber}
-                        onChange={handleCardInput}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="4242 4242 4242 4242"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          วันหมดอายุ
-                        </label>
-                        <input
-                          type="text"
-                          name="expiry"
-                          value={cardData.expiry}
-                          onChange={handleCardInput}
-                          inputMode="numeric"
-                          maxLength={5}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          CVC
-                        </label>
-                        <input
-                          type="text"
-                          name="cvc"
-                          value={cardData.cvc}
-                          onChange={handleCardInput}
-                          inputMode="numeric"
-                          maxLength={3}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          placeholder="123"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-4">
+            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
               <h2 className="text-xl font-semibold text-amber-800 mb-4">
-                📋 สรุปคำสั่งซื้อ
+                🧾 สรุปคำสั่งซื้อ
               </h2>
 
-              <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
-                {orderSummary?.items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3">
+              <div className="space-y-3 mb-4 max-h-72 overflow-y-auto">
+                {summary?.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-3 text-sm">
+                    {item.image && (
+                      <img
+                        src={item.image}
+                        alt={item.productName}
+                        className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                      />
+                    )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-amber-700 truncate">
+                      <p className="font-medium text-gray-800 truncate">
                         {item.productName}
                       </p>
-                      <p className="text-xs text-gray-500">x{item.quantity}</p>
+                      {item.selectedOption && (
+                        <p className="text-xs text-gray-500 truncate">
+                          {item.selectedOption}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        ฿{formatPrice(item.unitPrice)} × {item.quantity}
+                      </p>
                     </div>
-                    <p className="text-sm font-medium text-amber-600">
-                      ฿{formatPrice(item.price * item.quantity)}
+                    <p className="font-medium text-amber-700 whitespace-nowrap">
+                      ฿{formatPrice(item.lineTotal)}
                     </p>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-amber-800">
-                  <span>ยอดรวมสินค้า</span>
-                  <span>฿{formatPrice(orderSummary?.subtotal ?? 0)}</span>
+              <div className="border-t pt-4 space-y-2 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>ยอดสินค้า</span>
+                  <span>฿{formatPrice(summary?.subtotal ?? 0)}</span>
                 </div>
-                <div className="flex justify-between text-amber-800">
+                <div className="flex justify-between text-gray-600">
                   <span>ค่าจัดส่ง</span>
-                  {orderSummary?.shipping === 0 ? (
-                    <span className="text-green-600 font-medium">ฟรี</span>
-                  ) : (
-                    <span className="text-red-500 font-medium">
-                      ฿{formatPrice(orderSummary?.shipping ?? 0)}
-                    </span>
-                  )}
+                  <span>
+                    {summary?.shipping === 0 ? (
+                      <span className="text-green-600 font-medium">ฟรี</span>
+                    ) : (
+                      `฿${formatPrice(summary?.shipping ?? 0)}`
+                    )}
+                  </span>
                 </div>
-                {/* แสดงข้อความแนะนำค่าส่ง */}
-                {orderSummary && orderSummary.subtotal < 100 && (
-                  <p className="text-xs text-gray-400 text-right">
-                    สั่งเพิ่ม ฿{100 - orderSummary.subtotal} ลดค่าส่งเหลือ ฿20
-                  </p>
-                )}
-                {orderSummary &&
-                  orderSummary.subtotal >= 100 &&
-                  orderSummary.subtotal <= 500 && (
-                    <p className="text-xs text-gray-400 text-right">
-                      สั่งเพิ่ม ฿{501 - orderSummary.subtotal} ได้รับค่าส่งฟรี
-                    </p>
-                  )}
-                {orderSummary && orderSummary.subtotal > 500 && (
-                  <p className="text-xs text-green-500 text-right">
-                    🎉 คุณได้รับค่าส่งฟรี!
-                  </p>
-                )}
-                <div className="border-t pt-3 mt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-amber-800">
-                      ยอดรวมทั้งหมด
-                    </span>
-                    <span className="text-2xl font-bold text-amber-600">
-                      ฿{formatPrice(orderSummary?.total ?? 0)}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-lg font-bold text-amber-800 border-t pt-3">
+                  <span>ยอดชำระ</span>
+                  <span>{totalText}</span>
                 </div>
               </div>
 
-              {paymentMethod === "qr" && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
-                    ✅ เช็คลิสต์:
-                  </p>
-                  <div className="space-y-1 text-sm">
-                    <div
-                      className={
-                        shippingData.fullname &&
-                        shippingData.phone &&
-                        shippingData.address
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }
-                    >
-                      {shippingData.fullname &&
-                      shippingData.phone &&
-                      shippingData.address
-                        ? "✓"
-                        : "○"}{" "}
-                      กรอกข้อมูลจัดส่งแล้ว
-                    </div>
-                    <div
-                      className={
-                        slipFile
-                          ? slipValid
-                            ? "text-green-600"
-                            : "text-red-500"
-                          : "text-gray-400"
-                      }
-                    >
-                      {slipFile ? (slipValid ? "✓" : "✗") : "○"}{" "}
-                      {slipFile
-                        ? slipValid
-                          ? "อัพโหลดสลิปถูกต้อง"
-                          : "สลิปไม่ถูกต้อง"
-                        : "อัพโหลดสลิป"}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {blockOnline && (
-                <p className="mt-4 text-sm text-red-600 text-center">
-                  ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว ไม่สามารถสั่งซื้อได้
-                </p>
-              )}
-
-              <button
-                onClick={handlePayment}
-                disabled={
-                  blockOnline ||
-                  processing ||
-                  uploadingSlip ||
-                  slipValidating ||
-                  (paymentMethod === "qr" && (!slipFile || !slipValid))
-                }
-                className={`w-full mt-6 py-4 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
-                  blockOnline ||
-                  processing ||
-                  uploadingSlip ||
-                  slipValidating ||
-                  (paymentMethod === "qr" && (!slipFile || !slipValid))
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg"
-                }`}
-              >
-                {processing || uploadingSlip ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    {uploadingSlip
-                      ? "กำลังอัพโหลดสลิป..."
-                      : "กำลังดำเนินการ..."}
-                  </>
-                ) : slipValidating ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    กำลังตรวจสอบสลิป...
-                  </>
-                ) : paymentMethod === "qr" ? (
-                  slipFile && slipValid ? (
-                    "✅ ยืนยันการชำระเงิน"
-                  ) : slipFile && !slipValid ? (
-                    "❌ สลิปไม่ถูกต้อง"
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={() => startPayment("promptpay")}
+                  disabled={disabled}
+                  className={`w-full py-4 rounded-xl font-semibold text-white transition-colors ${
+                    disabled
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-amber-500 hover:bg-amber-600"
+                  }`}
+                >
+                  {pending === "promptpay" ? (
+                    <ButtonSpinner label="กำลังสร้าง QR..." light />
                   ) : (
-                    "📤 กรุณาอัพโหลดสลิปก่อน"
-                  )
-                ) : (
-                  `💳 ชำระเงิน ฿${formatPrice(orderSummary?.total ?? 0)}`
-                )}
-              </button>
+                    <>📱 สแกน QR PromptPay — {totalText}</>
+                  )}
+                </button>
 
-              {paymentMethod === "qr" && !slipValid && slipFile && (
-                <p className="text-xs text-red-500 text-center mt-2">
-                  * กรุณาอัพโหลดสลิปโอนเงินจากแอปธนาคาร
-                </p>
-              )}
-              {paymentMethod === "qr" && !slipFile && (
-                <p className="text-xs text-amber-600 text-center mt-2">
-                  * กรุณาอัพโหลดสลิปการโอนเงินก่อนยืนยัน
-                </p>
-              )}
+                <button
+                  onClick={() => startPayment("card")}
+                  disabled={disabled}
+                  className={`w-full py-3.5 rounded-xl font-semibold border-2 transition-colors ${
+                    disabled
+                      ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                      : "border-amber-500 text-amber-600 hover:bg-amber-50"
+                  }`}
+                >
+                  {pending === "card" ? (
+                    <ButtonSpinner label="กำลังเตรียมช่องกรอกบัตร..." />
+                  ) : (
+                    <>💳 จ่ายด้วยบัตรเครดิต / เดบิต</>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function ButtonSpinner({ label, light }: { label: string; light?: boolean }) {
+  return (
+    <span className="flex items-center justify-center gap-2">
+      <span
+        className="w-5 h-5 rounded-full animate-spin"
+        style={{
+          borderWidth: 2,
+          borderStyle: "solid",
+          borderColor: `${light ? "#fff" : "#f59e0b"} transparent transparent transparent`,
+        }}
+      />
+      {label}
+    </span>
   );
 }

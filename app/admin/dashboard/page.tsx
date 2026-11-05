@@ -2,7 +2,7 @@
 
 import StoreOrderingToggle from "@/components/admin/StoreOrderingToggle";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 interface Order {
@@ -112,6 +112,36 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+type TimeFilter = "7d" | "30d" | "all";
+
+const rangeFor = (tf: TimeFilter, prev = false) => {
+  if (tf === "all") return null;
+  const n = new Date();
+  const days = tf === "7d" ? 7 : 30;
+  const endOfDay = new Date(
+    n.getFullYear(),
+    n.getMonth(),
+    n.getDate(),
+    23,
+    59,
+    59,
+  );
+  if (!prev) return { from: new Date(n.getTime() - days * 86400000), to: endOfDay };
+  return {
+    from: new Date(n.getTime() - 2 * days * 86400000),
+    to: new Date(n.getTime() - days * 86400000),
+  };
+};
+
+const summaryUrl = (r: { from: Date; to: Date } | null) => {
+  const p = new URLSearchParams();
+  if (r) {
+    p.set("from", toParam(r.from));
+    p.set("to", toParam(r.to));
+  }
+  return `${process.env.NEXT_PUBLIC_API_URL}/api/orders/admin/report-summary?${p}`;
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -121,78 +151,11 @@ export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
-  const [timeFilter, setTimeFilter] = useState<"7d" | "30d" | "all">("all");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [animIn, setAnimIn] = useState(false);
 
-  const [categories, setCategories] = useState(
-    [] as { id: number; name: string; slug: string; icon: string }[],
-  );
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const user = JSON.parse(userData);
-      if (!user.email?.endsWith("@empbakery.com")) {
-        router.replace("/");
-        return;
-      }
-    } else {
-      router.replace("/login");
-      return;
-    }
-    fetchDashboardData();
-  }, [router]);
-
-  useEffect(() => {
-    if (!loading) setTimeout(() => setAnimIn(true), 50);
-  }, [loading]);
-
-  // ✅ เพิ่ม useEffect นี้
-  useEffect(() => {
-    if (!loading) {
-      const days =
-        timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all";
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${days}`,
-      )
-        .then((r) => (r.ok ? r.json() : { topProducts: [] }))
-        .then((data) => setTopProducts(data.topProducts || []))
-        .catch(console.error);
-      fetchSummary(timeFilter); // ✅ KPI/กราฟ/สถานะ refetch ตามช่วงเวลา
-    }
-  }, [timeFilter]);
-
-  // ช่วงเวลาของ timeFilter → from/to (prev = ช่วงก่อนหน้า)
-  const rangeFor = (tf: "7d" | "30d" | "all", prev = false) => {
-    if (tf === "all") return null;
-    const n = new Date();
-    const days = tf === "7d" ? 7 : 30;
-    const endOfDay = new Date(
-      n.getFullYear(),
-      n.getMonth(),
-      n.getDate(),
-      23,
-      59,
-      59,
-    );
-    if (!prev) return { from: new Date(n.getTime() - days * 86400000), to: endOfDay };
-    return {
-      from: new Date(n.getTime() - 2 * days * 86400000),
-      to: new Date(n.getTime() - days * 86400000),
-    };
-  };
-
-  const summaryUrl = (r: { from: Date; to: Date } | null) => {
-    const p = new URLSearchParams();
-    if (r) {
-      p.set("from", toParam(r.from));
-      p.set("to", toParam(r.to));
-    }
-    return `${process.env.NEXT_PUBLIC_API_URL}/api/orders/admin/report-summary?${p}`;
-  };
-
   // ✅ สรุปยอดจาก backend (คำนวณใน SQL) — ไม่ดึงออเดอร์ทั้งหมดมานับเอง
-  const fetchSummary = async (tf: "7d" | "30d" | "all") => {
+  const fetchSummary = useCallback(async (tf: TimeFilter) => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
@@ -209,22 +172,20 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
 
-  const fetchDashboardData = async () => {
+  // ข้อมูลที่ไม่ขึ้นกับช่วงเวลา — โหลดครั้งเดียวตอนเปิดหน้า
+  const fetchDashboardData = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
       const base = process.env.NEXT_PUBLIC_API_URL;
 
-      const [productsRes, usersRes, recentRes, topProdRes] = await Promise.all([
+      const [productsRes, usersRes, recentRes] = await Promise.all([
         fetch(`${base}/api/products`),
         fetch(`${base}/api/auth/users`, { headers }),
         // ✅ 6 ออเดอร์ล่าสุดจาก endpoint แบ่งหน้า (ไม่ดึงทั้งหมด)
         fetch(`${base}/api/orders/admin/page?page=0&size=6`, { headers }),
-        fetch(
-          `${base}/api/orders/stats/top-products?days=${timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all"}`,
-        ),
       ]);
 
       if (productsRes.ok) setProducts(await productsRes.json());
@@ -236,19 +197,47 @@ export default function AdminDashboard() {
         const d = await recentRes.json();
         setRecentOrders(Array.isArray(d) ? d : (d.content ?? []));
       }
-      if (topProdRes.ok) {
-        const topData = await topProdRes.json();
-        setTopProducts(topData.topProducts || []);
-      }
-
-      await fetchSummary(timeFilter); // ✅ KPI/กราฟ/สถานะ ครั้งแรก
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (!user.email?.endsWith("@empbakery.com")) {
+        router.replace("/");
+        return;
+      }
+    } else {
+      router.replace("/login");
+      return;
+    }
+    fetchDashboardData();
+  }, [router, fetchDashboardData]);
+
+  useEffect(() => {
+    if (!loading) setTimeout(() => setAnimIn(true), 50);
+  }, [loading]);
+
+  // ✅ ข้อมูลที่ขึ้นกับช่วงเวลา (สินค้าขายดี + KPI/กราฟ/สถานะ) — โหลดหลังหน้าพร้อม และทุกครั้งที่เปลี่ยนช่วง
+  useEffect(() => {
+    if (loading) return;
+    const days =
+      timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all";
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${days}`,
+    )
+      .then((r) => (r.ok ? r.json() : { topProducts: [] }))
+      .then((data) => setTopProducts(data.topProducts || []))
+      .catch(console.error);
+    fetchSummary(timeFilter);
+  }, [loading, timeFilter, fetchSummary]);
+
+  // ช่วงเวลาของ timeFilter → from/to (prev = ช่วงก่อนหน้า)
   const now = new Date();
 
   // ✅ ค่าทั้งหมดมาจาก report-summary (คำนวณใน SQL) — ไม่ดึงออเดอร์ทั้งหมดมานับเองแล้ว
@@ -293,23 +282,6 @@ export default function AdminDashboard() {
       ? Math.round(((totalOrders - prevOrderCount) / prevOrderCount) * 100)
       : 0;
 
-  const catCount = products.reduce((acc: Record<string, number>, p) => {
-    acc[p.category] = (acc[p.category] || 0) + 1;
-    return acc;
-  }, {});
-  const donutColors = [
-    "#f59e0b",
-    "#ec4899",
-    "#3b82f6",
-    "#ef4444",
-    "#8b5cf6",
-    "#10b981",
-  ];
-  const donutData = categories.map((cat, i) => ({
-    value: catCount[cat.slug] || 0,
-    color: donutColors[i % donutColors.length],
-    label: cat.name,
-  }));
   const statusBreakdown = [
     "pending",
     "confirmed",

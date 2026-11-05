@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TiltCard from "@/components/ui/TiltCard";
 
@@ -22,11 +21,6 @@ interface Product {
   options?: string | null; // ✅ JSON string
 }
 
-interface ProductCardProps extends Product {
-  onAddToCart?: (product: Product) => void;
-  onStockUpdate?: () => void;
-}
-
 const FRESH_STOCK_VALUE = 9999;
 const FRESH_DISPLAY_LIMIT = 10;
 
@@ -46,7 +40,6 @@ const formatPrice = (price: number) =>
   });
 
 export default function ProductCard({
-  id,
   name,
   type,
   category,
@@ -56,11 +49,9 @@ export default function ProductCard({
   stockQuantity = 10,
   isAvailable = true,
   options,
-  onAddToCart,
-  onStockUpdate,
-}: ProductCardProps) {
+}: Product) {
   const router = useRouter();
-  const [currentStock, setCurrentStock] = useState(stockQuantity);
+  const currentStock = stockQuantity;
 
   const isFresh =
     currentStock === FRESH_STOCK_VALUE || stockQuantity === FRESH_STOCK_VALUE;

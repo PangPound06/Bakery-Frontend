@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -97,6 +97,9 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+const getToken = () =>
+  typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
 export default function OrderDetailPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,10 +109,7 @@ export default function OrderDetailPage() {
   const [dineType, setDineType] = useState("");
   const [buffetPrice, setBuffetPrice] = useState<number | null>(null);
 
-  const getToken = () =>
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     const token = getToken();
     if (!token) {
       router.replace("/login");
@@ -143,7 +143,7 @@ export default function OrderDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchOrders();
@@ -169,7 +169,7 @@ export default function OrderDetailPage() {
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [fetchOrders]);
 
   if (loading)
     return (

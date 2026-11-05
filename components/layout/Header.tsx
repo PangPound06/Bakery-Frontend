@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import UserMenu from "@/components/ui/UserMenu";
 import Swal from "sweetalert2";
+import type { ApiProduct } from "@/types/product";
 
 interface Category {
   id: number;
@@ -33,6 +40,61 @@ interface PageResult {
   icon: string;
 }
 
+interface SearchablePage extends PageResult {
+  keywords: string[];
+}
+
+/** หน้าที่ค้นหาได้จากช่องค้นหา (หน้าหมวดหมู่เติมเพิ่มตอน runtime) */
+const STATIC_USER_PAGES: SearchablePage[] = [
+  {
+    href: "/user/profile",
+    label: "ข้อมูลส่วนตัว",
+    icon: "👤",
+    keywords: ["profile", "โปรไฟล์", "ข้อมูลส่วนตัว"],
+  },
+  {
+    href: "/user/orders",
+    label: "รายการสั่งซื้อ",
+    icon: "📦",
+    keywords: ["order", "orders", "คำสั่งซื้อ", "รายการสั่งซื้อ"],
+  },
+  {
+    href: "/user/search-order",
+    label: "ค้นหาคำสั่งซื้อ",
+    icon: "🔍",
+    keywords: ["search order", "ค้นหาคำสั่งซื้อ", "ORD"],
+  },
+  {
+    href: "/user/favorites",
+    label: "รายการโปรด",
+    icon: "❤️",
+    keywords: ["favorite", "favorites", "โปรด", "รายการโปรด"],
+  },
+  {
+    href: "/user/settings",
+    label: "ตั้งค่า",
+    icon: "⚙️",
+    keywords: ["setting", "settings", "ตั้งค่า"],
+  },
+  {
+    href: "/cart",
+    label: "ตะกร้าสินค้า",
+    icon: "🛒",
+    keywords: ["cart", "ตะกร้า"],
+  },
+  {
+    href: "/checkout",
+    label: "ชำระเงิน",
+    icon: "💳",
+    keywords: ["checkout", "ชำระเงิน"],
+  },
+];
+
+/** true เฉพาะตอนรันในเบราว์เซอร์ — ใช้กัน hydration mismatch แทน useEffect(setMounted) */
+const subscribeNoop = () => () => {};
+const useIsClient = () =>
+  useSyncExternalStore(subscribeNoop, () => true, () => false);
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<{
@@ -48,8 +110,6 @@ export default function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [pageResults, setPageResults] = useState<PageResult[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [allProducts, setAllProducts] = useState<SearchResult[]>([]);
@@ -77,57 +137,52 @@ export default function Header() {
     { href: "/user/settings", label: "ตั้งค่า", icon: "⚙️" },
   ];
 
+
   // ✅ Build page search results dynamically
-  const userPages = [
-    {
-      href: "/user/profile",
-      label: "ข้อมูลส่วนตัว",
-      icon: "👤",
-      keywords: ["profile", "โปรไฟล์", "ข้อมูลส่วนตัว"],
-    },
-    {
-      href: "/user/orders",
-      label: "รายการสั่งซื้อ",
-      icon: "📦",
-      keywords: ["order", "orders", "คำสั่งซื้อ", "รายการสั่งซื้อ"],
-    },
-    {
-      href: "/user/search-order",
-      label: "ค้นหาคำสั่งซื้อ",
-      icon: "🔍",
-      keywords: ["search order", "ค้นหาคำสั่งซื้อ", "ORD"],
-    },
-    {
-      href: "/user/favorites",
-      label: "รายการโปรด",
-      icon: "❤️",
-      keywords: ["favorite", "favorites", "โปรด", "รายการโปรด"],
-    },
-    {
-      href: "/user/settings",
-      label: "ตั้งค่า",
-      icon: "⚙️",
-      keywords: ["setting", "settings", "ตั้งค่า"],
-    },
-    {
-      href: "/cart",
-      label: "ตะกร้าสินค้า",
-      icon: "🛒",
-      keywords: ["cart", "ตะกร้า"],
-    },
-    {
-      href: "/checkout",
-      label: "ชำระเงิน",
-      icon: "💳",
-      keywords: ["checkout", "ชำระเงิน"],
-    },
-    ...categories.map((cat) => ({
-      href: `/${cat.slug}`,
-      label: `หน้า ${cat.name}`,
-      icon: cat.icon,
-      keywords: [cat.slug, cat.name.toLowerCase()],
-    })),
-  ];
+  const userPages = useMemo<SearchablePage[]>(
+    () => [
+      ...STATIC_USER_PAGES,
+      ...categories.map((cat) => ({
+        href: `/${cat.slug}`,
+        label: `หน้า ${cat.name}`,
+        icon: cat.icon,
+        keywords: [cat.slug, cat.name.toLowerCase()],
+      })),
+    ],
+    [categories],
+  );
+
+  // ผลค้นหาคำนวณจากคำค้นโดยตรง — ไม่ต้องเก็บเป็น state แยก
+  const query = searchQuery.toLowerCase().trim();
+  const searchResults = useMemo<SearchResult[]>(
+    () =>
+      query === ""
+        ? []
+        : allProducts
+            .filter(
+              (p) =>
+                p.name.toLowerCase().includes(query) ||
+                p.category.toLowerCase().includes(query),
+            )
+            .slice(0, 10),
+    [query, allProducts],
+  );
+  const pageResults = useMemo<PageResult[]>(
+    () =>
+      query === ""
+        ? []
+        : userPages.filter(
+            (page) =>
+              page.label.toLowerCase().includes(query) ||
+              page.keywords.some((kw) => kw.toLowerCase().includes(query)),
+          ),
+    [query, userPages],
+  );
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setShowResults(value.trim() !== "");
+  };
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -190,7 +245,7 @@ export default function Header() {
         if (res.ok) {
           const data = await res.json();
           setAllProducts(
-            data.map((p: any) => ({
+            data.map((p: ApiProduct) => ({
               id: p.id,
               name: p.name,
               category: p.category,
@@ -207,33 +262,6 @@ export default function Header() {
   }, [isAdmin]);
 
   useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setSearchResults([]);
-      setPageResults([]);
-      setShowResults(false);
-      return;
-    }
-    const q = searchQuery.toLowerCase().trim();
-    setSearchResults(
-      allProducts
-        .filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q),
-        )
-        .slice(0, 10),
-    );
-    setPageResults(
-      userPages.filter(
-        (page) =>
-          page.label.toLowerCase().includes(q) ||
-          page.keywords.some((kw) => kw.toLowerCase().includes(q)),
-      ),
-    );
-    setShowResults(true);
-  }, [searchQuery, allProducts, categories]);
-
-  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const t = e.target as Node;
       const inDesktop = searchRef.current?.contains(t);
@@ -247,8 +275,9 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const userEmail = user?.email;
   useEffect(() => {
-    if (!user || isAdmin) return;
+    if (!userEmail || isAdmin) return;
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     const userId = userData.id || userData.userId;
     if (!userId) return;
@@ -263,7 +292,7 @@ export default function Header() {
             data.success && data.profile?.profileImage
               ? data.profile.profileImage
               : "";
-          if (newImage !== user.profileImage) {
+          if (newImage !== (userData.profileImage || "")) {
             const updated = { ...userData, profileImage: newImage };
             localStorage.setItem("user", JSON.stringify(updated));
             setUser((prev) =>
@@ -276,7 +305,7 @@ export default function Header() {
       }
     };
     fetchProfileImage();
-  }, [user?.email, isAdmin]);
+  }, [userEmail, isAdmin]);
 
   const handleSearchSelect = (product: SearchResult) => {
     setSearchQuery("");
@@ -351,12 +380,11 @@ export default function Header() {
     onMenuPage || (pathname?.startsWith("/cart") ?? false) || showSearch;
   const hasAnyResults = searchResults.length > 0 || pageResults.length > 0;
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useIsClient();
   if (!mounted) return <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />;
   if (pathname?.startsWith("/admin")) return null;
 
-  const SearchDropdown = () => {
+  const renderSearchDropdown = () => {
     if (!showResults || searchQuery.trim() === "") return null;
     return (
       <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
@@ -484,7 +512,7 @@ export default function Header() {
                       <input
                         type="text"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         onFocus={() =>
                           searchQuery.trim() && setShowResults(true)
                         }
@@ -527,7 +555,7 @@ export default function Header() {
                   </button>
                   {showResults && (
                     <div className="absolute right-0 xl:left-0 top-full mt-2 w-80 z-50 hidden xl:block">
-                      <SearchDropdown />
+                      {renderSearchDropdown()}
                     </div>
                   )}
                 </div>
@@ -649,7 +677,7 @@ export default function Header() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   onFocus={() => searchQuery.trim() && setShowResults(true)}
                   placeholder="ค้นหาสินค้า, หน้า..."
                   autoFocus
@@ -671,7 +699,7 @@ export default function Header() {
               </form>
               {showResults && (
                 <div className="mt-2">
-                  <SearchDropdown />
+                  {renderSearchDropdown()}
                 </div>
               )}
             </div>

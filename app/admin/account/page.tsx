@@ -132,7 +132,7 @@ export default function AccountPage() {
       } else {
         showMessage("error", data.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err) {
+    } catch {
       showMessage("error", "ไม่สามารถเชื่อมต่อ server ได้");
     } finally {
       setSaving(false);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ProductCard from "@/components/ui/ProductCard";
+import type { ApiProduct } from "@/types/product";
 
 interface Category {
   id: number;
@@ -124,7 +125,7 @@ export default function MenuPage() {
       if (res.ok) {
         const data = await res.json();
         setProducts(
-          data.map((item: any) => ({
+          data.map((item: ApiProduct) => ({
             id: item.id,
             name: item.name,
             type: item.type || "Other",
@@ -151,7 +152,6 @@ export default function MenuPage() {
       setSelectedType("All");
       fetchProducts(selectedSlug);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSlug]);
 
   const story = CATEGORY_STORY[selectedSlug];
@@ -291,11 +291,7 @@ export default function MenuPage() {
 
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
               {filtered.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  {...p}
-                  onStockUpdate={() => fetchProducts(selectedSlug)}
-                />
+                <ProductCard key={p.id} {...p} />
               ))}
             </div>
           </>

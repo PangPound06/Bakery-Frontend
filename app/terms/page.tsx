@@ -6,7 +6,7 @@ export default function TermsPage() {
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-12 px-4"
-      style={{ fontFamily: "'Prompt', sans-serif" }}
+      style={{ fontFamily: "var(--font-prompt), sans-serif" }}
     >
       <div className="max-w-3xl mx-auto">
         {/* Back */}
@@ -187,7 +187,7 @@ export default function TermsPage() {
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 mt-1">•</span>
                   <span>
-                    ไม่สามารถยกเลิกคำสั่งซื้อที่มีสถานะ "จัดส่งแล้ว" ได้
+                    ไม่สามารถยกเลิกคำสั่งซื้อที่มีสถานะ &quot;จัดส่งแล้ว&quot; ได้
                   </span>
                 </li>
               </ul>

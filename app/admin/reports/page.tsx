@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Pagination from "@/components/ui/Pagination";
+import type { CellHookData } from "jspdf-autotable";
 
 interface Order {
   id: number;
@@ -77,11 +79,11 @@ export default function ReportsPage() {
   const [customEnd, setCustomEnd] = useState("");
 
   // ติดตามว่า items ของแต่ละ order โหลดเสร็จทั้งหมดหรือยัง
-  const [itemsLoading, setItemsLoading] = useState(false);
 
   // server-side pagination + summary
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [totalElements, setTotalElements] = useState(0);
   const [summary, setSummary] = useState<Summary>({
     totalRevenue: 0,
@@ -117,7 +119,7 @@ export default function ReportsPage() {
       const sumParams = new URLSearchParams();
       const pageParams = new URLSearchParams();
       pageParams.set("page", String(page));
-      pageParams.set("size", "50");
+      pageParams.set("size", String(pageSize));
       if (filterStatus !== "all") pageParams.set("status", filterStatus);
       if (dateRange !== "all") {
         const { start, end } = getDateCutoff();
@@ -150,7 +152,7 @@ export default function ReportsPage() {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filterStatus, dateRange, customStart, customEnd]);
+  }, [page, pageSize, filterStatus, dateRange, customStart, customEnd]);
 
   // โหลดใหม่เมื่อ page / filter / ช่วงวันที่ เปลี่ยน
   useEffect(() => {
@@ -165,7 +167,7 @@ export default function ReportsPage() {
     const all: OrderWithItems[] = [];
     const size = 200;
     const MAX_PAGES = 50; // ≤ 10,000 แถว
-    let range: { start: Date; end: Date } | null =
+    const range: { start: Date; end: Date } | null =
       dateRange !== "all" ? getDateCutoff() : null;
     for (let p = 0; p < MAX_PAGES; p++) {
       const params = new URLSearchParams();
@@ -628,7 +630,7 @@ export default function ReportsPage() {
             textColor: [50, 50, 50],
           },
           alternateRowStyles: { fillColor: [248, 248, 248] },
-          didParseCell: (data: any) => {
+          didParseCell: (data: CellHookData) => {
             if (
               data.section === "body" &&
               data.row.index === salesTableBody.length - 1
@@ -761,7 +763,7 @@ export default function ReportsPage() {
           <div className="flex gap-2">
             <button
               onClick={exportPDF}
-              disabled={exporting || itemsLoading}
+              disabled={exporting}
               className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
             >
               {exporting && exportType === "pdf" ? (
@@ -775,7 +777,7 @@ export default function ReportsPage() {
             </button>
             <button
               onClick={exportExcel}
-              disabled={exporting || itemsLoading}
+              disabled={exporting}
               className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
             >
               {exporting && exportType === "excel" ? (
@@ -787,12 +789,6 @@ export default function ReportsPage() {
                 <>📊 Excel</>
               )}
             </button>
-            {itemsLoading && (
-              <span className="text-xs text-amber-600 self-center ml-2">
-                <span className="inline-block w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mr-1"></span>
-                กำลังโหลดรายการ...
-              </span>
-            )}
           </div>
         </div>
 
@@ -1010,28 +1006,17 @@ export default function ReportsPage() {
               </div>
             )}
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-6">
-                <button
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page <= 0}
-                  className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  ← ก่อนหน้า
-                </button>
-                <span className="text-sm text-slate-600 font-medium">
-                  หน้า {page + 1} / {totalPages}
-                  <span className="text-slate-400"> ({totalElements} รายการ)</span>
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                  disabled={page >= totalPages - 1}
-                  className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  ถัดไป →
-                </button>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(0);
+              }}
+            />
           </div>
         )}
 

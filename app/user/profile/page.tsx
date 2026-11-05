@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
@@ -14,6 +14,9 @@ interface Profile {
   address: string;
   profileImage: string;
 }
+
+// ✅ Helper: ดึง token จาก localStorage
+const getToken = () => localStorage.getItem("token") || "";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -30,20 +33,8 @@ export default function ProfilePage() {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // ✅ Helper: ดึง token จาก localStorage
-  const getToken = () => localStorage.getItem("token") || "";
-
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-    fetchProfile();
-  }, [router]);
-
   // ✅ ใช้ /me แทน /{userId} — ไม่ต้องส่ง userId ใน URL
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`,
@@ -71,7 +62,17 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+    fetchProfile();
+  }, [router, fetchProfile]);
+
 
   const handleSave = async () => {
     setSaving(true);
@@ -103,7 +104,7 @@ export default function ProfilePage() {
       } else {
         setError(data.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err) {
+    } catch {
       setError("ไม่สามารถบันทึกข้อมูลได้");
     } finally {
       setSaving(false);
@@ -151,7 +152,7 @@ export default function ProfilePage() {
           confirmButtonColor: "#f97316",
         });
       }
-    } catch (err) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import CancelRequestModal from "@/components/orders/CancelRequestModal";
+import Pagination from "@/components/ui/Pagination";
 
 interface OrderItem {
   id: number;
@@ -12,6 +14,8 @@ interface OrderItem {
   price: number;
   quantity: number;
   selectedOption?: string | null;
+  /** จำนวนชิ้นที่ถูกยกเลิกไปแล้ว — backend ส่งมาใน itemToMap */
+  cancelledQty?: number | null;
 }
 
 interface Order {
@@ -31,6 +35,8 @@ interface Order {
   note: string;
   slipImage: string;
   createdAt: string;
+  /** ยอดที่คืนเงินไปแล้ว — มาจาก GET /api/orders/{id} เท่านั้น */
+  refundedAmount?: number;
 }
 
 const formatPrice = (price: number) =>
@@ -49,8 +55,38 @@ const getCustomerName = (order: Order): string => {
   return "-";
 };
 
-// ✅ ใช้แค่ isPoundOption เพื่อแสดง badge — Backend แปลง quantity ให้แล้ว
+/**
+ * ซ่อนใบที่หมดเวลาก่อนจ่ายเงินออกจากสายตาลูกค้า
+ *
+ * ใบเหล่านี้เกิดจากการกดจ่ายเงินค้างไว้แล้วเริ่มใหม่ ไม่เคยมีเงินเข้าออกจริง
+ * สำหรับลูกค้ามันคือขยะ — แอดมินยังเห็นครบที่หน้า Manage Orders
+ */
+const NEVER_PAID = ["expired", "failed"];
+const visibleOrders = (list: Order[]) =>
+  list.filter((o) => !NEVER_PAID.includes(o.paymentStatus));
+
 const isPoundOption = (opt?: string | null) => opt?.includes("ปอนด์") ?? false;
+
+/**
+ * จำนวนชิ้นต่อ 1 ออเดอร์ — ตรงกับ ProductQuantityHelper ฝั่ง backend
+ *
+ * tb_order_items เก็บ quantity เป็น "ชิ้น" ส่วน price เป็นราคาต่อ 1 ออเดอร์
+ * เค้ก 1 ปอนด์จึงเก็บ quantity = 8 ถ้าเอา price × quantity ตรงๆ จะได้ยอดเกินจริง 8 เท่า
+ */
+const multiplierOf = (opt?: string | null) => {
+  if (!opt) return 1;
+  if (opt.includes("2 ปอนด์")) return 16;
+  if (opt.includes("1 ปอนด์")) return 8;
+  return 1;
+};
+
+/** แตกรายการหนึ่งออกเป็น สั่ง / ยกเลิกแล้ว / เหลือจริง (หน่วยเป็น "ออเดอร์") */
+const splitQty = (item: OrderItem) => {
+  const mult = multiplierOf(item.selectedOption);
+  const ordered = Math.max(0, Math.floor(item.quantity / mult));
+  const cancelled = Math.max(0, Math.floor((item.cancelledQty ?? 0) / mult));
+  return { ordered, cancelled, active: Math.max(0, ordered - cancelled) };
+};
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -58,6 +94,10 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
+  const [cancelItems, setCancelItems] = useState<OrderItem[]>([]);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   const [dateRange, setDateRange] = useState<
@@ -94,13 +134,15 @@ export default function OrdersPage() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}?size=100`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}?size=500`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.ok) {
         const data = await response.json();
         // ✅ response เป็น envelope { content, ... } รองรับของเดิม (array) ด้วย
-        setOrders(Array.isArray(data) ? data : (data.content ?? []));
+        setOrders(
+          visibleOrders(Array.isArray(data) ? data : (data.content ?? [])),
+        );
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -115,15 +157,19 @@ export default function OrdersPage() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (!user.email) return;
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}?size=100`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.email}?size=500`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.ok) {
         const data = await response.json();
         // ✅ response เป็น envelope { content, ... } รองรับของเดิม (array) ด้วย
-        setOrders(Array.isArray(data) ? data : (data.content ?? []));
+        setOrders(
+          visibleOrders(Array.isArray(data) ? data : (data.content ?? [])),
+        );
       }
-    } catch (error) {}
+    } catch {
+      // เครือข่ายสะดุด — รอบ polling ถัดไปจะดึงใหม่เอง
+    }
   };
 
   const fetchOrderDetail = async (orderId: number, silent = false) => {
@@ -189,10 +235,39 @@ export default function OrdersPage() {
           confirmButtonColor: "#f97316",
         });
       }
-    } catch (error) {
+    } catch {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถยกเลิกได้",
+        icon: "error",
+        confirmButtonColor: "#f97316",
+      });
+    }
+  };
+
+  /**
+   * จ่ายเงินแล้ว → ต้องยื่นคำขอเพื่อให้แอดมินคืนเงิน
+   * ยังไม่จ่าย → ยกเลิกตรงได้เลยเหมือนเดิม ไม่มีเงินให้คืน
+   */
+  const startCancel = async (order: Order) => {
+    if (order.paymentStatus !== "paid") {
+      handleCancelOrder(order.id);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const data = await res.json();
+      setCancelItems(data.items ?? []);
+      setCancelTarget(order);
+    } catch {
+      await Swal.fire({
+        title: "โหลดรายการสินค้าไม่สำเร็จ",
+        text: "ลองใหม่อีกครั้ง",
         icon: "error",
         confirmButtonColor: "#f97316",
       });
@@ -230,6 +305,12 @@ export default function OrdersPage() {
           text: "จัดส่งแล้ว",
           bg: "bg-green-100 text-green-700",
           icon: "📦",
+        };
+      case "cancel_requested":
+        return {
+          text: "รอร้านพิจารณาคำขอยกเลิก",
+          bg: "bg-orange-100 text-orange-700",
+          icon: "⏸️",
         };
       case "cancelled":
         return { text: "ยกเลิก", bg: "bg-red-100 text-red-700", icon: "❌" };
@@ -324,6 +405,22 @@ export default function OrdersPage() {
     if (filterStatus === "all") return true;
     return order.orderStatus === filterStatus;
   });
+
+  /*
+   * ตัดหน้าฝั่ง client
+   *
+   * ตัวกรองสถานะกับช่วงวันที่ของหน้านี้ทำงานฝั่ง client ถ้าให้ server แบ่งหน้ามา
+   * ตัวกรองจะทำงานแค่ในหน้าที่เห็น เลือก "ยกเลิก" แล้วอาจได้ 0 รายการ
+   * ทั้งที่หน้าถัดไปมีอยู่ — กรองก่อนแล้วค่อยตัดหน้าจึงถูกกว่า
+   *
+   * ลูกค้าคนเดียวไม่มีทางมีออเดอร์ถึงหลักล้าน ดึง 500 ใบล่าสุดมาพอ
+   */
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const safePage = Math.min(page, totalPages - 1);
+  const pagedOrders = filteredOrders.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize,
+  );
 
   if (loading)
     return (
@@ -472,7 +569,10 @@ export default function OrdersPage() {
                 ].map((filter) => (
                   <button
                     key={filter.value}
-                    onClick={() => setFilterStatus(filter.value)}
+                    onClick={() => {
+                      setFilterStatus(filter.value);
+                      setPage(0);
+                    }}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === filter.value ? "bg-amber-500 text-white" : "bg-gray-100 text-amber-800 hover:bg-gray-200"}`}
                   >
                     {filter.label}
@@ -493,7 +593,7 @@ export default function OrdersPage() {
                 </Link>
               </div>
             ) : (
-              filteredOrders.map((order) => {
+              pagedOrders.map((order) => {
                 const status = getStatusBadge(order.orderStatus);
                 const payment = getPaymentBadge(order.paymentStatus);
                 return (
@@ -552,10 +652,12 @@ export default function OrdersPage() {
                         {(order.orderStatus === "pending" ||
                           order.orderStatus === "confirmed") && (
                           <button
-                            onClick={() => handleCancelOrder(order.id)}
+                            onClick={() => startCancel(order)}
                             className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
                           >
-                            ยกเลิก
+                            {order.paymentStatus === "paid"
+                              ? "ขอยกเลิก"
+                              : "ยกเลิก"}
                           </button>
                         )}
                       </div>
@@ -563,6 +665,23 @@ export default function OrdersPage() {
                   </div>
                 );
               })
+            )}
+
+            {filteredOrders.length > 0 && (
+              /* หน้านี้เป็นการ์ดเรียงกัน ไม่มีการ์ดครอบ จึงห่อเองให้แถบดูเข้าชุด */
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <Pagination
+                  page={safePage}
+                  totalPages={totalPages}
+                  totalElements={filteredOrders.length}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    setPage(0);
+                  }}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -625,15 +744,24 @@ export default function OrdersPage() {
                   <div className="space-y-2">
                     {orderItems.map((item) => {
                       const isPound = isPoundOption(item.selectedOption);
-                      // ✅ ใช้ item.quantity ตรงๆ — Backend แปลงให้แล้ว (1 ออเดอร์, ไม่ใช่ 8 ชิ้น)
-                      const displayTotal = item.price * item.quantity;
+                      const { cancelled, active } = splitQty(item);
+                      const allCancelled = active === 0;
+                      const displayTotal = item.price * active;
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-3 bg-amber-50 rounded-lg"
+                          className={`flex items-center justify-between p-3 rounded-lg ${
+                            allCancelled ? "bg-gray-100" : "bg-amber-50"
+                          }`}
                         >
                           <div>
-                            <p className="font-medium text-amber-700">
+                            <p
+                              className={`font-medium ${
+                                allCancelled
+                                  ? "text-gray-400 line-through"
+                                  : "text-amber-700"
+                              }`}
+                            >
                               {item.productName}
                             </p>
                             {item.selectedOption && (
@@ -641,12 +769,28 @@ export default function OrdersPage() {
                                 {item.selectedOption}
                               </span>
                             )}
+                            {cancelled > 0 && (
+                              <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full mt-0.5 ml-1">
+                                ยกเลิกแล้ว {cancelled}{" "}
+                                {isPound ? "ออเดอร์" : "ชิ้น"}
+                              </span>
+                            )}
                             <p className="text-xs text-gray-500 mt-0.5">
-                              ฿{formatPrice(item.price)} × {item.quantity}{" "}
-                              {isPound ? "ออเดอร์" : "ชิ้น"}
+                              {allCancelled ? (
+                                "ยกเลิกทั้งรายการแล้ว"
+                              ) : (
+                                <>
+                                  ฿{formatPrice(item.price)} × {active}{" "}
+                                  {isPound ? "ออเดอร์" : "ชิ้น"}
+                                </>
+                              )}
                             </p>
                           </div>
-                          <p className="font-semibold text-amber-600">
+                          <p
+                            className={`font-semibold ${
+                              allCancelled ? "text-gray-400" : "text-amber-600"
+                            }`}
+                          >
                             ฿{formatPrice(displayTotal)}
                           </p>
                         </div>
@@ -674,6 +818,19 @@ export default function OrdersPage() {
                       ฿{formatPrice(selectedOrder.total)}
                     </span>
                   </div>
+                  {(selectedOrder.refundedAmount ?? 0) > 0 && (
+                    <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-1">
+                      <div className="flex justify-between text-sm text-red-600 font-medium">
+                        <span>คืนเงินให้คุณแล้ว</span>
+                        <span>
+                          ฿{formatPrice(selectedOrder.refundedAmount ?? 0)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-400 mt-0.5">
+                        ยอดรวมด้านบนคือรายการที่เหลือหลังหักรายการที่ยกเลิกออกแล้ว
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t pt-4">
@@ -733,10 +890,12 @@ export default function OrdersPage() {
                 {(selectedOrder.orderStatus === "pending" ||
                   selectedOrder.orderStatus === "confirmed") && (
                   <button
-                    onClick={() => handleCancelOrder(selectedOrder.id)}
+                    onClick={() => startCancel(selectedOrder)}
                     className="w-full py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors font-medium"
                   >
-                    ❌ ยกเลิกคำสั่งซื้อ
+                    {selectedOrder.paymentStatus === "paid"
+                      ? "❌ ขอยกเลิกและคืนเงิน"
+                      : "❌ ยกเลิกคำสั่งซื้อ"}
                   </button>
                 )}
                 <button
@@ -749,6 +908,26 @@ export default function OrdersPage() {
             )}
           </div>
         </div>
+      )}
+
+      {cancelTarget && (
+        <CancelRequestModal
+          orderId={cancelTarget.id}
+          ordCode={cancelTarget.ordCode}
+          items={cancelItems}
+          onClose={() => setCancelTarget(null)}
+          onSubmitted={async (_requestId, message) => {
+            setCancelTarget(null);
+            setSelectedOrder(null);
+            await Swal.fire({
+              title: "ส่งคำขอแล้ว",
+              text: message,
+              icon: "success",
+              confirmButtonColor: "#f97316",
+            });
+            fetchOrders();
+          }}
+        />
       )}
     </div>
   );

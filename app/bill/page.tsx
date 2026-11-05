@@ -32,7 +32,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   cancelled: { label: "ยกเลิก", color: "text-red-500" },
 };
 
-export function formatTime(dateStr: string) {
+function formatTime(dateStr: string) {
   if (!dateStr) return "-";
 
   // บังคับแปลง String ให้เป็น Format ที่เติม Timezone ของไทยถ้ายังไม่มี
@@ -49,7 +49,7 @@ export function formatTime(dateStr: string) {
   });
 }
 
-export function formatDate(dateStr: string) {
+function formatDate(dateStr: string) {
   if (!dateStr) return "-";
 
   // บังคับแปลง String ให้เป็น Format ที่เติม Timezone ของไทยถ้ายังไม่มี
@@ -142,7 +142,7 @@ export default function BillPage() {
     if (type === "buffet" && price) {
       setBuffetPrice(Number(price) * pax); // ← คูณจำนวนคนตรงนี้
     }
-  }, []);
+  }, [router]);
 
   const grandTotal =
     dineType === "buffet" && buffetPrice

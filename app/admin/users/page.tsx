@@ -196,7 +196,7 @@ export default function UserManagementPage() {
     try {
       let response;
       if (editingAdmin) {
-        const body: any = {
+        const body: { fullname: string; role: string; password?: string } = {
           fullname: formData.fullname.trim(),
           role: formData.role,
         };
@@ -246,7 +246,7 @@ export default function UserManagementPage() {
       } else {
         setError(data.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อ server ได้");
     } finally {
       setSaving(false);

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import ProductCard from "@/components/ui/ProductCard";
+import type { ApiProduct } from "@/types/product";
 
 interface Product {
   id: number;
@@ -100,7 +102,6 @@ const RESERVED_PATHS = [
 export default function CategoryPage() {
   const params = useParams();
   const categorySlug = params.category as string;
-  const router = useRouter();
 
   // ✅ เช็คก่อนเลย ถ้าเป็น reserved path
   const isReserved = RESERVED_PATHS.includes(categorySlug);
@@ -164,7 +165,7 @@ export default function CategoryPage() {
     }
   }, [categoryInfo]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (isReserved) return; // ← ไม่ fetch ถ้าเป็น reserved
     try {
       const response = await fetch(
@@ -173,7 +174,7 @@ export default function CategoryPage() {
       if (response.ok) {
         const data = await response.json();
         setProducts(
-          data.map((item: any) => ({
+          data.map((item: ApiProduct) => ({
             id: item.id,
             name: item.name,
             type: item.type || "Other",
@@ -192,14 +193,14 @@ export default function CategoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categorySlug, isReserved]);
 
   useEffect(() => {
     if (isReserved) return; // ← ไม่ fetch ถ้าเป็น reserved
     fetchProducts();
     const interval = setInterval(() => fetchProducts(), 2000);
     return () => clearInterval(interval);
-  }, [categorySlug, isReserved]);
+  }, [fetchProducts, isReserved]);
 
   // ✅ แสดง loading spinner ขณะ redirect
   if (isReserved) {
@@ -221,12 +222,12 @@ export default function CategoryPage() {
           <p className="text-gray-500 mb-6">
             หมวดหมู่ &quot;{categorySlug}&quot; ไม่มีอยู่ในระบบ
           </p>
-          <a
+          <Link
             href="/"
             className="px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium"
           >
             ← กลับหน้าหลัก
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -267,7 +268,7 @@ export default function CategoryPage() {
   return (
     <div
       className="bg-amber-50 min-h-screen"
-      style={{ fontFamily: "'Prompt', sans-serif" }}
+      style={{ fontFamily: "var(--font-prompt), sans-serif" }}
     >
       <section
         ref={heroRef}
@@ -370,7 +371,7 @@ export default function CategoryPage() {
               className="animate-fade-in"
               style={{ animationDelay: `${i * 50}ms` }}
             >
-              <ProductCard {...p} onStockUpdate={fetchProducts} />
+              <ProductCard {...p} />
             </div>
           ))}
         </div>

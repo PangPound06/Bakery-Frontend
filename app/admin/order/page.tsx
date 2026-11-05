@@ -3,14 +3,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import Pagination from "@/components/ui/Pagination";
+import CancelRefundModal, {
+  CancelRefundValues,
+} from "@/components/admin/CancelRefundModal";
 
 interface OrderItem {
   id: number;
   productId: number;
   productName: string;
   price: number;
+  /** จำนวน "ชิ้น" ที่สั่ง (เค้ก 1 ปอนด์ = 8) */
   quantity: number;
   selectedOption?: string | null;
+  /** จำนวน "ชิ้น" ที่ถูกยกเลิกและคืนเงินไปแล้ว */
+  cancelledQty?: number | null;
 }
 
 interface Order {
@@ -30,6 +37,8 @@ interface Order {
   slipImage: string;
   createdAt: string;
   ordCode: string;
+  /** ยอดที่คืนเงินไปแล้ว — มีเฉพาะตอนดึงรายละเอียด */
+  refundedAmount?: number;
 }
 
 interface Product {
@@ -63,6 +72,49 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 2,
   });
 
+/**
+ * จำนวนชิ้นต่อ 1 ออเดอร์ — ตรงกับ ProductQuantityHelper ฝั่ง backend
+ *
+ * price ใน tb_order_items เป็นราคาต่อ 1 ออเดอร์ แต่ quantity เป็นชิ้น
+ * เอามาคูณกันตรงๆ เค้กปอนด์จะได้ยอดเกินจริง 8 เท่า
+ */
+const multiplierOf = (opt?: string | null) => {
+  if (!opt) return 1;
+  if (opt.includes("2 ปอนด์")) return 16;
+  if (opt.includes("1 ปอนด์")) return 8;
+  return 1;
+};
+
+/**
+ * ชื่อวิธีชำระเงินที่อ่านออก
+ *
+ * ห้ามเดาว่าค่าที่ไม่รู้จักคือบัตร — order เก่าที่เก็บไว้ว่า "stripe"
+ * จะกลายเป็น "บัตร" ทันที ทั้งที่อาจจ่ายด้วย QR ก็ได้
+ */
+const paymentMethodLabel = (method?: string | null) => {
+  switch (method) {
+    case "qr_promptpay":
+      return "📱 QR PromptPay";
+    case "card":
+      return "💳 บัตร";
+    case "cash":
+      return "💵 เงินสด";
+    case "stripe":
+      // order ก่อนแก้บั๊ก — ดูวิธีจ่ายจริงได้ใน Stripe Dashboard
+      return "Stripe (ข้อมูลเก่า ไม่ระบุวิธี)";
+    default:
+      return method || "-";
+  }
+};
+
+/** แตกจำนวนออกเป็น สั่ง / ยกเลิกแล้ว / เหลือจริง — หน่วยเป็น "ออเดอร์" */
+const splitQty = (item: OrderItem) => {
+  const mult = multiplierOf(item.selectedOption);
+  const ordered = Math.max(0, Math.floor(item.quantity / mult));
+  const cancelled = Math.max(0, Math.floor((item.cancelledQty ?? 0) / mult));
+  return { ordered, cancelled, active: Math.max(0, ordered - cancelled) };
+};
+
 // ดึงชื่อลูกค้าจาก note ของ POS order
 // รูปแบบ note ของ POS: "POS Sale - <ชื่อลูกค้า>"
 const getCustomerName = (order: Order): string => {
@@ -90,11 +142,16 @@ export default function AdminOrdersPage() {
   const [customTo, setCustomTo] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [refundTarget, setRefundTarget] = useState<Order | null>(null);
+  /** กดถังขยะที่รายการไหน ให้โมดัลติ๊กรายการนั้นมาให้เลย */
+  const [refundPreselect, setRefundPreselect] = useState<number | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [slipModal, setSlipModal] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const prevTotalRef = useRef(0);
   const [page, setPage] = useState(0);
+  /** เปลี่ยนขนาดหน้าได้ — ข้อมูลเยอะๆ บางคนอยากเห็นทีละ 200 */
+  const [pageSize, setPageSize] = useState(50);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [summaryTotalOrders, setSummaryTotalOrders] = useState(0);
@@ -192,7 +249,7 @@ export default function AdminOrdersPage() {
 
         const params = new URLSearchParams();
         params.set("page", String(page));
-        params.set("size", "50");
+        params.set("size", String(pageSize));
         if (filterStatus !== "all") params.set("status", filterStatus);
         if (filterChannel !== "all") params.set("channel", filterChannel);
         if (searchTerm.trim()) params.set("search", searchTerm.trim());
@@ -250,7 +307,16 @@ export default function AdminOrdersPage() {
         if (!silent) setLoading(false);
       }
     },
-    [page, filterStatus, filterChannel, searchTerm, dateRange, customFrom, customTo],
+    [
+      page,
+      pageSize,
+      filterStatus,
+      filterChannel,
+      searchTerm,
+      dateRange,
+      customFrom,
+      customTo,
+    ],
   );
 
   // โหลดใหม่เมื่อ page/filter/search เปลี่ยน
@@ -263,13 +329,23 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     fetchOrdersRef.current = fetchOrders;
   });
+  // โมดัลที่เปิดค้างต้องรีเฟรชด้วย — ไม่งั้นแอดมินจะค้างอยู่ที่ข้อมูลก่อนอนุมัติคำขอยกเลิก
+  const selectedOrderRef = useRef<Order | null>(null);
   useEffect(() => {
-    const interval = setInterval(() => fetchOrdersRef.current(true), 2000);
+    selectedOrderRef.current = selectedOrder;
+  }, [selectedOrder]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrdersRef.current(true);
+      const open = selectedOrderRef.current;
+      if (open) fetchOrderDetail(open.id, true);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  const fetchOrderDetail = async (orderId: number) => {
-    setLoadingDetail(true);
+  const fetchOrderDetail = async (orderId: number, silent = false) => {
+    if (!silent) setLoadingDetail(true);
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
@@ -288,7 +364,7 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error("Error:", error);
     } finally {
-      setLoadingDetail(false);
+      if (!silent) setLoadingDetail(false);
     }
   };
 
@@ -328,7 +404,9 @@ export default function AdminOrdersPage() {
     setUpdating(true);
     try {
       const token = localStorage.getItem("token");
-      const body: any = { orderStatus };
+      const body: { orderStatus: string; paymentStatus?: string } = {
+        orderStatus,
+      };
       if (paymentStatus) body.paymentStatus = paymentStatus;
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status`,
@@ -369,7 +447,7 @@ export default function AdminOrdersPage() {
         Swal.fire({
           icon: "error",
           title: "เกิดข้อผิดพลาด",
-          text: data.message || "ไม่สามารถอัพเดทสถานะได้",
+          text: data.error || data.message || "ไม่สามารถอัพเดทสถานะได้",
           confirmButtonColor: "#f97316",
         });
       }
@@ -385,7 +463,76 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const cancelOrder = async (orderId: number) => {
+  /**
+   * ยิงคำขอยกเลิก+คืนเงินให้ backend — เรียกจาก CancelRefundModal
+   *
+   * backend บันทึกลง tb_cancel_requests + tb_refunds เหมือนเคสที่ลูกค้าขอเอง
+   * ประวัติจึงไล่ดูย้อนหลังได้ที่เดียว ไม่มีเงินออกทางลับ
+   */
+  const submitCancelRefund = async (
+    orderId: number,
+    values: CancelRefundValues,
+  ): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/orders/${orderId}/cancel-refund`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(values),
+        },
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem("stockUpdated", Date.now().toString());
+        window.dispatchEvent(new Event("storage"));
+        await Swal.fire({
+          icon: "success",
+          title: "ยกเลิกและคืนเงินแล้ว",
+          text: data.message,
+          confirmButtonColor: "#f97316",
+        });
+        fetchOrders();
+        if (selectedOrder?.id === orderId) fetchOrderDetail(orderId);
+        return true;
+      }
+
+      await Swal.fire({
+        icon: "error",
+        title: "คืนเงินไม่สำเร็จ",
+        text: data.error || data.message || "ลองใหม่อีกครั้ง",
+        confirmButtonColor: "#f97316",
+      });
+      return false;
+    } catch {
+      await Swal.fire({
+        icon: "error",
+        title: "เชื่อมต่อ server ไม่ได้",
+        text: "ตรวจสอบใน Stripe Dashboard ก่อนกดซ้ำ",
+        confirmButtonColor: "#f97316",
+      });
+      return false;
+    }
+  };
+
+  /**
+   * ยกเลิกโดยแอดมิน — แยกสองทางตามว่าเก็บเงินไปแล้วหรือยัง
+   *
+   * ยังไม่จ่าย → PUT /cancel ตามเดิม ไม่มีเงินให้คืน
+   * จ่ายแล้ว → เปิดโมดัลเลือกว่าจะยกเลิกทั้งใบหรือตัดบางรายการ แล้วคืนเงินตามนั้น
+   */
+  const cancelOrder = async (order: Order) => {
+    if (order.paymentStatus === "paid") {
+      setRefundPreselect(null);
+      setRefundTarget(order);
+      return;
+    }
+    const orderId = order.id;
     const result = await Swal.fire({
       icon: "warning",
       title: "ยกเลิกคำสั่งซื้อ?",
@@ -423,7 +570,7 @@ export default function AdminOrdersPage() {
         Swal.fire({
           icon: "error",
           title: "เกิดข้อผิดพลาด",
-          text: data.message || "ไม่สามารถยกเลิกได้",
+          text: data.error || data.message || "ไม่สามารถยกเลิกได้",
           confirmButtonColor: "#f97316",
         });
       }
@@ -493,7 +640,7 @@ export default function AdminOrdersPage() {
         Swal.fire({
           icon: "error",
           title: "เกิดข้อผิดพลาด",
-          text: data.message || "ไม่สามารถลบสินค้าได้",
+          text: data.error || data.message || "ไม่สามารถลบสินค้าได้",
           confirmButtonColor: "#f97316",
         });
       }
@@ -561,7 +708,7 @@ export default function AdminOrdersPage() {
       Swal.fire({
         icon: "error",
         title: "เพิ่มไม่สำเร็จ",
-        text: data.message,
+        text: data.error || data.message || "ลองใหม่อีกครั้ง",
         confirmButtonColor: "#f97316",
       });
     }
@@ -571,18 +718,18 @@ export default function AdminOrdersPage() {
     console.log("createdAt raw:", order.createdAt);
     const win = window.open("", "_blank");
     if (!win) return;
+    // รายการที่ยกเลิกและคืนเงินไปแล้วต้องไม่อยู่บนใบเสร็จ — ไม่งั้นยอดจะไม่ตรงกับรายการ
     const itemsHtml = items
-      .map(
-        (item) =>
-          `<div class="row"><span>${item.productName}${item.selectedOption ? ` (${item.selectedOption})` : ""}</span><span>x${item.quantity}</span><span>฿${(item.price * item.quantity).toLocaleString()}</span></div>`,
-      )
+      .map((item) => {
+        const { active } = splitQty(item);
+        if (active === 0) return "";
+        return `<div class="row"><span>${item.productName}${item.selectedOption ? ` (${item.selectedOption})` : ""}</span><span>x${active}</span><span>฿${(item.price * active).toLocaleString()}</span></div>`;
+      })
       .join("");
-    const paymentText =
-      order.paymentMethod === "qr_promptpay"
-        ? "QR PromptPay"
-        : order.paymentMethod === "cash"
-          ? "เงินสด"
-          : "บัตร";
+    // ตัด emoji ออก เครื่องพิมพ์สลิปส่วนใหญ่พิมพ์ emoji ไม่ออก
+    const paymentText = paymentMethodLabel(order.paymentMethod)
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+      .trim();
     const orderCode =
       order.ordCode ||
       `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`;
@@ -674,6 +821,12 @@ export default function AdminOrdersPage() {
                 bg: "bg-green-100 text-green-700",
                 icon: "📦",
               };
+      case "cancel_requested":
+        return {
+          text: "รอพิจารณาคำขอยกเลิก",
+          bg: "bg-orange-100 text-orange-700",
+          icon: "⏸️",
+        };
       case "cancelled":
         return { text: "ยกเลิก", bg: "bg-red-100 text-red-700", icon: "❌" };
       default:
@@ -918,7 +1071,7 @@ export default function AdminOrdersPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-6">
+        <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-3 mb-6">
           {[
             { key: "all", label: "ทั้งหมด", icon: "📋", color: "bg-gray-100" },
             {
@@ -950,6 +1103,12 @@ export default function AdminOrdersPage() {
               label: "สั่งซื้อสำเร็จ",
               icon: "🎉",
               color: "bg-green-100",
+            },
+            {
+              key: "cancel_requested",
+              label: "รอยกเลิก",
+              icon: "⏸️",
+              color: "bg-orange-100",
             },
             {
               key: "cancelled",
@@ -1150,7 +1309,7 @@ export default function AdminOrdersPage() {
                               disabled={updating}
                               onClick={() =>
                                 action.orderStatus === "cancelled"
-                                  ? cancelOrder(order.id)
+                                  ? cancelOrder(order)
                                   : updateOrderStatus(
                                       order.id,
                                       action.orderStatus,
@@ -1176,34 +1335,20 @@ export default function AdminOrdersPage() {
               <p className="text-gray-500">ไม่พบคำสั่งซื้อ</p>
             </div>
           )}
-        </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-3 mt-6">
-            <button
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page <= 0}
-              className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              ← ก่อนหน้า
-            </button>
-            <span className="text-sm text-amber-700 font-medium">
-              หน้า {page + 1} / {totalPages}
-              <span className="text-amber-400">
-                {" "}
-                ({totalElements} รายการ)
-              </span>
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={page >= totalPages - 1}
-              className="px-4 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              ถัดไป →
-            </button>
-          </div>
-        )}
+          {/* แถบเปลี่ยนหน้า — อยู่ในการ์ดแถวล่างสุด ไม่ใช่ลอยข้างนอก */}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(0);
+            }}
+          />
+        </div>
       </div>
 
       {/* Order Detail Modal */}
@@ -1272,7 +1417,7 @@ export default function AdminOrdersPage() {
                           disabled={updating}
                           onClick={() =>
                             action.orderStatus === "cancelled"
-                              ? cancelOrder(selectedOrder.id)
+                              ? cancelOrder(selectedOrder)
                               : updateOrderStatus(
                                   selectedOrder.id,
                                   action.orderStatus,
@@ -1296,25 +1441,45 @@ export default function AdminOrdersPage() {
                   <div className="space-y-2">
                     {orderItems.map((item) => {
                       const isEditing = editingItemId === item.id;
+                      const { cancelled, active } = splitQty(item);
+                      const allCancelled = active === 0;
+                      // รายการที่คืนเงินไปแล้วห้ามแก้ — ยอดจะไม่ตรงกับที่คืนไป
+                      // จ่ายเงินแล้วแก้ไม่ได้ทั้งใบ — backend กันไว้ที่ isPaid()
+                      // ปุ่มต้องหายไปด้วย ไม่งั้นกดแล้วเด้ง error ทุกครั้ง
                       const canRemove =
                         selectedOrder &&
-                        !["delivered", "cancelled"].includes(
+                        !["delivered", "cancelled", "cancel_requested"].includes(
                           selectedOrder.orderStatus,
                         ) &&
-                        selectedOrder.orderType !== "pos";
+                        selectedOrder.orderType !== "pos" &&
+                        selectedOrder.paymentStatus !== "paid" &&
+                        cancelled === 0;
 
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-3 bg-amber-50 rounded-lg gap-2"
+                          className={`flex items-center justify-between p-3 rounded-lg gap-2 ${
+                            allCancelled ? "bg-gray-100" : "bg-amber-50"
+                          }`}
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-amber-700 truncate">
+                            <p
+                              className={`font-medium truncate ${
+                                allCancelled
+                                  ? "text-gray-400 line-through"
+                                  : "text-amber-700"
+                              }`}
+                            >
                               {item.productName}
                             </p>
                             {item.selectedOption && (
                               <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
                                 {item.selectedOption}
+                              </span>
+                            )}
+                            {cancelled > 0 && (
+                              <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full mt-0.5 ml-1">
+                                คืนเงินแล้ว {cancelled}
                               </span>
                             )}
                             {isEditing ? (
@@ -1350,7 +1515,9 @@ export default function AdminOrdersPage() {
                               </div>
                             ) : (
                               <p className="text-xs text-gray-500 mt-0.5">
-                                ฿{formatPrice(item.price)} x {item.quantity}
+                                {allCancelled
+                                  ? "ยกเลิกทั้งรายการแล้ว"
+                                  : `฿${formatPrice(item.price)} x ${active}`}
                               </p>
                             )}
                           </div>
@@ -1397,7 +1564,10 @@ export default function AdminOrdersPage() {
                                       Swal.fire({
                                         icon: "error",
                                         title: "แก้ไขไม่สำเร็จ",
-                                        text: data.message,
+                                        text:
+                                          data.error ||
+                                          data.message ||
+                                          "ลองใหม่อีกครั้ง",
                                         confirmButtonColor: "#f97316",
                                       });
                                     }
@@ -1416,15 +1586,22 @@ export default function AdminOrdersPage() {
                               </>
                             ) : (
                               <>
-                                <p className="font-semibold text-amber-600">
-                                  ฿{formatPrice(item.price * item.quantity)}
+                                <p
+                                  className={`font-semibold ${
+                                    allCancelled
+                                      ? "text-gray-400"
+                                      : "text-amber-600"
+                                  }`}
+                                >
+                                  ฿{formatPrice(item.price * active)}
                                 </p>
                                 {canRemove && (
                                   <>
                                     <button
                                       onClick={() => {
                                         setEditingItemId(item.id);
-                                        setEditQty(item.quantity);
+                                        // PATCH /items/{id} รับจำนวนเป็น "ออเดอร์" ไม่ใช่ "ชิ้น"
+                                        setEditQty(active);
                                       }}
                                       className="p-1.5 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors"
                                       title="แก้ไขจำนวน"
@@ -1470,6 +1647,40 @@ export default function AdminOrdersPage() {
                                     </button>
                                   </>
                                 )}
+
+                                {/*
+                                  จ่ายแล้วแก้จำนวนตรงๆ ไม่ได้ เพราะต้องมีเงินคืนตามไปด้วย
+                                  แต่ตัดออกได้ผ่านทางคืนเงิน — เปิดโมดัลโดยติ๊กรายการนี้ไว้ให้เลย
+                                */}
+                                {selectedOrder &&
+                                  selectedOrder.paymentStatus === "paid" &&
+                                  !["delivered", "cancelled", "cancel_requested"].includes(
+                                    selectedOrder.orderStatus,
+                                  ) &&
+                                  !allCancelled && (
+                                    <button
+                                      onClick={() => {
+                                        setRefundPreselect(item.id);
+                                        setRefundTarget(selectedOrder);
+                                      }}
+                                      className="p-1.5 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition-colors"
+                                      title="ตัดรายการนี้ออกและคืนเงิน"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                      </svg>
+                                    </button>
+                                  )}
                               </>
                             )}
                           </div>
@@ -1482,7 +1693,19 @@ export default function AdminOrdersPage() {
                     !["delivered", "cancelled"].includes(
                       selectedOrder.orderStatus,
                     ) &&
-                    selectedOrder.orderType !== "pos" && (
+                    selectedOrder.orderType !== "pos" &&
+                    (selectedOrder.paymentStatus === "paid" ? (
+                      /*
+                       * จ่ายเงินแล้วแก้รายการไม่ได้ — backend กันไว้ที่ isPaid()
+                       * เพิ่มของ = ร้านแถมฟรี เพราะเก็บเงินเพิ่มทีหลังไม่ได้
+                       * จึงซ่อนปุ่มไปเลย ดีกว่าให้กดแล้วเด้ง error
+                       */
+                      <div className="mt-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-500 text-center">
+                        คำสั่งซื้อนี้ชำระเงินแล้ว เพิ่มของไม่ได้ เพราะเก็บเงินเพิ่มทีหลังไม่ได้
+                        <br />
+                        ถ้าของหมดหรือทำไม่ทัน กด 🗑 ที่รายการนั้นเพื่อตัดออกและคืนเงินเฉพาะส่วนนั้น
+                      </div>
+                    ) : (
                       <button
                         onClick={() => {
                           fetchAllProducts();
@@ -1494,7 +1717,7 @@ export default function AdminOrdersPage() {
                       >
                         ➕ เพิ่มสินค้าใน order นี้
                       </button>
-                    )}
+                    ))}
                 </div>
 
                 {/* Price */}
@@ -1523,6 +1746,19 @@ export default function AdminOrdersPage() {
                       ฿{formatPrice(selectedOrder.total)}
                     </span>
                   </div>
+                  {(selectedOrder.refundedAmount ?? 0) > 0 && (
+                    <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-1">
+                      <div className="flex justify-between text-sm text-red-600 font-medium">
+                        <span>คืนเงินไปแล้ว</span>
+                        <span>
+                          ฿{formatPrice(selectedOrder.refundedAmount ?? 0)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-400 mt-0.5">
+                        ยอดรวมด้านบนปรับตามรายการที่เหลือแล้ว — ส่วนต่างคือค่าธรรมเนียมที่ไม่ได้คืน
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Payment */}
@@ -1534,11 +1770,7 @@ export default function AdminOrdersPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-500">วิธีชำระเงิน</span>
                       <span>
-                        {selectedOrder.paymentMethod === "qr_promptpay"
-                          ? "📱 QR PromptPay"
-                          : selectedOrder.paymentMethod === "cash"
-                            ? "💵 เงินสด"
-                            : "💳 บัตร"}
+                        {paymentMethodLabel(selectedOrder.paymentMethod)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -1839,6 +2071,20 @@ export default function AdminOrdersPage() {
             />
           </div>
         </div>
+      )}
+
+      {refundTarget && (
+        <CancelRefundModal
+          ordCode={refundTarget.ordCode}
+          total={refundTarget.total}
+          items={orderItems}
+          preselectItemId={refundPreselect}
+          onClose={() => {
+            setRefundTarget(null);
+            setRefundPreselect(null);
+          }}
+          onConfirm={(values) => submitCancelRefund(refundTarget.id, values)}
+        />
       )}
     </div>
   );

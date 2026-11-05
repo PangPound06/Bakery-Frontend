@@ -220,26 +220,24 @@ export default function POSPage() {
     delta: number,
   ) => {
     setOrderItems((prev) =>
-      prev
-        .map((i) => {
-          if (
-            i.product.id !== productId ||
-            i.selectedOption !== (optName ?? null)
+      prev.flatMap((i) => {
+        if (
+          i.product.id !== productId ||
+          i.selectedOption !== (optName ?? null)
+        )
+          return [i];
+        const newQty = i.quantity + delta;
+        if (newQty <= 0) return [];
+        const totalOther = prev
+          .filter(
+            (x) =>
+              x.product.id === productId &&
+              x.selectedOption !== (optName ?? null),
           )
-            return i;
-          const newQty = i.quantity + delta;
-          if (newQty <= 0) return null as any;
-          const totalOther = prev
-            .filter(
-              (x) =>
-                x.product.id === productId &&
-                x.selectedOption !== (optName ?? null),
-            )
-            .reduce((s, x) => s + x.quantity, 0);
-          if (totalOther + newQty > maxQty(i.product)) return i;
-          return { ...i, quantity: newQty };
-        })
-        .filter(Boolean),
+          .reduce((s, x) => s + x.quantity, 0);
+        if (totalOther + newQty > maxQty(i.product)) return [i];
+        return [{ ...i, quantity: newQty }];
+      }),
     );
   };
 
@@ -993,7 +991,7 @@ export default function POSPage() {
                 </p>
               </div>
               <div className="bg-amber-50 rounded-xl p-3 text-sm text-amber-700">
-                หลังลูกค้าสแกนและชำระเงินแล้ว กดปุ่ม "ยืนยันได้รับเงิน"
+                หลังลูกค้าสแกนและชำระเงินแล้ว กดปุ่ม &quot;ยืนยันได้รับเงิน&quot;
               </div>
               <div className="flex gap-3 pt-2">
                 <button

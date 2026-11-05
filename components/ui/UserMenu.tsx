@@ -15,11 +15,9 @@ interface UserMenuProps {
 export default function UserMenu({ user }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdmin = user.email?.endsWith("@empbakery.com") || false;
 
   useEffect(() => {
-    setIsAdmin(user.email?.endsWith("@empbakery.com") || false);
-
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -36,7 +34,7 @@ export default function UserMenu({ user }: UserMenuProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, user.email]);
+  }, [isOpen]);
 
   const handleLogout = async () => {
     const result = await Swal.fire({

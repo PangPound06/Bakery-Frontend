@@ -59,7 +59,7 @@ function GoogleCallbackContent() {
         setTimeout(() => {
           window.location.href = "/order-mode";
         }, 1500);
-      } catch (err) {
+      } catch {
         setStatus("error");
         setErrorMessage("เกิดข้อผิดพลาด กรุณาลองใหม่");
       }

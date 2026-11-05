@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link"; // ใช้ Link สำหรับ Next.js
-import ProductCard from "@/components/ui/ProductCard";
 import PopularCarousel from "@/components/ui/PopularCarousel";
+import type { ApiProduct } from "@/types/product";
 
 // ━━━ TYPES ━━━
 interface Product {
@@ -86,9 +86,23 @@ function BentoGrid({ categories }: { categories: Category[] }) {
   );
 }
 
+const formatProductData = (data: ApiProduct[]): Product[] => {
+  return data.map((item) => ({
+    id: item.id,
+    name: item.name,
+    type: item.type || "Other",
+    category: item.category,
+    price: item.price,
+    img: item.image,
+    description: item.description,
+    stockQuantity: item.stockQuantity,
+    isAvailable: item.isAvailable,
+    options: item.options ?? null,
+  }));
+};
+
 export default function HomePage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [displayProducts, setDisplayProducts] = useState<Product[]>([]); // สำหรับหน้าแรกสุ่ม
   const [loading, setLoading] = useState(true);
   const [visibleSections, setVisibleSections] = useState<Set<string>>(
     new Set(),
@@ -109,39 +123,7 @@ export default function HomePage() {
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   // ━━━ FETCH LOGIC ━━━
-  const formatProductData = (data: any[]): Product[] => {
-    return data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      type: item.type || "Other",
-      category: item.category,
-      price: item.price,
-      img: item.image,
-      description: item.description,
-      stockQuantity: item.stockQuantity,
-      isAvailable: item.isAvailable,
-      options: item.options ?? null,
-    }));
-  };
-
-  const getRandomItems = (arr: Product[], count: number) =>
-    [...arr].sort(() => Math.random() - 0.5).slice(0, count);
-
-  const getRandomProductsByCategory = useCallback((products: Product[]) => {
-    const uniqueCategories = [
-      ...new Set(products.map((p) => p.category?.toLowerCase())),
-    ];
-    return uniqueCategories
-      .flatMap((cat) =>
-        getRandomItems(
-          products.filter((p) => p.category?.toLowerCase() === cat),
-          4,
-        ),
-      )
-      .sort(() => Math.random() - 0.5);
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [prodRes, catRes, topRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`),
@@ -156,7 +138,6 @@ export default function HomePage() {
         const data = await prodRes.json();
         fmt = formatProductData(data);
         setAllProducts(fmt);
-        setDisplayProducts(getRandomProductsByCategory(fmt));
       }
       if (catRes.ok) {
         setCategoryList(await catRes.json());
@@ -187,30 +168,11 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, [getRandomProductsByCategory]);
-
-  const handleStockUpdate = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const fmt = formatProductData(data);
-        setAllProducts(fmt);
-        // อัปเดตข้อมูลใน displayProducts ที่แสดงอยู่ด้วย
-        setDisplayProducts((prev) =>
-          prev.map((p) => fmt.find((i) => i.id === p.id) || p),
-        );
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  }, [fetchData]);
 
   // ━━━ SCROLL OBSERVER ━━━
   useEffect(() => {
@@ -263,7 +225,7 @@ export default function HomePage() {
   return (
     <div
       className="bg-amber-50 min-h-screen"
-      style={{ fontFamily: "'Prompt', sans-serif" }}
+      style={{ fontFamily: "var(--font-prompt), sans-serif" }}
     >
       {/* HERO SECTION */}
       <section
@@ -392,10 +354,7 @@ export default function HomePage() {
                 เมนู<span className="font-semibold">ยอดนิยม</span>
               </h2>
             </div>
-            <PopularCarousel
-              items={popularProducts}
-              onStockUpdate={handleStockUpdate}
-            />
+            <PopularCarousel items={popularProducts} />
           </div>
         </section>
       )}

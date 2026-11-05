@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -88,7 +88,42 @@ export default function AdminRestaurantPage() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [prevCount, setPrevCount] = useState(0);
+  // จำนวนออเดอร์รอบก่อน — ใช้ ref เพราะ interval ต้องเห็นค่าล่าสุดเสมอ
+  const prevCountRef = useRef(0);
+
+  const fetchOrders = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders`,
+      );
+      if (res.ok) {
+        const data: Order[] = await res.json();
+        const sorted = data.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        const prevCount = prevCountRef.current;
+        if (silent && sorted.length > prevCount && prevCount > 0) {
+          try {
+            const audio = new Audio(
+              "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjlkp9/LpnQyHEBvruHLn2kvGT5wse7TpWcqFTpxsvLWpWUnEzlxtPfaqmMkETd0t/3grGAgDDR3u8U",
+            );
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+          } catch {
+            // เบราว์เซอร์บางตัวบล็อกเสียง — ไม่เป็นไร
+          }
+        }
+        prevCountRef.current = sorted.length;
+        setOrders(sorted);
+      }
+    } catch (e) {
+      if (!silent) console.error(e);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -115,39 +150,8 @@ export default function AdminRestaurantPage() {
     fetchOrders();
     const interval = setInterval(() => fetchOrders(true), 5000);
     return () => clearInterval(interval);
-  }, [router]);
+  }, [router, fetchOrders]);
 
-  // ✅ แก้ fetchOrders — เอา filter ออก
-  const fetchOrders = async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders`,
-      );
-      if (res.ok) {
-        const data: Order[] = await res.json();
-        const sorted = data.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-        if (silent && sorted.length > prevCount && prevCount > 0) {
-          try {
-            const audio = new Audio(
-              "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjlkp9/LpnQyHEBvruHLn2kvGT5wse7TpWcqFTpxsvLWpWUnEzlxtPfaqmMkETd0t/3grGAgDDR3u8U",
-            );
-            audio.volume = 0.5;
-            audio.play().catch(() => {});
-          } catch {}
-        }
-        setPrevCount(sorted.length);
-        setOrders(sorted);
-      }
-    } catch (e) {
-      if (!silent) console.error(e);
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
 
   // ✅ แก้ fetchOrderDetail — เปลี่ยน URL และ parse ใหม่
   const fetchOrderDetail = async (orderId: number) => {

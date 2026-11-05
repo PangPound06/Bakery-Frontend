@@ -5,9 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
 
+/** ข้อมูลผู้ใช้ที่หน้า login เก็บไว้ใน localStorage("user") */
+interface StoredUser {
+  id?: number;
+  userId?: number;
+  email?: string;
+}
+
 export default function SettingsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<StoredUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,12 +29,6 @@ export default function SettingsPage() {
     confirm: false,
   });
 
-  const [notifications, setNotifications] = useState({
-    orderUpdates: true,
-    promotions: false,
-    newsletter: false,
-  });
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -36,11 +37,6 @@ export default function SettingsPage() {
     }
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     setUser(userData);
-    const savedSettings = localStorage.getItem("userSettings");
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      setNotifications(settings.notifications || notifications);
-    }
   }, [router]);
 
   const handleChangePassword = async () => {
@@ -71,7 +67,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user/${user.userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user/${user?.userId}`,
         {
           method: "PUT",
           headers: {
@@ -101,22 +97,11 @@ export default function SettingsPage() {
       } else {
         setError(data.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อ Server ได้");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSaveNotifications = async () => {
-    localStorage.setItem("userSettings", JSON.stringify({ notifications }));
-    await Swal.fire({
-      title: "บันทึกการตั้งค่าสำเร็จ!",
-      icon: "success",
-      confirmButtonColor: "#f97316",
-      timer: 1500,
-      showConfirmButton: false,
-    });
   };
 
   const handleLogout = async () => {
@@ -177,7 +162,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user/${user.id || user.userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/user/${user?.id || user?.userId}`,
         { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
       );
       const data = await response.json();
@@ -204,7 +189,7 @@ export default function SettingsPage() {
           confirmButtonColor: "#f97316",
         });
       }
-    } catch (err) {
+    } catch {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถเชื่อมต่อ Server ได้",
@@ -383,59 +368,6 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-
-            {/* Notification Settings */}
-            {/*<div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4 flex items-center gap-2">
-                🔔 การแจ้งเตือน
-              </h2>
-              <div className="space-y-4">
-                {[
-                  {
-                    key: "orderUpdates",
-                    label: "อัพเดทคำสั่งซื้อ",
-                    desc: "รับแจ้งเตือนเมื่อสถานะคำสั่งซื้อเปลี่ยน",
-                  },
-                  {
-                    key: "promotions",
-                    label: "โปรโมชั่น",
-                    desc: "รับข่าวสารโปรโมชั่นและส่วนลดพิเศษ",
-                  },
-                  {
-                    key: "newsletter",
-                    label: "จดหมายข่าว",
-                    desc: "รับข่าวสารและเมนูใหม่ทางอีเมล",
-                  },
-                ].map(({ key, label, desc }) => (
-                  <label
-                    key={key}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer"
-                  >
-                    <div>
-                      <p className="font-medium text-amber-700">{label}</p>
-                      <p className="text-sm text-gray-500">{desc}</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={notifications[key as keyof typeof notifications]}
-                      onChange={(e) =>
-                        setNotifications({
-                          ...notifications,
-                          [key]: e.target.checked,
-                        })
-                      }
-                      className="w-5 h-5 text-amber-500 rounded focus:ring-amber-500"
-                    />
-                  </label>
-                ))}
-                <button
-                  onClick={handleSaveNotifications}
-                  className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
-                >
-                  💾 บันทึกการตั้งค่า
-                </button>
-              </div>
-            </div>*/}
 
             {/* Account Actions */}
             <div className="bg-white rounded-2xl shadow-lg p-6">

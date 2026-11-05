@@ -18,11 +18,9 @@ interface Product {
 
 export default function PopularCarousel({
   items,
-  onStockUpdate,
   interval = 3500,
 }: {
   items: Product[];
-  onStockUpdate?: () => void;
   interval?: number;
 }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -55,10 +53,12 @@ export default function PopularCarousel({
     scrollToIndex(current);
   }, [current, scrollToIndex]);
 
-  // ถ้า items เปลี่ยน รีเซ็ตกลับตัวแรก
-  useEffect(() => {
+  // ถ้าจำนวน items เปลี่ยน รีเซ็ตกลับตัวแรก (ปรับ state ระหว่าง render ตามแนวทางของ React)
+  const [itemCount, setItemCount] = useState(items.length);
+  if (itemCount !== items.length) {
+    setItemCount(items.length);
     setCurrent(0);
-  }, [items.length]);
+  }
 
   if (!items || items.length === 0) return null;
 
@@ -104,7 +104,7 @@ export default function PopularCarousel({
             key={item.id}
             className="snap-start shrink-0 w-[78%] sm:w-[46%] md:w-[31.5%] lg:w-[23.5%]"
           >
-            <ProductCard {...item} onStockUpdate={onStockUpdate} />
+            <ProductCard {...item} />
           </div>
         ))}
       </div>

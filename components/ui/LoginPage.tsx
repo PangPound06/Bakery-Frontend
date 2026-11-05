@@ -102,8 +102,12 @@ export default function LoginPage() {
         // User ทั่วไปไปหน้า Home
         window.location.href = "/";
       }
-    } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+      );
     } finally {
       setLoading(false);
     }

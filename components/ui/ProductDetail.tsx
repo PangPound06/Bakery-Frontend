@@ -196,11 +196,12 @@ export default function ProductDetail({
         return;
       }
       const cartText = await cartRes.text();
-      const cartData = cartText ? JSON.parse(cartText) : { items: [] };
+      const cartData: { items?: { productId: number; quantity: number }[] } =
+        cartText ? JSON.parse(cartText) : { items: [] };
       const totalInCart =
         cartData.items
-          ?.filter((i: any) => i.productId === product.id)
-          .reduce((sum: number, i: any) => sum + i.quantity, 0) ?? 0;
+          ?.filter((i) => i.productId === product.id)
+          .reduce((sum, i) => sum + i.quantity, 0) ?? 0;
       if (totalInCart + quantity > 10) {
         setError(
           `สินค้าทำสดสั่งได้รวมสูงสุด 10 ${unit} (ในตะกร้ามีแล้ว ${totalInCart} ${unit})`,
