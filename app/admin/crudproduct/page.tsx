@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Pagination from "@/components/ui/Pagination";
+import { authHeaders } from "@/lib/auth";
 
 interface Product {
   id: number;
@@ -211,7 +212,7 @@ export default function CrudProductPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({
             name: editCategoryName,
             icon: editCategoryIcon,
@@ -256,6 +257,7 @@ export default function CrudProductPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
         {
           method: "DELETE",
+          headers: authHeaders(),
         },
       );
       const data = await res.json();

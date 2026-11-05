@@ -6,6 +6,12 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import CancelRequestModal from "@/components/orders/CancelRequestModal";
 import Pagination from "@/components/ui/Pagination";
+import {
+  isAwaitingVerification,
+  isPaid,
+  paymentMethodLabel,
+  paymentStatusBadge,
+} from "@/lib/payment";
 
 interface OrderItem {
   id: number;
@@ -230,7 +236,7 @@ export default function OrdersPage() {
       } else {
         await Swal.fire({
           title: "เกิดข้อผิดพลาด",
-          text: data.message || "ไม่สามารถยกเลิกได้",
+          text: data.error || data.message || "ไม่สามารถยกเลิกได้",
           icon: "error",
           confirmButtonColor: "#f97316",
         });
@@ -249,8 +255,13 @@ export default function OrdersPage() {
    * จ่ายเงินแล้ว → ต้องยื่นคำขอเพื่อให้แอดมินคืนเงิน
    * ยังไม่จ่าย → ยกเลิกตรงได้เลยเหมือนเดิม ไม่มีเงินให้คืน
    */
+  /** แจ้งโอนแล้วรอร้านตรวจยอด → ยกเลิกเองไม่ได้ (เงินอาจอยู่ในบัญชีร้านแล้ว) */
+  const canCancel = (order: Order) =>
+    (order.orderStatus === "pending" || order.orderStatus === "confirmed") &&
+    !isAwaitingVerification(order.paymentStatus);
+
   const startCancel = async (order: Order) => {
-    if (order.paymentStatus !== "paid") {
+    if (!isPaid(order.paymentStatus)) {
       handleCancelOrder(order.id);
       return;
     }
@@ -319,32 +330,7 @@ export default function OrdersPage() {
     }
   };
 
-  const getPaymentBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return { text: "ชำระแล้ว", bg: "bg-green-100 text-green-700" };
-      case "pending":
-        return { text: "รอตรวจสอบ", bg: "bg-yellow-100 text-yellow-700" };
-      case "failed":
-        return { text: "ล้มเหลว", bg: "bg-red-100 text-red-700" };
-      default:
-        return { text: status, bg: "bg-gray-100 text-gray-700" };
-    }
-  };
-
-  const getPaymentMethodText = (method: string) => {
-    switch (method) {
-      case "qr_promptpay":
-        return "📱 QR PromptPay";
-      case "card":
-        return "💳 บัตรเครดิต/เดบิต";
-      default:
-        return method;
-    }
-  };
-
   const formatDate = (dateStr: string) => {
-    console.log("formatDate:", dateStr);
     const dateObj = new Date(dateStr);
 
     // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)
@@ -595,7 +581,7 @@ export default function OrdersPage() {
             ) : (
               pagedOrders.map((order) => {
                 const status = getStatusBadge(order.orderStatus);
-                const payment = getPaymentBadge(order.paymentStatus);
+                const payment = paymentStatusBadge(order.paymentStatus);
                 return (
                   <div
                     key={order.id}
@@ -620,7 +606,7 @@ export default function OrdersPage() {
                           {status.text}
                         </span>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${payment.bg}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${payment.className}`}
                         >
                           {payment.text}
                         </span>
@@ -630,7 +616,7 @@ export default function OrdersPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-500">
-                            {getPaymentMethodText(order.paymentMethod)}
+                            {paymentMethodLabel(order.paymentMethod)}
                           </p>
                           <p className="text-sm text-gray-500">
                             จัดส่งถึง: {order.receiverName}
@@ -649,15 +635,12 @@ export default function OrdersPage() {
                         >
                           🔍 ดูรายละเอียด
                         </button>
-                        {(order.orderStatus === "pending" ||
-                          order.orderStatus === "confirmed") && (
+                        {canCancel(order) && (
                           <button
                             onClick={() => startCancel(order)}
                             className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
                           >
-                            {order.paymentStatus === "paid"
-                              ? "ขอยกเลิก"
-                              : "ยกเลิก"}
+                            {isPaid(order.paymentStatus) ? "ขอยกเลิก" : "ยกเลิก"}
                           </button>
                         )}
                       </div>
@@ -840,15 +823,15 @@ export default function OrdersPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500">วิธีชำระเงิน</span>
                     <span>
-                      {getPaymentMethodText(selectedOrder.paymentMethod)}
+                      {paymentMethodLabel(selectedOrder.paymentMethod)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm mt-1">
                     <span className="text-gray-500">สถานะ</span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentBadge(selectedOrder.paymentStatus).bg}`}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${paymentStatusBadge(selectedOrder.paymentStatus).className}`}
                     >
-                      {getPaymentBadge(selectedOrder.paymentStatus).text}
+                      {paymentStatusBadge(selectedOrder.paymentStatus).text}
                     </span>
                   </div>
                 </div>
@@ -887,16 +870,20 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                {(selectedOrder.orderStatus === "pending" ||
-                  selectedOrder.orderStatus === "confirmed") && (
+                {canCancel(selectedOrder) && (
                   <button
                     onClick={() => startCancel(selectedOrder)}
                     className="w-full py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors font-medium"
                   >
-                    {selectedOrder.paymentStatus === "paid"
+                    {isPaid(selectedOrder.paymentStatus)
                       ? "❌ ขอยกเลิกและคืนเงิน"
                       : "❌ ยกเลิกคำสั่งซื้อ"}
                   </button>
+                )}
+                {isAwaitingVerification(selectedOrder.paymentStatus) && (
+                  <p className="text-xs text-center text-orange-600">
+                    แจ้งโอนแล้ว รอร้านตรวจสอบยอด — หากต้องการยกเลิกกรุณาติดต่อร้าน
+                  </p>
                 )}
                 <button
                   onClick={() => setSelectedOrder(null)}

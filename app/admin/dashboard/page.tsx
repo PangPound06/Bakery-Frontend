@@ -4,6 +4,7 @@ import StoreOrderingToggle from "@/components/admin/StoreOrderingToggle";
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { authHeaders } from "@/lib/auth";
 
 interface Order {
   id: number;
@@ -230,6 +231,7 @@ export default function AdminDashboard() {
       timeFilter === "7d" ? "7" : timeFilter === "30d" ? "30" : "all";
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${days}`,
+      { headers: authHeaders() },
     )
       .then((r) => (r.ok ? r.json() : { topProducts: [] }))
       .then((data) => setTopProducts(data.topProducts || []))
@@ -314,7 +316,6 @@ export default function AdminDashboard() {
 
   // ✅ recentOrders มาจาก state (ดึงจาก /admin/page?size=6) — ไม่ sort จากทั้งก้อนแล้ว
   const formatDate = (dateStr: string) => {
-    console.log("formatDate:", dateStr);
     const dateObj = new Date(dateStr);
 
     // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)

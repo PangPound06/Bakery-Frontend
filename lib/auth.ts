@@ -18,6 +18,12 @@ export const removeToken = (): void => {
   localStorage.removeItem(TOKEN_KEY);
 };
 
+/** header Authorization สำหรับ fetch — ว่างถ้ายังไม่ login */
+export const authHeaders = (): Record<string, string> => {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // User
 
 export interface AuthUser {

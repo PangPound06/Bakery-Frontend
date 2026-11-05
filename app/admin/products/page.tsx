@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { authHeaders } from "@/lib/auth";
 
 interface Product {
   id: number;
@@ -140,7 +141,7 @@ export default function POSPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/payment/promptpay/generate`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({ amount }),
         },
       );

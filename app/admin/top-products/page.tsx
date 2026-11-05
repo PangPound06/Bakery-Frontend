@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { authHeaders } from "@/lib/auth";
 
 interface TopProduct {
   productName: string;
@@ -55,7 +56,7 @@ export default function TopProductsPage() {
       const days = filter === "7d" ? "7" : filter === "30d" ? "30" : "all";
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=${days}`,
-        { cache: "no-store" },
+        { cache: "no-store", headers: authHeaders() },
       );
       if (res.ok) {
         const data = await res.json();

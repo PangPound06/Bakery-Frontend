@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { authHeaders } from "@/lib/auth";
 
 interface Supplier {
   id: number;
@@ -137,7 +138,9 @@ export default function SupplierPage() {
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (filterCat !== "ทั้งหมด") params.set("category", filterCat);
       if (filterStatus !== "ทั้งหมด") params.set("status", filterStatus);
-      const res = await fetch(`${API}/api/suppliers?${params}`);
+      const res = await fetch(`${API}/api/suppliers?${params}`, {
+        headers: authHeaders(),
+      });
       const data = await res.json();
       const list: Supplier[] = Array.isArray(data) ? data : [];
       setSuppliers(list);
@@ -149,7 +152,9 @@ export default function SupplierPage() {
 
   const fetchPOs = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/purchase-orders`);
+      const res = await fetch(`${API}/api/purchase-orders`, {
+        headers: authHeaders(),
+      });
       const data = await res.json();
       setPos(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -188,7 +193,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/suppliers`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(newSupplier),
       });
       if (!res.ok) {
@@ -236,7 +241,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/purchase-orders`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           supplierId: poTarget.id,
           supplierName: poTarget.name,
@@ -294,7 +299,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/suppliers/${selectedSupplier.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(editSupplierForm),
       });
       if (!res.ok) throw new Error();
@@ -335,6 +340,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/suppliers/${sup.id}/toggle-status`, {
         method: "PATCH",
+        headers: authHeaders(),
       });
       if (!res.ok) throw new Error();
       const updated: Supplier = await res.json();
@@ -374,6 +380,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/suppliers/${sup.id}`, {
         method: "DELETE",
+        headers: authHeaders(),
       });
       const data = await res.json();
 
@@ -438,7 +445,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/purchase-orders/${poId}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ status: value }),
       });
       if (!res.ok) throw new Error();
@@ -490,7 +497,7 @@ export default function SupplierPage() {
         `${API}/api/purchase-orders/${poId}/payment-status`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({ paymentStatus: value }),
         },
       );
@@ -517,7 +524,7 @@ export default function SupplierPage() {
     try {
       const res = await fetch(`${API}/api/purchase-orders/${editPO.id}/item`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(editPOForm),
       });
       if (!res.ok) throw new Error();

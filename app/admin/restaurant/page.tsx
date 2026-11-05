@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { authHeaders } from "@/lib/auth";
 
 interface OrderItem {
   id: number;
@@ -96,6 +97,7 @@ export default function AdminRestaurantPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders`,
+        { headers: authHeaders() },
       );
       if (res.ok) {
         const data: Order[] = await res.json();
@@ -159,6 +161,7 @@ export default function AdminRestaurantPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}`,
+        { headers: authHeaders() },
       );
       if (res.ok) {
         const data = await res.json();
@@ -197,7 +200,7 @@ export default function AdminRestaurantPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}/status`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({ orderStatus }),
         },
       );
@@ -298,7 +301,7 @@ export default function AdminRestaurantPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/admin/orders/${orderId}/cancel`,
-        { method: "PUT" },
+        { method: "PUT", headers: authHeaders() },
       );
       const data = await res.json();
       if (data.success) {

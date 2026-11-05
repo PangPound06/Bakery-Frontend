@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import PromptPayPanel from "@/components/checkout/PromptPayPanel";
 import CardPaymentPanel from "@/components/checkout/CardPaymentPanel";
+import TransferPaymentPanel from "@/components/checkout/TransferPaymentPanel";
 
 /**
  * หน้าชำระเงิน — ทุกอย่างจบในเว็บเรา ไม่ redirect ออกไปหา Stripe
@@ -14,13 +15,18 @@ import CardPaymentPanel from "@/components/checkout/CardPaymentPanel";
  * "form"    → กรอกที่อยู่ + เลือกวิธีจ่าย
  * "paying"  → แสดง QR หรือช่องกรอกบัตร (สลับมาแบบไม่เปลี่ยนหน้า)
  *
+ * ═══ วิธีจ่าย ═══
+ * promptpay → QR ของ Stripe ระบบยืนยันเองอัตโนมัติ
+ * card      → ช่องกรอกบัตรของ Stripe
+ * transfer  → QR พร้อมเพย์ของร้าน ลูกค้ากดแจ้งโอน แล้วแอดมินตรวจยอดเอง
+ *
  * ═══ ยอดเงินมาจากไหน ═══
  * จาก GET /api/checkout/summary ซึ่ง backend คำนวณใหม่จาก tb_products
  * หน้านี้ไม่คำนวณราคาเองแม้แต่ตัวเดียว ตัวเลขที่เห็นเป็นแค่ "การแสดงผล"
  * ยอดที่เรียกเก็บจริงมาจาก PaymentIntent ที่ backend สร้าง
  */
 
-type PaymentMethod = "promptpay" | "card";
+type PaymentMethod = "promptpay" | "card" | "transfer";
 type Phase = "form" | "paying";
 
 interface SummaryItem {
@@ -49,6 +55,10 @@ interface ActiveIntent {
   hostedUrl?: string;
   testMode?: boolean;
   clientSecret?: string;
+  /** เฉพาะ transfer */
+  promptPayId?: string;
+  accountName?: string;
+  expiresInSeconds?: number;
 }
 
 const formatPrice = (price: number) =>
@@ -245,6 +255,9 @@ function CheckoutInner() {
         hostedUrl: data.hostedUrl,
         testMode: data.testMode === true,
         clientSecret: data.clientSecret,
+        promptPayId: data.promptPayId,
+        accountName: data.accountName,
+        expiresInSeconds: data.expiresInSeconds,
       });
       setPhase("paying");
       setPending(null);
@@ -257,6 +270,7 @@ function CheckoutInner() {
     }
   };
 
+  /** จ่ายสำเร็จ หรือแจ้งโอนแล้ว — หน้า success ถามสถานะจริงจาก backend เอง */
   const handlePaid = () => {
     window.dispatchEvent(new Event("cartUpdated"));
     router.push(`/checkout/success?order_id=${intent?.orderId ?? ""}`);
@@ -280,7 +294,20 @@ function CheckoutInner() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
         <div className="max-w-lg mx-auto px-4">
-          {intent.method === "promptpay" && intent.qrImageUrl ? (
+          {intent.method === "transfer" && intent.qrImageUrl ? (
+            <TransferPaymentPanel
+              orderId={intent.orderId}
+              ordCode={intent.ordCode}
+              qrImageUrl={intent.qrImageUrl}
+              total={intent.total}
+              promptPayId={intent.promptPayId}
+              accountName={intent.accountName}
+              expiresInSeconds={intent.expiresInSeconds ?? 30 * 60}
+              apiUrl={apiUrl}
+              onSubmitted={handlePaid}
+              onCancel={handleCancelPayment}
+            />
+          ) : intent.method === "promptpay" && intent.qrImageUrl ? (
             <PromptPayPanel
               orderId={intent.orderId}
               ordCode={intent.ordCode}
@@ -438,8 +465,14 @@ function CheckoutInner() {
               </h2>
               <div className="border-2 border-amber-200 bg-amber-50 rounded-xl p-5">
                 <p className="text-sm text-amber-700">
-                  เลือกวิธีที่ต้องการจากปุ่มด้านขวา QR หรือ ช่องกรอกบัตร
+                  เลือกวิธีที่ต้องการจากปุ่มด้านขวา
                 </p>
+                <ul className="mt-2 text-xs text-amber-700 space-y-1 list-disc list-inside">
+                  <li>QR PromptPay / บัตร — ยืนยันการชำระเงินอัตโนมัติทันที</li>
+                  <li>
+                    โอนพร้อมเพย์ — โอนเข้าบัญชีร้านโดยตรง ร้านจะยืนยันหลังตรวจยอด
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -531,6 +564,22 @@ function CheckoutInner() {
                     <ButtonSpinner label="กำลังเตรียมช่องกรอกบัตร..." />
                   ) : (
                     <>💳 จ่ายด้วยบัตรเครดิต / เดบิต</>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => startPayment("transfer")}
+                  disabled={disabled}
+                  className={`w-full py-3.5 rounded-xl font-semibold border-2 transition-colors ${
+                    disabled
+                      ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                      : "border-amber-500 text-amber-600 hover:bg-amber-50"
+                  }`}
+                >
+                  {pending === "transfer" ? (
+                    <ButtonSpinner label="กำลังสร้าง QR..." />
+                  ) : (
+                    <>🏦 โอนพร้อมเพย์ (ร้านยืนยันยอด)</>
                   )}
                 </button>
               </div>

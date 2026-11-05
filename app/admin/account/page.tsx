@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import Swal from "sweetalert2";
+import { authHeaders } from "@/lib/auth";
 
 interface AdminProfile {
   id: number;
@@ -59,6 +60,7 @@ export default function AccountPage() {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/${email}`,
+        { headers: authHeaders() },
       );
       if (response.ok) {
         const data = await response.json();
@@ -110,7 +112,7 @@ export default function AccountPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/${profile.email}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({
             fullname: profile.fullname,
             phone: profile.phone,

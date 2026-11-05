@@ -323,7 +323,12 @@ export default function ReportsPage() {
       cancelled: "bg-red-100 text-red-700",
     })[s] || "bg-gray-100 text-gray-700";
   const getPaymentMethodText = (m: string) =>
-    ({ qr_promptpay: "PromptPay", card: "บัตรเครดิต", cash: "เงินสด" })[m] || m;
+    ({
+      qr_promptpay: "PromptPay",
+      promptpay_transfer: "โอนพร้อมเพย์",
+      card: "บัตรเครดิต",
+      cash: "เงินสด",
+    })[m] || m;
   const getStatusTextEN = (s: string) =>
     ({
       delivered: "Delivered",
@@ -334,9 +339,13 @@ export default function ReportsPage() {
       cancelled: "Cancelled",
     })[s] || s;
   const getPaymentMethodTextEN = (m: string) =>
-    ({ qr_promptpay: "PromptPay", card: "Credit Card", cash: "Cash" })[m] || m;
+    ({
+      qr_promptpay: "PromptPay",
+      promptpay_transfer: "PromptPay Transfer",
+      card: "Credit Card",
+      cash: "Cash",
+    })[m] || m;
   const formatDate = (dateStr: string) => {
-    console.log("formatDate:", dateStr);
     const dateObj = new Date(dateStr);
 
     // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)

@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 import UserMenu from "@/components/ui/UserMenu";
 import Swal from "sweetalert2";
 import type { ApiProduct } from "@/types/product";
+import { authHeaders } from "@/lib/auth";
 
 interface Category {
   id: number;
@@ -279,12 +280,12 @@ export default function Header() {
   useEffect(() => {
     if (!userEmail || isAdmin) return;
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    const userId = userData.id || userData.userId;
-    if (!userId) return;
     const fetchProfileImage = async () => {
       try {
+        // /me อ่านตัวตนจาก token — เดิมเรียก /api/profile/{id} โดยไม่แนบ token จึงได้ 401 ทุกครั้ง
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/profile/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`,
+          { headers: authHeaders() },
         );
         if (res.ok) {
           const data = await res.json();

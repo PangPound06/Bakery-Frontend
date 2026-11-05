@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { authHeaders } from "@/lib/auth";
+import { paymentMethodLabel, paymentStatusBadge } from "@/lib/payment";
 
 interface OrderItem {
   id?: number;
@@ -24,7 +26,8 @@ interface Order {
   createdAt: string;
   receiverName: string;
   receiverPhone: string;
-  receiverAddress: string;
+  /** null = ไม่ใช่เจ้าของ order — backend ซ่อนที่อยู่ไว้ */
+  receiverAddress: string | null;
   note?: string;
 }
 
@@ -53,8 +56,10 @@ export default function SearchOrderPage() {
     setError("");
     setOrder(null);
     try {
+      // ส่ง token ไปด้วยถ้า login อยู่ — เจ้าของ order จะเห็นที่อยู่/เบอร์เต็ม คนอื่นเห็นแค่สถานะ
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/search/${searchInput.trim()}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/search/${encodeURIComponent(searchInput.trim())}`,
+        { headers: authHeaders() },
       );
       const data = await res.json();
       if (data.success) {
@@ -107,34 +112,7 @@ export default function SearchOrderPage() {
     }
   };
 
-  const getPaymentBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return { text: "ชำระแล้ว", bg: "bg-green-100 text-green-700" };
-      case "pending":
-        return { text: "รอตรวจสอบ", bg: "bg-yellow-100 text-yellow-700" };
-      case "failed":
-        return { text: "ล้มเหลว", bg: "bg-red-100 text-red-700" };
-      default:
-        return { text: status, bg: "bg-gray-100 text-gray-700" };
-    }
-  };
-
-  const getPaymentMethodText = (method: string) => {
-    switch (method) {
-      case "qr_promptpay":
-        return "📱 QR PromptPay";
-      case "card":
-        return "💳 บัตรเครดิต/เดบิต";
-      case "cash":
-        return "💵 เงินสด";
-      default:
-        return method;
-    }
-  };
-
   const formatDate = (dateStr: string) => {
-    console.log("formatDate:", dateStr);
     const dateObj = new Date(dateStr);
 
     // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)
@@ -355,14 +333,14 @@ export default function SearchOrderPage() {
                     </p>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">วิธีชำระเงิน</span>
-                      <span>{getPaymentMethodText(order.paymentMethod)}</span>
+                      <span>{paymentMethodLabel(order.paymentMethod)}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm mt-1">
                       <span className="text-gray-500">สถานะ</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentBadge(order.paymentStatus).bg}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${paymentStatusBadge(order.paymentStatus).className}`}
                       >
-                        {getPaymentBadge(order.paymentStatus).text}
+                        {paymentStatusBadge(order.paymentStatus).text}
                       </span>
                     </div>
                   </div>
@@ -387,7 +365,7 @@ export default function SearchOrderPage() {
                       <p>
                         <span className="text-gray-500">ที่อยู่:</span>{" "}
                         <span className="font-medium">
-                          {order.receiverAddress}
+                          {order.receiverAddress ?? "แสดงเฉพาะเจ้าของคำสั่งซื้อที่เข้าสู่ระบบ"}
                         </span>
                       </p>
                       {order.note && (

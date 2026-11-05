@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { PAYMENT_STATUS } from "@/lib/payment";
 
 /**
  * หน้าหลังชำระเงิน
@@ -18,9 +19,11 @@ import Link from "next/link";
  * บัตรเครดิตมักจะ paid ก่อนลูกค้าถูก redirect กลับมาด้วยซ้ำ
  * แต่ PromptPay ยืนยันแบบ asynchronous — อาจช้ากว่าไม่กี่วินาที
  * เลยถามซ้ำทุก 2 วินาที สูงสุดประมาณ 40 วินาที
+ *
+ * โอนพร้อมเพย์ (แอดมินยืนยัน) จะหยุดที่ "verifying" — รอร้านตรวจยอด อาจเป็นหลักนาทีถึงชั่วโมง
  */
 
-type Phase = "checking" | "paid" | "pending" | "failed" | "notfound";
+type Phase = "checking" | "paid" | "verifying" | "pending" | "failed" | "notfound";
 
 const POLL_INTERVAL_MS = 2000;
 const MAX_ATTEMPTS = 20; // ~40 วินาที
@@ -71,17 +74,20 @@ function SuccessInner() {
           if (data.ordCode) setOrdCode(data.ordCode);
           if (typeof data.total === "number") setTotal(data.total);
 
-          if (data.paymentStatus === "paid") {
-            setPhase("paid");
-            // ตะกร้าถูกล้างที่ backend แล้วตอน webhook มาถึง — บอก UI ให้รีเฟรช
+          if (
+            data.paymentStatus === PAYMENT_STATUS.PAID ||
+            data.paymentStatus === PAYMENT_STATUS.VERIFYING
+          ) {
+            setPhase(data.paymentStatus === PAYMENT_STATUS.PAID ? "paid" : "verifying");
+            // ตะกร้าถูกล้างที่ backend แล้ว (ได้เงิน / แจ้งโอน) — บอก UI ให้รีเฟรช
             window.dispatchEvent(new Event("cartUpdated"));
             localStorage.removeItem("lastOrderId");
             return;
           }
 
           if (
-            data.paymentStatus === "failed" ||
-            data.paymentStatus === "expired"
+            data.paymentStatus === PAYMENT_STATUS.FAILED ||
+            data.paymentStatus === PAYMENT_STATUS.EXPIRED
           ) {
             setPhase("failed");
             return;
@@ -112,6 +118,7 @@ function SuccessInner() {
         <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
           {phase === "checking" && <Checking />}
           {phase === "paid" && <Paid ordCode={ordCode} total={total} />}
+          {phase === "verifying" && <Verifying ordCode={ordCode} total={total} />}
           {phase === "pending" && <Pending ordCode={ordCode} />}
           {phase === "failed" && <Failed />}
           {phase === "notfound" && <NotFound />}
@@ -205,6 +212,30 @@ function Paid({ ordCode, total }: { ordCode: string; total: number | null }) {
             <span>ติดตามสถานะได้ที่หน้า &quot;คำสั่งซื้อของฉัน&quot;</span>
           </li>
         </ul>
+      </div>
+    </>
+  );
+}
+
+function Verifying({ ordCode, total }: { ordCode: string; total: number | null }) {
+  return (
+    <>
+      <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <span className="text-6xl">🧾</span>
+      </div>
+      <h1 className="text-2xl font-bold text-amber-700 mb-2">ได้รับแจ้งโอนแล้ว</h1>
+      <p className="text-gray-600 text-sm mb-6">
+        ร้านกำลังตรวจสอบยอดโอน เมื่อยืนยันแล้ว สถานะจะเปลี่ยนเป็น &quot;ชำระแล้ว&quot;
+        ในหน้า &quot;คำสั่งซื้อของฉัน&quot;
+      </p>
+      <div className="bg-gray-50 rounded-xl p-4">
+        <p className="text-sm text-gray-500 mb-1">หมายเลขคำสั่งซื้อ</p>
+        <p className="text-xl font-bold text-amber-600">{ordCode || "-"}</p>
+        {total !== null && (
+          <p className="text-sm text-gray-600 mt-2">
+            ยอดโอน ฿{total.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+          </p>
+        )}
       </div>
     </>
   );

@@ -1,0 +1,256 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { authHeaders } from "@/lib/auth";
+
+/**
+ * TransferPaymentPanel — โอนเข้าพร้อมเพย์ของร้านตรง แล้วแอดมินตรวจยอดเอง
+ *
+ * ═══ ต่างจาก PromptPayPanel (Stripe) ยังไง ═══
+ * QR นี้สร้างจากเลขพร้อมเพย์ของร้าน เงินเข้าบัญชีร้านทันที ไม่ผ่าน Stripe
+ * แต่ไม่มีใครบอกระบบอัตโนมัติว่าเงินเข้าแล้ว ลูกค้าจึงต้องกด "แจ้งโอนแล้ว"
+ * แล้วรอแอดมินเช็กยอดในแอปธนาคารก่อน order จะเป็น "ชำระแล้ว"
+ *
+ * การกดแจ้งโอนไม่ได้ยืนยันการจ่ายเงิน — แค่หยุดเวลาหมดอายุและส่งเรื่องให้แอดมิน
+ */
+
+interface Props {
+  orderId: number;
+  ordCode: string;
+  /** รูป QR แบบ data URL — สแกนด้วยแอปธนาคารจริงได้ */
+  qrImageUrl: string;
+  total: number;
+  /** เลขพร้อมเพย์ของร้านแบบซ่อนบางส่วน ให้ลูกค้าเทียบกับที่แอปธนาคารแสดง */
+  promptPayId?: string;
+  accountName?: string;
+  expiresInSeconds: number;
+  apiUrl?: string;
+  /** แจ้งโอนสำเร็จ (หรือแจ้งไปแล้วก่อนหน้า) → ไปหน้ารอตรวจสอบ */
+  onSubmitted: () => void;
+  onCancel: () => void;
+}
+
+/** ตรงกับข้อจำกัดของ /api/upload/image */
+const SLIP_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const SLIP_MAX_BYTES = 5 * 1024 * 1024;
+
+const formatPrice = (n: number) =>
+  n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const mmss = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+
+export default function TransferPaymentPanel({
+  orderId,
+  ordCode,
+  qrImageUrl,
+  total,
+  promptPayId,
+  accountName,
+  expiresInSeconds,
+  apiUrl,
+  onSubmitted,
+  onCancel,
+}: Props) {
+  const [secondsLeft, setSecondsLeft] = useState(expiresInSeconds);
+  const [slip, setSlip] = useState<File | null>(null);
+  const [slipPreview, setSlipPreview] = useState<string | null>(null);
+  const [busy, setBusy] = useState<"submit" | "cancel" | null>(null);
+  const [error, setError] = useState("");
+
+  const expired = secondsLeft <= 0;
+
+  useEffect(() => {
+    if (expired) return;
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secondsLeft, expired]);
+
+  // คืนหน่วยความจำของรูปตัวอย่างเดิมเมื่อเปลี่ยนรูปหรือออกจากหน้า
+  useEffect(() => {
+    return () => {
+      if (slipPreview) URL.revokeObjectURL(slipPreview);
+    };
+  }, [slipPreview]);
+
+  const pickSlip = (file: File | undefined) => {
+    setError("");
+    if (!file) return;
+    if (!SLIP_TYPES.includes(file.type)) {
+      setError("รองรับเฉพาะรูป JPG, PNG หรือ WEBP");
+      return;
+    }
+    if (file.size > SLIP_MAX_BYTES) {
+      setError("รูปสลิปต้องมีขนาดไม่เกิน 5MB");
+      return;
+    }
+    setSlip(file);
+    setSlipPreview(URL.createObjectURL(file));
+  };
+
+  /** อัปสลิปผ่าน /api/upload/image แล้วได้ URL ของ Cloudinary กลับมา */
+  const uploadSlip = async (file: File): Promise<string> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${apiUrl}/api/upload/image`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: form,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.url) {
+      throw new Error(data.message || "อัปโหลดสลิปไม่สำเร็จ");
+    }
+    return data.url as string;
+  };
+
+  const handleSubmit = async () => {
+    setBusy("submit");
+    setError("");
+    try {
+      const slipUrl = slip ? await uploadSlip(slip) : null;
+      const res = await fetch(`${apiUrl}/api/checkout/transfer/${orderId}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ slipUrl }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        onSubmitted();
+        return;
+      }
+      setError(data.error || "แจ้งโอนไม่สำเร็จ กรุณาลองใหม่");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
+    }
+    setBusy(null);
+  };
+
+  const handleCancel = async () => {
+    setBusy("cancel");
+    try {
+      const res = await fetch(`${apiUrl}/api/checkout/cancel/${orderId}`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      // 409 = แจ้งโอนไปแล้ว ยกเลิกเองไม่ได้ → ไปหน้ารอตรวจสอบแทน
+      if (res.status === 409) {
+        onSubmitted();
+        return;
+      }
+    } catch {
+      /* ยกเลิกไม่สำเร็จก็ไม่เป็นไร order จะหมดอายุเองตามเวลา */
+    }
+    onCancel();
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-amber-800 mb-1">โอนผ่านพร้อมเพย์</h2>
+        <p className="text-sm text-gray-500">
+          สแกน QR ด้วยแอปธนาคาร โอนแล้วกด &quot;แจ้งโอนแล้ว&quot; ด้านล่าง
+        </p>
+      </div>
+
+      {/* ═══ ยอดเงิน ═══ */}
+      <div className="text-center mb-5">
+        <p className="text-4xl font-bold text-amber-600">฿{formatPrice(total)}</p>
+        {ordCode && <p className="text-xs text-gray-400 mt-1">คำสั่งซื้อ {ordCode}</p>}
+      </div>
+
+      {/* ═══ QR ═══ */}
+      <div className="flex flex-col items-center mb-5">
+        <div
+          className={`relative rounded-2xl border-2 p-4 bg-white ${
+            expired ? "border-gray-200" : "border-amber-200"
+          }`}
+        >
+          <img
+            src={qrImageUrl}
+            alt="QR พร้อมเพย์ของร้าน"
+            width={260}
+            height={260}
+            className={`w-[260px] h-[260px] object-contain ${expired ? "opacity-20 grayscale" : ""}`}
+          />
+          {expired && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-white/85 px-6 text-center">
+              <span className="text-4xl mb-2">⏰</span>
+              <p className="font-semibold text-gray-700">หมดเวลาโอนแล้ว</p>
+              <p className="text-xs text-gray-500 mt-1">ถ้าโอนไปแล้ว กดแจ้งโอนทันที หรือติดต่อร้าน</p>
+            </div>
+          )}
+        </div>
+
+        {/* มือถือสแกนหน้าจอตัวเองไม่ได้ — บันทึกรูปแล้วเลือกจากแกลเลอรีในแอปธนาคารแทน */}
+        <a
+          href={qrImageUrl}
+          download={`promptpay-${ordCode || orderId}.png`}
+          className="mt-3 text-sm font-medium text-amber-600 underline hover:text-amber-700"
+        >
+          บันทึกรูป QR (สำหรับสแกนจากแกลเลอรี)
+        </a>
+
+        {(promptPayId || accountName) && (
+          <p className="mt-2 text-xs text-gray-500 text-center">
+            พร้อมเพย์ {promptPayId}
+            {accountName ? ` · ${accountName}` : ""}
+          </p>
+        )}
+      </div>
+
+      {!expired && (
+        <p className="text-center text-sm text-amber-700 font-medium mb-5">
+          กรุณาโอนและแจ้งภายใน {mmss(secondsLeft)} นาที
+        </p>
+      )}
+
+      {/* ═══ สลิป (ไม่บังคับ) ═══ */}
+      <div className="bg-amber-50 rounded-xl p-4 mb-5">
+        <p className="text-sm font-semibold text-amber-800 mb-1">แนบสลิป (ไม่บังคับ)</p>
+        <p className="text-xs text-amber-700 mb-3">ช่วยให้ร้านตรวจสอบยอดได้เร็วขึ้น</p>
+        <label className="block">
+          <input
+            type="file"
+            accept={SLIP_TYPES.join(",")}
+            onChange={(e) => pickSlip(e.target.files?.[0])}
+            disabled={busy !== null}
+            className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-amber-500 file:text-white hover:file:bg-amber-600"
+          />
+        </label>
+        {slipPreview && (
+          <img
+            src={slipPreview}
+            alt="ตัวอย่างสลิป"
+            className="mt-3 max-h-48 rounded-lg border border-amber-200 mx-auto"
+          />
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+          {error}
+        </div>
+      )}
+
+      {/* ═══ ปุ่ม ═══ */}
+      <button
+        onClick={handleSubmit}
+        disabled={busy !== null}
+        className="w-full py-4 mb-3 rounded-xl font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors disabled:opacity-50"
+      >
+        {busy === "submit" ? "กำลังแจ้งโอน..." : "✅ แจ้งโอนแล้ว"}
+      </button>
+      <button
+        onClick={handleCancel}
+        disabled={busy !== null}
+        className="w-full py-3 rounded-xl font-semibold border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+      >
+        {busy === "cancel" ? "กำลังยกเลิก..." : "ยกเลิก (ยังไม่ได้โอน)"}
+      </button>
+
+      <p className="text-xs text-gray-400 text-center mt-3">
+        ร้านจะยืนยันคำสั่งซื้อหลังตรวจพบยอดโอนในบัญชี
+      </p>
+    </div>
+  );
+}

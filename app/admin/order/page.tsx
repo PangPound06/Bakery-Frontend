@@ -2,6 +2,16 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
+import { authHeaders } from "@/lib/auth";
+import {
+  isAwaitingVerification,
+  isPaid,
+  isPaymentLocked,
+  isPromptPayTransfer,
+  PAYMENT_STATUS,
+  paymentMethodLabel,
+  paymentStatusBadge,
+} from "@/lib/payment";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Pagination from "@/components/ui/Pagination";
@@ -86,27 +96,13 @@ const multiplierOf = (opt?: string | null) => {
   return 1;
 };
 
-/**
- * ชื่อวิธีชำระเงินที่อ่านออก
- *
- * ห้ามเดาว่าค่าที่ไม่รู้จักคือบัตร — order เก่าที่เก็บไว้ว่า "stripe"
- * จะกลายเป็น "บัตร" ทันที ทั้งที่อาจจ่ายด้วย QR ก็ได้
- */
-const paymentMethodLabel = (method?: string | null) => {
-  switch (method) {
-    case "qr_promptpay":
-      return "📱 QR PromptPay";
-    case "card":
-      return "💳 บัตร";
-    case "cash":
-      return "💵 เงินสด";
-    case "stripe":
-      // order ก่อนแก้บั๊ก — ดูวิธีจ่ายจริงได้ใน Stripe Dashboard
-      return "Stripe (ข้อมูลเก่า ไม่ระบุวิธี)";
-    default:
-      return method || "-";
-  }
-};
+/** ปุ่มดำเนินการกับ order ในตาราง/โมดัล */
+type OrderAction = { label: string; color: string } & (
+  | { kind: "status"; orderStatus: string; paymentStatus?: string }
+  | { kind: "cancel" }
+  | { kind: "confirm-transfer" }
+  | { kind: "reject-transfer" }
+);
 
 /** แตกจำนวนออกเป็น สั่ง / ยกเลิกแล้ว / เหลือจริง — หน่วยเป็น "ออเดอร์" */
 const splitQty = (item: OrderItem) => {
@@ -534,7 +530,7 @@ export default function AdminOrdersPage() {
    * จ่ายแล้ว → เปิดโมดัลเลือกว่าจะยกเลิกทั้งใบหรือตัดบางรายการ แล้วคืนเงินตามนั้น
    */
   const cancelOrder = async (order: Order) => {
-    if (order.paymentStatus === "paid") {
+    if (isPaid(order.paymentStatus)) {
       setRefundPreselect(null);
       setRefundTarget(order);
       return;
@@ -722,7 +718,6 @@ export default function AdminOrdersPage() {
   };
 
   const printReceipt = (order: Order, items: OrderItem[]) => {
-    console.log("createdAt raw:", order.createdAt);
     const win = window.open("", "_blank");
     if (!win) return;
     // รายการที่ยกเลิกและคืนเงินไปแล้วต้องไม่อยู่บนใบเสร็จ — ไม่งั้นยอดจะไม่ตรงกับรายการ
@@ -841,19 +836,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const getPaymentBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return { text: "ชำระแล้ว", bg: "bg-green-100 text-green-700" };
-      case "pending":
-        return { text: "รอตรวจสอบ", bg: "bg-yellow-100 text-yellow-700" };
-      case "failed":
-        return { text: "ล้มเหลว", bg: "bg-red-100 text-red-700" };
-      default:
-        return { text: status, bg: "bg-gray-100 text-gray-700" };
-    }
-  };
-
   const getChannelBadge = (orderType?: string) => {
     if (orderType === "pos")
       return { text: "🏪 หน้าร้าน", bg: "bg-amber-100 text-amber-700" };
@@ -863,7 +845,6 @@ export default function AdminOrdersPage() {
   };
 
   const formatDate = (dateStr: string) => {
-    console.log("formatDate:", dateStr);
     const dateObj = new Date(dateStr);
 
     // 1. ดึงเฉพาะส่วนวันที่ (ที่ทำงานได้ตรงเวลา)
@@ -885,69 +866,149 @@ export default function AdminOrdersPage() {
     return `${datePart} ${timePart}`;
   };
 
-  const getNextStatusActions = (order: Order) => {
-    const actions: {
-      label: string;
-      orderStatus: string;
-      paymentStatus?: string;
-      color: string;
-    }[] = [];
+  /**
+   * ปุ่มที่แอดมินกดได้ต่อจากสถานะปัจจุบัน
+   *
+   * order ออนไลน์ต้องได้เงินก่อนถึงจะยืนยัน/เตรียมของได้ (backend กันไว้ด้วย)
+   * โอนพร้อมเพย์ยังไม่ได้ยืนยันยอด → ปุ่มยืนยันรับเงิน / ไม่พบยอดโอน แทนปุ่มยกเลิก
+   */
+  const getNextStatusActions = (order: Order): OrderAction[] => {
+    if (order.orderType === "pos") return [];
 
-    if (order.orderType === "pos") return actions;
-
-    // ✅ dine-in มีแค่ปุ่มยืนยันชำระเงิน
+    // ✅ dine-in มีแค่ปุ่มยืนยันชำระเงิน (รับเงินสดที่เคาน์เตอร์)
     if (order.orderType === "dine-in") {
-      if (
-        order.orderStatus === "pending" ||
-        order.orderStatus === "confirmed"
-      ) {
-        actions.push({
-          label: "✅ ยืนยันการชำระเงิน",
-          orderStatus: "delivered",
-          paymentStatus: "paid",
-          color: "bg-green-500 hover:bg-green-600 text-white",
-        });
-      }
-      return actions;
+      return order.orderStatus === "pending" || order.orderStatus === "confirmed"
+        ? [
+            {
+              kind: "status",
+              label: "✅ ยืนยันการชำระเงิน",
+              orderStatus: "delivered",
+              paymentStatus: PAYMENT_STATUS.PAID,
+              color: "bg-green-500 hover:bg-green-600 text-white",
+            },
+          ]
+        : [];
     }
 
     switch (order.orderStatus) {
-      case "pending":
-        actions.push({
-          label: "✅ ยืนยันคำสั่งซื้อ",
-          orderStatus: "confirmed",
-          paymentStatus: "paid",
-          color: "bg-blue-500 hover:bg-blue-600 text-white",
-        });
-        actions.push({
+      case "pending": {
+        const transferUndecided =
+          isPromptPayTransfer(order.paymentMethod) &&
+          (isAwaitingVerification(order.paymentStatus) ||
+            order.paymentStatus === PAYMENT_STATUS.AWAITING);
+        if (transferUndecided) {
+          return [
+            { kind: "confirm-transfer", label: "✅ ยืนยันรับเงิน", color: "bg-green-500 hover:bg-green-600 text-white" },
+            { kind: "reject-transfer", label: "❌ ไม่พบยอดโอน", color: "bg-red-100 hover:bg-red-200 text-red-600" },
+          ];
+        }
+        const cancel: OrderAction = {
+          kind: "cancel",
           label: "❌ ยกเลิก",
-          orderStatus: "cancelled",
           color: "bg-red-100 hover:bg-red-200 text-red-600",
-        });
-        break;
+        };
+        return isPaid(order.paymentStatus)
+          ? [
+              {
+                kind: "status",
+                label: "✅ ยืนยันคำสั่งซื้อ",
+                orderStatus: "confirmed",
+                color: "bg-blue-500 hover:bg-blue-600 text-white",
+              },
+              cancel,
+            ]
+          : [cancel];
+      }
       case "confirmed":
-        actions.push({
-          label: "👨‍🍳 เตรียมสินค้า",
-          orderStatus: "preparing",
-          color: "bg-indigo-500 hover:bg-indigo-600 text-white",
-        });
-        break;
+        return [{ kind: "status", label: "👨‍🍳 เตรียมสินค้า", orderStatus: "preparing", color: "bg-indigo-500 hover:bg-indigo-600 text-white" }];
       case "preparing":
-        actions.push({
-          label: "🚚 จัดส่ง",
-          orderStatus: "shipping",
-          color: "bg-purple-500 hover:bg-purple-600 text-white",
-        });
-        break;
+        return [{ kind: "status", label: "🚚 จัดส่ง", orderStatus: "shipping", color: "bg-purple-500 hover:bg-purple-600 text-white" }];
       case "shipping":
-        actions.push({
-          label: "📦 จัดส่งสำเร็จ",
-          orderStatus: "delivered",
-          color: "bg-green-500 hover:bg-green-600 text-white",
-        });
-        break;
+        return [{ kind: "status", label: "📦 จัดส่งสำเร็จ", orderStatus: "delivered", color: "bg-green-500 hover:bg-green-600 text-white" }];
+      default:
+        return [];
     }
-    return actions;
+  };
+
+  const runAction = (order: Order, action: OrderAction) => {
+    switch (action.kind) {
+      case "status":
+        return updateOrderStatus(order.id, action.orderStatus, action.paymentStatus);
+      case "cancel":
+        return cancelOrder(order);
+      case "confirm-transfer":
+        return decideTransfer(order, "confirm");
+      case "reject-transfer":
+        return decideTransfer(order, "reject");
+    }
+  };
+
+  /**
+   * ยืนยัน / ปฏิเสธยอดโอนพร้อมเพย์ — แอดมินต้องเช็กยอดในแอปธนาคารของร้านก่อนกด
+   * ปฏิเสธแล้ว backend คืน stock และปิด order ให้เอง
+   */
+  const decideTransfer = async (order: Order, decision: "confirm" | "reject") => {
+    const amount = `฿${order.total.toLocaleString("th-TH", { minimumFractionDigits: 2 })}`;
+    const code = order.ordCode || `#${order.id}`;
+    const result =
+      decision === "confirm"
+        ? await Swal.fire({
+            icon: "question",
+            title: "ยืนยันรับเงิน?",
+            html: `ตรวจแล้วว่ามียอดโอน <b>${amount}</b> ของ ${code} เข้าบัญชีร้าน`,
+            showCancelButton: true,
+            confirmButtonColor: "#22c55e",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "✅ ได้รับเงินแล้ว",
+            cancelButtonText: "ปิด",
+          })
+        : await Swal.fire({
+            icon: "warning",
+            title: "ไม่พบยอดโอน?",
+            text: `คำสั่งซื้อ ${code} จะถูกยกเลิกและคืน stock`,
+            input: "text",
+            inputPlaceholder: "เหตุผล (เช่น ยอดไม่ตรง / ไม่พบยอด)",
+            showCancelButton: true,
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "ยกเลิกคำสั่งซื้อ",
+            cancelButtonText: "ปิด",
+          });
+    if (!result.isConfirmed) return;
+
+    setUpdating(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${order.id}/transfer/${decision}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify(decision === "reject" ? { reason: result.value || "" } : {}),
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        await Swal.fire({
+          icon: "success",
+          title: decision === "confirm" ? "ยืนยันรับเงินแล้ว" : "ยกเลิกคำสั่งซื้อแล้ว",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        fetchOrders();
+        if (selectedOrder?.id === order.id) fetchOrderDetail(order.id);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "ดำเนินการไม่สำเร็จ",
+          text: data.error || "ลองใหม่อีกครั้ง",
+          confirmButtonColor: "#f97316",
+        });
+      }
+    } catch {
+      Swal.fire({ icon: "error", title: "เชื่อมต่อ server ไม่ได้", confirmButtonColor: "#f97316" });
+    } finally {
+      setUpdating(false);
+    }
   };
 
   // orders ถูกกรอง + แบ่งหน้าจากฝั่ง server แล้ว → ใช้ได้เลย ไม่ต้องกรองซ้ำ
@@ -1239,7 +1300,7 @@ export default function AdminOrdersPage() {
                     order.orderStatus,
                     order.orderType,
                   );
-                  const payment = getPaymentBadge(order.paymentStatus);
+                  const payment = paymentStatusBadge(order.paymentStatus);
                   const nextActions = getNextStatusActions(order);
 
                   return (
@@ -1272,7 +1333,7 @@ export default function AdminOrdersPage() {
                       <td className="px-4 py-4">
                         <div className="space-y-1">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${payment.bg}`}
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${payment.className}`}
                           >
                             {payment.text}
                           </span>
@@ -1310,19 +1371,11 @@ export default function AdminOrdersPage() {
                           >
                             🔍 รายละเอียด
                           </button>
-                          {nextActions.map((action, i) => (
+                          {nextActions.map((action) => (
                             <button
-                              key={i}
+                              key={action.kind + action.label}
                               disabled={updating}
-                              onClick={() =>
-                                action.orderStatus === "cancelled"
-                                  ? cancelOrder(order)
-                                  : updateOrderStatus(
-                                      order.id,
-                                      action.orderStatus,
-                                      action.paymentStatus,
-                                    )
-                              }
+                              onClick={() => runAction(order, action)}
                               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${action.color}`}
                             >
                               {action.label}
@@ -1418,19 +1471,11 @@ export default function AdminOrdersPage() {
                   </div>
                   {getNextStatusActions(selectedOrder).length > 0 && (
                     <div className="flex gap-2">
-                      {getNextStatusActions(selectedOrder).map((action, i) => (
+                      {getNextStatusActions(selectedOrder).map((action) => (
                         <button
-                          key={i}
+                          key={action.kind + action.label}
                           disabled={updating}
-                          onClick={() =>
-                            action.orderStatus === "cancelled"
-                              ? cancelOrder(selectedOrder)
-                              : updateOrderStatus(
-                                  selectedOrder.id,
-                                  action.orderStatus,
-                                  action.paymentStatus,
-                                )
-                          }
+                          onClick={() => runAction(selectedOrder, action)}
                           className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 ${action.color}`}
                         >
                           {action.label}
@@ -1459,7 +1504,7 @@ export default function AdminOrdersPage() {
                           selectedOrder.orderStatus,
                         ) &&
                         selectedOrder.orderType !== "pos" &&
-                        selectedOrder.paymentStatus !== "paid" &&
+                        !isPaymentLocked(selectedOrder.paymentStatus) &&
                         cancelled === 0;
 
                       return (
@@ -1660,7 +1705,7 @@ export default function AdminOrdersPage() {
                                   แต่ตัดออกได้ผ่านทางคืนเงิน — เปิดโมดัลโดยติ๊กรายการนี้ไว้ให้เลย
                                 */}
                                 {selectedOrder &&
-                                  selectedOrder.paymentStatus === "paid" &&
+                                  isPaid(selectedOrder.paymentStatus) &&
                                   !["delivered", "cancelled", "cancel_requested"].includes(
                                     selectedOrder.orderStatus,
                                   ) &&
@@ -1701,7 +1746,7 @@ export default function AdminOrdersPage() {
                       selectedOrder.orderStatus,
                     ) &&
                     selectedOrder.orderType !== "pos" &&
-                    (selectedOrder.paymentStatus === "paid" ? (
+                    (isPaid(selectedOrder.paymentStatus) ? (
                       /*
                        * จ่ายเงินแล้วแก้รายการไม่ได้ — backend กันไว้ที่ isPaid()
                        * เพิ่มของ = ร้านแถมฟรี เพราะเก็บเงินเพิ่มทีหลังไม่ได้
@@ -1711,6 +1756,11 @@ export default function AdminOrdersPage() {
                         คำสั่งซื้อนี้ชำระเงินแล้ว เพิ่มของไม่ได้ เพราะเก็บเงินเพิ่มทีหลังไม่ได้
                         <br />
                         ถ้าของหมดหรือทำไม่ทัน กด 🗑 ที่รายการนั้นเพื่อตัดออกและคืนเงินเฉพาะส่วนนั้น
+                      </div>
+                    ) : isPaymentLocked(selectedOrder.paymentStatus) ? (
+                      // ลูกค้ากำลังจ่าย/รอตรวจยอดโอน — ยอดที่ลูกค้าจ่ายคือยอดเดิม (backend กันไว้ที่ isPaymentInProgress)
+                      <div className="mt-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-500 text-center">
+                        ลูกค้ากำลังชำระเงินหรือรอตรวจยอดโอน แก้ไขรายการไม่ได้
                       </div>
                     ) : (
                       <button
@@ -1783,9 +1833,9 @@ export default function AdminOrdersPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-500">สถานะ</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentBadge(selectedOrder.paymentStatus).bg}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${paymentStatusBadge(selectedOrder.paymentStatus).className}`}
                       >
-                        {getPaymentBadge(selectedOrder.paymentStatus).text}
+                        {paymentStatusBadge(selectedOrder.paymentStatus).text}
                       </span>
                     </div>
                   </div>

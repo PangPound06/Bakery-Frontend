@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import dynamic from "next/dynamic";
+import { authHeaders } from "@/lib/auth";
 
 interface Branch {
   id: number;
@@ -54,14 +55,10 @@ const BranchLocationPicker = dynamic(
   },
 );
 
-function authHeaders(): HeadersInit {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+const jsonAuthHeaders = (): HeadersInit => ({
+  "Content-Type": "application/json",
+  ...authHeaders(),
+});
 
 export default function AdminBranchesPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -73,7 +70,7 @@ export default function AdminBranchesPage() {
     setLoading(true);
     try {
       const res = await fetch(`${API}/api/store/branches/all`, {
-        headers: authHeaders(),
+        headers: jsonAuthHeaders(),
       });
       const data = await res.json();
       setBranches(data.branches || []);
@@ -141,7 +138,7 @@ export default function AdminBranchesPage() {
         : `${API}/api/store/branches`;
       const res = await fetch(url, {
         method: form.id ? "PUT" : "POST",
-        headers: authHeaders(),
+        headers: jsonAuthHeaders(),
         body: JSON.stringify(payload),
       });
       const data = await res.json();
@@ -181,7 +178,7 @@ export default function AdminBranchesPage() {
     try {
       const res = await fetch(`${API}/api/store/branches/${b.id}`, {
         method: "DELETE",
-        headers: authHeaders(),
+        headers: jsonAuthHeaders(),
       });
       const data = await res.json();
       if (!res.ok || data.success === false) {
