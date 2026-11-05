@@ -117,10 +117,15 @@ export default function PromptPayPanel({
     stopped.current = true;
     try {
       const token = localStorage.getItem("token");
-      await fetch(`${apiUrl}/api/checkout/cancel/${orderId}`, {
+      const res = await fetch(`${apiUrl}/api/checkout/cancel/${orderId}`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      // 409 = ลูกค้าสแกนจ่ายไปแล้วก่อนกดยกเลิก → ไปหน้าสำเร็จแทน
+      if (res.status === 409) {
+        onPaid();
+        return;
+      }
     } catch {
       /* ยกเลิกไม่สำเร็จก็ไม่เป็นไร order จะหมดอายุเองใน 30 นาที */
     }
