@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -72,6 +73,8 @@ export default function SupplierPage() {
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
+  /** ยิง API หลังหยุดพิมพ์ 300ms ไม่ใช่ทุกตัวอักษร */
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [filterCat, setFilterCat] = useState("ทั้งหมด");
   const [filterStatus, setFilterStatus] = useState("ทั้งหมด");
 
@@ -131,7 +134,7 @@ export default function SupplierPage() {
   const fetchSuppliers = useCallback(async () => {
     try {
       const params = new URLSearchParams();
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
       if (filterCat !== "ทั้งหมด") params.set("category", filterCat);
       if (filterStatus !== "ทั้งหมด") params.set("status", filterStatus);
       const res = await fetch(`${API}/api/suppliers?${params}`);
@@ -142,7 +145,7 @@ export default function SupplierPage() {
     } catch (e) {
       console.error("fetch suppliers error", e);
     }
-  }, [search, filterCat, filterStatus]);
+  }, [debouncedSearch, filterCat, filterStatus]);
 
   const fetchPOs = useCallback(async () => {
     try {
@@ -154,8 +157,8 @@ export default function SupplierPage() {
     }
   }, []);
 
+  // หน้าจอโหลดเต็มจอเฉพาะครั้งแรก — ตอนค้นหา/กรองให้รายการเดิมค้างไว้ (กันจอกระพริบ)
   useEffect(() => {
-    setLoading(true);
     Promise.all([fetchSuppliers(), fetchPOs()]).finally(() =>
       setLoading(false),
     );

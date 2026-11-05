@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Pagination from "@/components/ui/Pagination";
@@ -149,6 +150,10 @@ export default function AdminOrdersPage() {
   const [slipModal, setSlipModal] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const prevTotalRef = useRef(0);
+  /** เลขของคำขอล่าสุด — คำตอบของคำขอเก่าที่มาช้ากว่าจะถูกทิ้ง ไม่ให้ทับผลล่าสุด */
+  const latestRequestRef = useRef(0);
+  /** ยิง API หลังหยุดพิมพ์ 300ms ไม่ใช่ทุกตัวอักษร */
+  const debouncedSearch = useDebouncedValue(searchTerm.trim());
   const [page, setPage] = useState(0);
   /** เปลี่ยนขนาดหน้าได้ — ข้อมูลเยอะๆ บางคนอยากเห็นทีละ 200 */
   const [pageSize, setPageSize] = useState(50);
@@ -200,7 +205,8 @@ export default function AdminOrdersPage() {
   // และดึง summary แยกเพื่อให้ตัวเลขบนแท็บเป็นยอดรวมทั้งระบบ ไม่ใช่แค่หน้าปัจจุบัน
   const fetchOrders = useCallback(
     async (silent = false) => {
-      if (!silent) setLoading(true);
+      // หน้าจอโหลดเต็มจอเฉพาะครั้งแรก — ตอนกรอง/ค้นหาให้ตารางเดิมค้างไว้จนข้อมูลใหม่มา (กันจอกระพริบ)
+      const requestId = ++latestRequestRef.current;
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
@@ -252,7 +258,7 @@ export default function AdminOrdersPage() {
         params.set("size", String(pageSize));
         if (filterStatus !== "all") params.set("status", filterStatus);
         if (filterChannel !== "all") params.set("channel", filterChannel);
-        if (searchTerm.trim()) params.set("search", searchTerm.trim());
+        if (debouncedSearch) params.set("search", debouncedSearch);
         if (rFrom) params.set("from", rFrom);
         if (rTo) params.set("to", rTo);
 
@@ -267,6 +273,7 @@ export default function AdminOrdersPage() {
             headers,
           }),
         ]);
+        if (requestId !== latestRequestRef.current) return;
 
         if (pageRes.ok) {
           const data = await pageRes.json();
@@ -304,7 +311,7 @@ export default function AdminOrdersPage() {
       } catch (error) {
         if (!silent) console.error("Error fetching orders:", error);
       } finally {
-        if (!silent) setLoading(false);
+        setLoading(false);
       }
     },
     [
@@ -312,7 +319,7 @@ export default function AdminOrdersPage() {
       pageSize,
       filterStatus,
       filterChannel,
-      searchTerm,
+      debouncedSearch,
       dateRange,
       customFrom,
       customTo,
