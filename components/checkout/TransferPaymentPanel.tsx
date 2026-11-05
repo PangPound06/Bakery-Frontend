@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { authHeaders } from "@/lib/auth";
+import SlipPicker from "./SlipPicker";
 
 /**
  * TransferPaymentPanel — โอนเข้าพร้อมเพย์ของร้านตรง แล้วแอดมินตรวจยอดเอง
@@ -12,6 +13,7 @@ import { authHeaders } from "@/lib/auth";
  * แล้วรอแอดมินเช็กยอดในแอปธนาคารก่อน order จะเป็น "ชำระแล้ว"
  *
  * การกดแจ้งโอนไม่ได้ยืนยันการจ่ายเงิน — แค่หยุดเวลาหมดอายุและส่งเรื่องให้แอดมิน
+ * ต้องแนบสลิปที่มี QR ของธนาคารทุกครั้ง (ตรวจในเบราว์เซอร์ และ backend ตรวจซ้ำ)
  */
 
 interface Props {
@@ -29,10 +31,6 @@ interface Props {
   onSubmitted: () => void;
   onCancel: () => void;
 }
-
-/** ตรงกับข้อจำกัดของ /api/upload/image */
-const SLIP_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const SLIP_MAX_BYTES = 5 * 1024 * 1024;
 
 const formatPrice = (n: number) =>
   n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -52,8 +50,8 @@ export default function TransferPaymentPanel({
   onCancel,
 }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(expiresInSeconds);
+  /** สลิปที่ผ่านการตรวจ QR แล้วเท่านั้น */
   const [slip, setSlip] = useState<File | null>(null);
-  const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState<"submit" | "cancel" | null>(null);
   const [error, setError] = useState("");
 
@@ -65,53 +63,18 @@ export default function TransferPaymentPanel({
     return () => clearTimeout(t);
   }, [secondsLeft, expired]);
 
-  // คืนหน่วยความจำของรูปตัวอย่างเดิมเมื่อเปลี่ยนรูปหรือออกจากหน้า
-  useEffect(() => {
-    return () => {
-      if (slipPreview) URL.revokeObjectURL(slipPreview);
-    };
-  }, [slipPreview]);
-
-  const pickSlip = (file: File | undefined) => {
-    setError("");
-    if (!file) return;
-    if (!SLIP_TYPES.includes(file.type)) {
-      setError("รองรับเฉพาะรูป JPG, PNG หรือ WEBP");
-      return;
-    }
-    if (file.size > SLIP_MAX_BYTES) {
-      setError("รูปสลิปต้องมีขนาดไม่เกิน 5MB");
-      return;
-    }
-    setSlip(file);
-    setSlipPreview(URL.createObjectURL(file));
-  };
-
-  /** อัปสลิปผ่าน /api/upload/image แล้วได้ URL ของ Cloudinary กลับมา */
-  const uploadSlip = async (file: File): Promise<string> => {
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch(`${apiUrl}/api/upload/image`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: form,
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.url) {
-      throw new Error(data.message || "อัปโหลดสลิปไม่สำเร็จ");
-    }
-    return data.url as string;
-  };
-
   const handleSubmit = async () => {
+    if (!slip) return;
     setBusy("submit");
     setError("");
     try {
-      const slipUrl = slip ? await uploadSlip(slip) : null;
+      const form = new FormData();
+      form.append("slip", slip);
+      // ไม่ตั้ง Content-Type เอง — เบราว์เซอร์ใส่ boundary ของ multipart ให้
       const res = await fetch(`${apiUrl}/api/checkout/transfer/${orderId}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ slipUrl }),
+        headers: authHeaders(),
+        body: form,
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
@@ -119,8 +82,8 @@ export default function TransferPaymentPanel({
         return;
       }
       setError(data.error || "แจ้งโอนไม่สำเร็จ กรุณาลองใหม่");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
+    } catch {
+      setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
     }
     setBusy(null);
   };
@@ -204,26 +167,15 @@ export default function TransferPaymentPanel({
         </p>
       )}
 
-      {/* ═══ สลิป (ไม่บังคับ) ═══ */}
+      {/* ═══ สลิป (บังคับ) ═══ */}
       <div className="bg-amber-50 rounded-xl p-4 mb-5">
-        <p className="text-sm font-semibold text-amber-800 mb-1">แนบสลิป (ไม่บังคับ)</p>
-        <p className="text-xs text-amber-700 mb-3">ช่วยให้ร้านตรวจสอบยอดได้เร็วขึ้น</p>
-        <label className="block">
-          <input
-            type="file"
-            accept={SLIP_TYPES.join(",")}
-            onChange={(e) => pickSlip(e.target.files?.[0])}
-            disabled={busy !== null}
-            className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-amber-500 file:text-white hover:file:bg-amber-600"
-          />
-        </label>
-        {slipPreview && (
-          <img
-            src={slipPreview}
-            alt="ตัวอย่างสลิป"
-            className="mt-3 max-h-48 rounded-lg border border-amber-200 mx-auto"
-          />
-        )}
+        <p className="text-sm font-semibold text-amber-800 mb-1">
+          แนบสลิป <span className="text-red-500">*</span>
+        </p>
+        <p className="text-xs text-amber-700 mb-3">
+          ใช้รูปสลิปจากแอปธนาคาร (JPG/PNG) ที่เห็น QR Code ชัดเจน
+        </p>
+        <SlipPicker disabled={busy !== null} onValidSlipChange={setSlip} />
       </div>
 
       {error && (
@@ -235,11 +187,14 @@ export default function TransferPaymentPanel({
       {/* ═══ ปุ่ม ═══ */}
       <button
         onClick={handleSubmit}
-        disabled={busy !== null}
-        className="w-full py-4 mb-3 rounded-xl font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors disabled:opacity-50"
+        disabled={!slip || busy !== null}
+        className="w-full py-4 mb-3 rounded-xl font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         {busy === "submit" ? "กำลังแจ้งโอน..." : "✅ แจ้งโอนแล้ว"}
       </button>
+      {!slip && (
+        <p className="-mt-1 mb-3 text-xs text-center text-gray-500">แนบสลิปที่มี QR Code ก่อนจึงจะแจ้งโอนได้</p>
+      )}
       <button
         onClick={handleCancel}
         disabled={busy !== null}
