@@ -37,6 +37,7 @@ function BillQRContent() {
   const [tableNo, setTableNo] = useState("");
   const [qrImageUrl, setQrImageUrl] = useState("");
   const [hostedUrl, setHostedUrl] = useState("");
+  const [testMode, setTestMode] = useState(false);
   const [ordCode, setOrdCode] = useState("");
   const [orderId, setOrderId] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(EXPIRE_SECONDS);
@@ -112,6 +113,7 @@ function BillQRContent() {
         setOrdCode(data.ordCode);
         setQrImageUrl(data.qrImageUrl);
         setHostedUrl(data.hostedInstructionsUrl || "");
+        setTestMode(data.testMode === true);
         setAmount(data.amount ?? total);
         setSecondsLeft(EXPIRE_SECONDS);
       } catch {
@@ -303,12 +305,12 @@ function BillQRContent() {
                 {/* ═══ ลิงก์จำลองการจ่ายเงิน (test mode เท่านั้น) ═══
                     ใน test mode ข้อมูลใน QR ไม่ใช่ payload ของ PromptPay จริง
                     แอปธนาคารจะอ่านไม่ออก ต้องกดลิงก์นี้แทน
-                    ลิงก์จะไม่แสดงตอน build production
+                    แสดงตาม testMode ที่ backend ส่งมา — ใช้คีย์โหมดจริงเมื่อไหร่ลิงก์จะหายเอง
 
                     <a> ธรรมดาไม่มี target — เปิดในแท็บเดิม ไม่งอกแท็บใหม่
                     เหมือน PromptPayPanel ฝั่งออนไลน์ทุกตัวอักษร
                     กดย้อนกลับมาแล้วหน้านี้จะใช้บิลใบเดิมต่อ ไม่สร้างแถวใหม่ */}
-                {hostedUrl && process.env.NODE_ENV === "development" && (
+                {hostedUrl && testMode && (
                   <div className="mt-4 mb-1 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3 text-center">
                     <p className="text-xs text-gray-500 mb-1">โหมดทดสอบ</p>
                     <a

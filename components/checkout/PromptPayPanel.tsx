@@ -21,6 +21,8 @@ interface Props {
   qrImageUrl: string;
   /** หน้าของ Stripe — ใน test mode ใช้กดจำลองการจ่ายเงินได้ */
   hostedUrl?: string;
+  /** backend ใช้คีย์ sk_test อยู่ (Stripe sandbox) */
+  testMode?: boolean;
   total: number;
   apiUrl?: string;
   onPaid: () => void;
@@ -48,6 +50,7 @@ export default function PromptPayPanel({
   ordCode,
   qrImageUrl,
   hostedUrl,
+  testMode = false,
   total,
   apiUrl,
   onPaid,
@@ -189,8 +192,8 @@ export default function PromptPayPanel({
       {/* ═══ ลิงก์จำลองการจ่ายเงิน (test mode เท่านั้น) ═══
           ใน test mode ข้อมูลใน QR ไม่ใช่ payload ของ PromptPay จริง
           แอปธนาคารจะอ่านไม่ออก ต้องกดลิงก์นี้แทน
-          ลิงก์จะไม่แสดงตอน build production */}
-      {hostedUrl && process.env.NODE_ENV === "development" && (
+          แสดงตาม testMode ที่ backend ส่งมา — ใช้คีย์โหมดจริงเมื่อไหร่ลิงก์จะหายเอง */}
+      {hostedUrl && testMode && (
         <div className="mb-5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3 text-center">
           <p className="text-xs text-gray-500 mb-1">โหมดทดสอบ</p>
           <a

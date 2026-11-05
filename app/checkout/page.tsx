@@ -47,6 +47,7 @@ interface ActiveIntent {
   total: number;
   qrImageUrl?: string;
   hostedUrl?: string;
+  testMode?: boolean;
   clientSecret?: string;
 }
 
@@ -242,6 +243,7 @@ function CheckoutInner() {
         total: data.total ?? summary?.total ?? 0,
         qrImageUrl: data.qrImageUrl,
         hostedUrl: data.hostedUrl,
+        testMode: data.testMode === true,
         clientSecret: data.clientSecret,
       });
       setPhase("paying");
@@ -284,6 +286,7 @@ function CheckoutInner() {
               ordCode={intent.ordCode}
               qrImageUrl={intent.qrImageUrl}
               hostedUrl={intent.hostedUrl}
+              testMode={intent.testMode}
               total={intent.total}
               apiUrl={apiUrl}
               onPaid={handlePaid}
