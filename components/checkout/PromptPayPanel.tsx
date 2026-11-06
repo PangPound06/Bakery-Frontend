@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { pollPaymentStatus } from "@/lib/paymentStatus";
 
 /**
  * PromptPayPanel — แสดง QR ที่ Stripe ออกให้ ในหน้าเว็บของเราเอง
@@ -71,33 +72,21 @@ export default function PromptPayPanel({
 
   // ─── ถามสถานะซ้ำๆ ───
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
     const poll = async () => {
       if (stopped.current) return;
 
       try {
-        const res = await fetch(`${apiUrl}/api/checkout/status/${orderId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          if (data.paymentStatus === "paid") {
-            stopped.current = true;
-            onPaid();
-            return;
-          }
-          if (
-            data.paymentStatus === "failed" ||
-            data.paymentStatus === "expired"
-          ) {
-            stopped.current = true;
-            setFailed(
-              "การชำระเงินไม่สำเร็จหรือหมดเวลาแล้ว กรุณาเริ่มใหม่อีกครั้ง",
-            );
-            return;
-          }
+        const { state } = await pollPaymentStatus(orderId);
+        if (state === "paid") {
+          stopped.current = true;
+          onPaid();
+          return;
+        }
+        // QR หมดอายุ / จ่ายไม่สำเร็จ → backend ลบรอบนี้ทิ้งแล้ว
+        if (state === "ended") {
+          stopped.current = true;
+          setFailed("การชำระเงินไม่สำเร็จหรือหมดเวลาแล้ว กรุณาเริ่มใหม่อีกครั้ง");
+          return;
         }
       } catch {
         /* network สะดุด — ลองใหม่รอบหน้า */

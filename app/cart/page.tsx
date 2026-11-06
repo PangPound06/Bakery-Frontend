@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import { cartUrl } from "@/lib/cart";
 
 interface CartItem {
   id: number;
@@ -30,8 +31,6 @@ const formatPrice = (price: number) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/cart`;
 
 const getToken = () => {
   if (typeof window !== "undefined") return localStorage.getItem("token");
@@ -63,7 +62,8 @@ export default function CartPage() {
       return;
     }
     try {
-      const response = await fetch(API_URL, {
+      // ตะกร้าของโหมดปัจจุบัน (ออนไลน์ / ทานในร้าน) — สองใบไม่ปนกัน
+      const response = await fetch(cartUrl(), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.status === 401) {
@@ -85,7 +85,7 @@ export default function CartPage() {
     if (!token) return;
     setUpdating(cartId);
     try {
-      const response = await fetch(`${API_URL}/${cartId}`, {
+      const response = await fetch(cartUrl(`/${cartId}`), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +116,7 @@ export default function CartPage() {
     });
     if (!result.isConfirmed) return;
     try {
-      const response = await fetch(`${API_URL}/${cartId}`, {
+      const response = await fetch(cartUrl(`/${cartId}`), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -141,7 +141,7 @@ export default function CartPage() {
     });
     if (!result.isConfirmed) return;
     try {
-      const response = await fetch(`${API_URL}/clear`, {
+      const response = await fetch(cartUrl("/clear"), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -151,75 +151,49 @@ export default function CartPage() {
     }
   };
 
-  // ✅ สั่งในร้าน — ส่ง order เข้าครัวเลย ไม่ต้องชำระเงิน
+  /**
+   * สั่งในร้าน — ส่งตะกร้าทานในร้านเข้าครัว (จ่ายเงินตอนเรียกเก็บบิล)
+   *
+   * ส่งแค่เลขโต๊ะ — backend คิดราคาจากตะกร้าทานในร้านเอง แล้วล้างตะกร้าให้
+   */
   const submitDineInOrder = async () => {
     if (!cart || cart.items.length === 0 || submitting) return;
     const token = getToken();
     if (!token) return;
 
     setSubmitting(true);
-
     try {
-      const items = cart.items.map((item) => ({
-        productId: item.productId,
-        productName: item.productName,
-        price: item.price,
-        quantity: item.quantity,
-        selectedOption: item.selectedOption || null,
-        image: item.image || null,
-      }));
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dinein/orders`,
-        {
-          // ← เปลี่ยน URL
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            tableNo: tableNo, // ← เปลี่ยนจาก note เป็น tableNo
-            subtotal: cart.totalAmount,
-            total: cart.totalAmount,
-            items,
-          }),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dinein/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ tableNo }),
+      });
+      const data = await res.json().catch(() => ({}));
 
-      const data = await res.json();
-
-      if (data.success) {
-        // ล้างตะกร้าหลังสั่งสำเร็จ
-        await fetch(`${API_URL}/clear`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        await Swal.fire({
-          title: "ส่งรายการเข้าครัวแล้ว! 🍳",
-          html: `
-            <div style="text-align:center">
-              <p style="color:#78716C;margin-bottom:8px">โต๊ะ ${tableNo} · ${cart.totalItems} รายการ · ฿${formatPrice(cart.totalAmount)}</p>
-              <p style="color:#16A34A;font-weight:600">ร้านกำลังทำอาหารให้คุณ</p>
-            </div>
-          `,
-          icon: "success",
-          confirmButtonColor: "#f97316",
-          confirmButtonText: "สั่งเพิ่ม",
-          timer: 3000,
-          showConfirmButton: true,
-        });
-
-        fetchCart(); // refresh ตะกร้า (จะว่างเปล่า)
-        router.push("/"); // กลับไปหน้าเมนูเพื่อสั่งเพิ่ม
-      } else {
-        Swal.fire(
-          "เกิดข้อผิดพลาด",
-          data.message || "ไม่สามารถสั่งได้",
-          "error",
-        );
+      if (!res.ok || !data.success) {
+        Swal.fire("เกิดข้อผิดพลาด", data.message || "ไม่สามารถสั่งได้", "error");
+        fetchCart(); // ราคา/stock อาจเปลี่ยน — โชว์ตะกร้าล่าสุด
+        return;
       }
+
+      await Swal.fire({
+        title: "ส่งรายการเข้าครัวแล้ว! 🍳",
+        html: `
+          <div style="text-align:center">
+            <p style="color:#78716C;margin-bottom:8px">โต๊ะ ${tableNo} · ${cart.totalItems} รายการ · ฿${formatPrice(data.total ?? cart.totalAmount)}</p>
+            <p style="color:#16A34A;font-weight:600">ร้านกำลังทำอาหารให้คุณ</p>
+          </div>
+        `,
+        icon: "success",
+        confirmButtonColor: "#f97316",
+        confirmButtonText: "สั่งเพิ่ม",
+        timer: 3000,
+        showConfirmButton: true,
+      });
+      router.push("/"); // กลับไปหน้าเมนูเพื่อสั่งเพิ่ม
     } catch (error) {
       console.error("Error submitting dine-in order:", error);
       Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "error");

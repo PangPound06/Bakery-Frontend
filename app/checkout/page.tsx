@@ -4,9 +4,8 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { useStoreStatus } from "@/lib/useStoreStatus";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import PromptPayPanel from "@/components/checkout/PromptPayPanel";
-import CardPaymentPanel from "@/components/checkout/CardPaymentPanel";
-import TransferPaymentPanel from "@/components/checkout/TransferPaymentPanel";
+import PaymentPanel from "@/components/checkout/PaymentPanel";
+import { toActiveIntent, type ActiveIntent, type CheckoutMethod } from "@/lib/paymentIntent";
 
 /**
  * หน้าชำระเงิน — ทุกอย่างจบในเว็บเรา ไม่ redirect ออกไปหา Stripe
@@ -26,7 +25,7 @@ import TransferPaymentPanel from "@/components/checkout/TransferPaymentPanel";
  * ยอดที่เรียกเก็บจริงมาจาก PaymentIntent ที่ backend สร้าง
  */
 
-type PaymentMethod = "promptpay" | "card" | "transfer";
+type PaymentMethod = CheckoutMethod;
 type Phase = "form" | "paying";
 
 interface SummaryItem {
@@ -44,21 +43,6 @@ interface Summary {
   subtotal: number;
   shipping: number;
   total: number;
-}
-
-interface ActiveIntent {
-  method: PaymentMethod;
-  orderId: number;
-  ordCode: string;
-  total: number;
-  qrImageUrl?: string;
-  hostedUrl?: string;
-  testMode?: boolean;
-  clientSecret?: string;
-  /** เฉพาะ transfer */
-  promptPayId?: string;
-  accountName?: string;
-  expiresInSeconds?: number;
 }
 
 const formatPrice = (price: number) =>
@@ -246,19 +230,7 @@ function CheckoutInner() {
 
       localStorage.setItem("lastOrderId", String(data.orderId));
 
-      setIntent({
-        method,
-        orderId: data.orderId,
-        ordCode: data.ordCode ?? "",
-        total: data.total ?? summary?.total ?? 0,
-        qrImageUrl: data.qrImageUrl,
-        hostedUrl: data.hostedUrl,
-        testMode: data.testMode === true,
-        clientSecret: data.clientSecret,
-        promptPayId: data.promptPayId,
-        accountName: data.accountName,
-        expiresInSeconds: data.expiresInSeconds,
-      });
+      setIntent(toActiveIntent(method, data, summary?.total ?? 0));
       setPhase("paying");
       setPending(null);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -294,52 +266,7 @@ function CheckoutInner() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
         <div className="max-w-lg mx-auto px-4">
-          {intent.method === "transfer" && intent.qrImageUrl ? (
-            <TransferPaymentPanel
-              orderId={intent.orderId}
-              ordCode={intent.ordCode}
-              qrImageUrl={intent.qrImageUrl}
-              total={intent.total}
-              promptPayId={intent.promptPayId}
-              accountName={intent.accountName}
-              expiresInSeconds={intent.expiresInSeconds ?? 30 * 60}
-              apiUrl={apiUrl}
-              onSubmitted={handlePaid}
-              onCancel={handleCancelPayment}
-            />
-          ) : intent.method === "promptpay" && intent.qrImageUrl ? (
-            <PromptPayPanel
-              orderId={intent.orderId}
-              ordCode={intent.ordCode}
-              qrImageUrl={intent.qrImageUrl}
-              hostedUrl={intent.hostedUrl}
-              testMode={intent.testMode}
-              total={intent.total}
-              apiUrl={apiUrl}
-              onPaid={handlePaid}
-              onCancel={handleCancelPayment}
-            />
-          ) : intent.clientSecret ? (
-            <CardPaymentPanel
-              orderId={intent.orderId}
-              ordCode={intent.ordCode}
-              clientSecret={intent.clientSecret}
-              total={intent.total}
-              apiUrl={apiUrl}
-              onPaid={handlePaid}
-              onCancel={handleCancelPayment}
-            />
-          ) : (
-            <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-              <p className="text-red-600">ข้อมูลการชำระเงินไม่ครบ</p>
-              <button
-                onClick={handleCancelPayment}
-                className="mt-4 text-amber-600 font-medium"
-              >
-                ← กลับไปเริ่มใหม่
-              </button>
-            </div>
-          )}
+          <PaymentPanel intent={intent} onDone={handlePaid} onCancel={handleCancelPayment} />
         </div>
       </div>
     );

@@ -3,6 +3,7 @@ import {
   isPaid,
   isPaymentLocked,
   isPromptPayTransfer,
+  PAYMENT_METHOD,
   PAYMENT_STATUS,
 } from "@/lib/payment";
 import type { Badge, DateRangeKey, Order, OrderAction, OrderItem, ProductOption } from "./types";
@@ -134,17 +135,35 @@ export const showsAddItemSection = (order: Order) =>
 const RED = "bg-red-100 hover:bg-red-200 text-red-600";
 const GREEN = "bg-green-500 hover:bg-green-600 text-white";
 
+/** โอนพร้อมเพย์ที่แอดมินยังไม่ได้ตัดสิน (ลูกค้าแจ้งโอนแล้ว หรือโอนแล้วลืมแจ้ง) */
+const isUndecidedTransfer = (order: Order) =>
+  isPromptPayTransfer(order.paymentMethod) &&
+  (isAwaitingVerification(order.paymentStatus) || order.paymentStatus === PAYMENT_STATUS.AWAITING);
+
+const TRANSFER_ACTIONS: OrderAction[] = [
+  { kind: "confirm-transfer", label: "✅ ยืนยันรับเงิน", color: GREEN },
+  { kind: "reject-transfer", label: "❌ ไม่พบยอดโอน", color: RED },
+];
+
+/** ลูกค้ากำลังจ่ายผ่าน Stripe (QR / บัตร) — ระบบยืนยันเองเมื่อได้เงิน แอดมินห้ามกดแทน */
+const isAwaitingStripe = (order: Order) =>
+  order.paymentStatus === PAYMENT_STATUS.AWAITING &&
+  (order.paymentMethod === PAYMENT_METHOD.STRIPE_PROMPTPAY || order.paymentMethod === PAYMENT_METHOD.CARD);
+
 /**
  * ปุ่มที่แอดมินกดได้ต่อจากสถานะปัจจุบัน
  *
  * order ออนไลน์ต้องได้เงินก่อนถึงจะยืนยัน/เตรียมของได้ (backend กันไว้ด้วย)
- * โอนพร้อมเพย์ยังไม่ได้ยืนยันยอด → ปุ่มยืนยันรับเงิน / ไม่พบยอดโอน แทนปุ่มยกเลิก
+ * โอนพร้อมเพย์ยังไม่ได้ยืนยันยอด → ปุ่มยืนยันรับเงิน / ไม่พบยอดโอน แทนปุ่มยกเลิก (ทั้งออนไลน์และบิลในร้าน)
  */
 export const nextActionsFor = (order: Order): OrderAction[] => {
   if (order.orderType === "pos") return [];
 
-  // dine-in มีแค่ปุ่มยืนยันชำระเงิน (รับเงินสดที่เคาน์เตอร์)
   if (order.orderType === "dine-in") {
+    if (isUndecidedTransfer(order)) return TRANSFER_ACTIONS;
+    // ลูกค้ากำลังสแกน QR / กรอกบัตรอยู่ — กดยืนยันเองจะได้เงินซ้ำ
+    if (isAwaitingStripe(order)) return [];
+    // จ่ายแล้วผ่านระบบ หรือรับเงินสดที่เคาน์เตอร์ → ปิดบิล
     return order.orderStatus === "pending" || order.orderStatus === "confirmed"
       ? [
           {
@@ -160,16 +179,7 @@ export const nextActionsFor = (order: Order): OrderAction[] => {
 
   switch (order.orderStatus) {
     case "pending": {
-      const transferUndecided =
-        isPromptPayTransfer(order.paymentMethod) &&
-        (isAwaitingVerification(order.paymentStatus) ||
-          order.paymentStatus === PAYMENT_STATUS.AWAITING);
-      if (transferUndecided) {
-        return [
-          { kind: "confirm-transfer", label: "✅ ยืนยันรับเงิน", color: GREEN },
-          { kind: "reject-transfer", label: "❌ ไม่พบยอดโอน", color: RED },
-        ];
-      }
+      if (isUndecidedTransfer(order)) return TRANSFER_ACTIONS;
       const cancel: OrderAction = { kind: "cancel", label: "❌ ยกเลิก", color: RED };
       return isPaid(order.paymentStatus)
         ? [

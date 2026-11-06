@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import type { CheckoutMethod } from "@/lib/paymentIntent";
 
 interface OrderItem {
   id: number;
@@ -67,6 +68,22 @@ function formatDate(dateStr: string) {
   });
 }
 
+/** วิธีจ่ายบิล — สามแบบแรกจ่ายเองผ่านระบบ (เหมือนหน้า checkout ออนไลน์) ส่วน staff เรียกพนักงานมาเก็บเงิน */
+type BillMethod = CheckoutMethod | "staff";
+
+const BILL_METHODS: { value: BillMethod; label: string; hint: string; icon: string; tint: string }[] = [
+  { value: "promptpay", label: "QR PromptPay", hint: "สแกนจ่าย ระบบยืนยันอัตโนมัติ", icon: "📱", tint: "bg-blue-100" },
+  { value: "card", label: "บัตรเครดิต / เดบิต", hint: "ชำระผ่าน Stripe", icon: "💳", tint: "bg-purple-100" },
+  {
+    value: "transfer",
+    label: "โอนพร้อมเพย์ (แอดมินยืนยัน)",
+    hint: "โอนเข้าบัญชีร้าน แนบสลิป แล้วรอร้านตรวจยอด",
+    icon: "🏦",
+    tint: "bg-emerald-100",
+  },
+  { value: "staff", label: "ชำระเงินกับพนักงาน", hint: "พนักงานมาเก็บเงินที่โต๊ะ", icon: "🙋", tint: "bg-amber-100" },
+];
+
 const formatPrice = (price: number) =>
   price.toLocaleString("th-TH", {
     minimumFractionDigits: 2,
@@ -78,10 +95,7 @@ export default function BillPage() {
   const [loading, setLoading] = useState(true);
   const [tableNo, setTableNo] = useState("");
   const [showPayment, setShowPayment] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"qr" | "staff" | null>(
-    null,
-  );
-  const grandTotalRef = useRef(0);
+  const [paymentMethod, setPaymentMethod] = useState<BillMethod | null>(null);
   const router = useRouter();
 
   const getToken = () =>
@@ -150,7 +164,6 @@ export default function BillPage() {
       : orders
           .filter((o) => o.orderStatus !== "cancelled")
           .reduce((sum, o) => sum + o.total, 0);
-  grandTotalRef.current = grandTotal;
 
   const totalItems = orders.reduce(
     (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
@@ -376,7 +389,7 @@ export default function BillPage() {
 
       {showPayment && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-base font-bold text-gray-900">
                 วิธีการชำระเงิน
@@ -408,66 +421,29 @@ export default function BillPage() {
                 </p>
               </div>
               <div className="space-y-3 mb-6">
-                <button
-                  onClick={() => setPaymentMethod("qr")}
-                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl border-2 transition-all ${paymentMethod === "qr" ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-orange-200"}`}
-                >
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {BILL_METHODS.map((m) => {
+                  const selected = paymentMethod === m.value;
+                  return (
+                    <button
+                      key={m.value}
+                      onClick={() => setPaymentMethod(m.value)}
+                      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border-2 text-left transition-all ${selected ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-orange-200"}`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="font-semibold text-gray-800">
-                    QR Promptpay
-                  </span>
-                  <div
-                    className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "qr" ? "border-orange-400 bg-orange-400" : "border-gray-300"}`}
-                  >
-                    {paymentMethod === "qr" && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setPaymentMethod("staff")}
-                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl border-2 transition-all ${paymentMethod === "staff" ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-orange-200"}`}
-                >
-                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-amber-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="font-semibold text-gray-800">
-                    ชำระเงินกับพนักงาน
-                  </span>
-                  <div
-                    className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "staff" ? "border-orange-400 bg-orange-400" : "border-gray-300"}`}
-                  >
-                    {paymentMethod === "staff" && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                </button>
+                      <div className={`w-10 h-10 ${m.tint} rounded-xl flex items-center justify-center flex-shrink-0 text-xl`}>
+                        {m.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-800">{m.label}</p>
+                        <p className="text-xs text-gray-500">{m.hint}</p>
+                      </div>
+                      <div
+                        className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selected ? "border-orange-400 bg-orange-400" : "border-gray-300"}`}
+                      >
+                        {selected && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
               <button
                 disabled={!paymentMethod}
@@ -484,20 +460,20 @@ export default function BillPage() {
                     cancelButtonText: "ยกเลิก",
                     customClass: { icon: "border-0 bg-transparent" },
                   });
-                  if (result.isConfirmed) {
-                    setShowPayment(false);
-                    if (paymentMethod === "qr") {
-                      window.location.href = `/bill/qr-code?total=${grandTotalRef.current}`;
-                    } else {
-                      await Swal.fire({
-                        icon: "success",
-                        title: "แจ้งพนักงานแล้ว",
-                        text: "พนักงานจะมาเก็บเงินที่โต๊ะของท่านในไม่ช้า",
-                        confirmButtonColor: "#f97316",
-                        confirmButtonText: "รับทราบ",
-                      });
-                    }
+                  if (!result.isConfirmed) return;
+                  setShowPayment(false);
+                  if (paymentMethod === "staff") {
+                    await Swal.fire({
+                      icon: "success",
+                      title: "แจ้งพนักงานแล้ว",
+                      text: "พนักงานจะมาเก็บเงินที่โต๊ะของท่านในไม่ช้า",
+                      confirmButtonColor: "#f97316",
+                      confirmButtonText: "รับทราบ",
+                    });
+                    return;
                   }
+                  // ยอดเงินคิดที่ server — หน้าจ่ายเงินไม่รับตัวเลขจากหน้านี้
+                  router.push(`/bill/pay?method=${paymentMethod}`);
                 }}
                 className={`w-full py-4 rounded-2xl font-bold text-base transition-all ${
                   paymentMethod

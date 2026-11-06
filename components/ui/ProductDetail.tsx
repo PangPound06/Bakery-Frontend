@@ -5,6 +5,7 @@ import { useStoreStatus } from "@/lib/useStoreStatus";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { cartUrl } from "@/lib/cart";
 
 interface ProductOption {
   name: string;
@@ -185,12 +186,9 @@ export default function ProductDetail({
 
     // ✅ เช็ค fresh product
     if (fresh) {
-      const cartRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const cartRes = await fetch(cartUrl(), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!cartRes.ok) {
         setError("ไม่สามารถเช็คตะกร้าได้");
         return;
@@ -225,7 +223,7 @@ export default function ProductDetail({
           : null;
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/add`,
+        cartUrl("/add"),
         {
           method: "POST",
           headers: {
