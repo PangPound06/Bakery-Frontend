@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { cartUrl } from "@/lib/cart";
+import { DINING_SESSION_CHANGED, formatDuration, useBuffetTimer } from "@/lib/diningSession";
 
 interface CartItem {
   id: number;
@@ -43,6 +44,7 @@ export default function CartPage() {
   const [updating, setUpdating] = useState<number | null>(null);
   const [orderMode, setOrderMode] = useState<string>("online");
   const [tableNo, setTableNo] = useState<string>("");
+  const [dineType, setDineType] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
@@ -169,15 +171,19 @@ export default function CartPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ tableNo }),
+        // ประเภทการทานใช้เฉพาะออเดอร์แรก — backend ล็อกตามมื้อและตัดสินเรื่องเวลาบุฟเฟต์เอง
+        body: JSON.stringify({ tableNo, dineType: dineType || "alacarte" }),
       });
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.success) {
         Swal.fire("เกิดข้อผิดพลาด", data.message || "ไม่สามารถสั่งได้", "error");
         fetchCart(); // ราคา/stock อาจเปลี่ยน — โชว์ตะกร้าล่าสุด
+        window.dispatchEvent(new Event(DINING_SESSION_CHANGED));
         return;
       }
+      // ออเดอร์แรกของบุฟเฟต์ = เริ่มนับเวลา
+      window.dispatchEvent(new Event(DINING_SESSION_CHANGED));
 
       await Swal.fire({
         title: "ส่งรายการเข้าครัวแล้ว! 🍳",
@@ -209,9 +215,12 @@ export default function CartPage() {
     const table = localStorage.getItem("tableNo") || "";
     setOrderMode(mode);
     setTableNo(table);
+    setDineType(localStorage.getItem("dineType") || "");
   }, [fetchCart]);
 
   const isDineIn = orderMode === "dinein";
+  const buffet = useBuffetTimer(isDineIn && dineType === "buffet", tableNo);
+  const buffetOver = buffet?.expired ?? false;
 
   if (loading)
     return (
@@ -492,14 +501,28 @@ export default function CartPage() {
                       💰 ชำระเงินที่โต๊ะหลังทานเสร็จ
                     </p>
 
+                    {buffet && (
+                      <p
+                        className={`text-xs mb-3 text-center font-medium ${buffetOver ? "text-red-600" : "text-amber-700"}`}
+                      >
+                        {buffet.notStarted
+                          ? `🍱 บุฟเฟต์สั่งได้ ${buffet.totalMinutes} นาที เริ่มนับเมื่อสั่งรอบแรก`
+                          : buffetOver
+                            ? `หมดเวลาสั่งบุฟเฟต์ ${buffet.totalMinutes} นาทีแล้ว — เรียกเก็บเงินได้ที่หน้าออเดอร์`
+                            : `⏱ เหลือเวลาสั่งบุฟเฟต์ ${formatDuration(buffet.secondsLeft)}`}
+                      </p>
+                    )}
+
                     <button
                       onClick={submitDineInOrder}
-                      disabled={submitting}
+                      disabled={submitting || buffetOver}
                       className={`w-full py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold text-sm sm:text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 ${
-                        submitting ? "opacity-60 cursor-not-allowed" : ""
+                        submitting || buffetOver ? "opacity-60 cursor-not-allowed" : ""
                       }`}
                     >
-                      {submitting ? (
+                      {buffetOver ? (
+                        <>⏱ หมดเวลาบุฟเฟต์แล้ว</>
+                      ) : submitting ? (
                         <>
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           กำลังส่ง...

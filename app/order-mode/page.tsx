@@ -470,6 +470,7 @@ export default function OrderModePage() {
                   <div>
                     <p className="font-bold text-stone-800">Buffet</p>
                     <p className="text-sm text-stone-500">เลือกราคาบุฟเฟ่ต์</p>
+                    <p className="text-xs text-amber-700 mt-0.5">⏱ สั่งได้ 100 นาที นับจากออเดอร์แรก</p>
                   </div>
                 </div>
 

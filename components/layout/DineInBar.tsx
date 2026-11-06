@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { formatDuration, useBuffetTimer } from "@/lib/diningSession";
 
 export default function DineInBar() {
   const [isDineIn, setIsDineIn] = useState(false);
   const [tableNo, setTableNo] = useState("");
+  const [isBuffet, setIsBuffet] = useState(false);
   const pathname = usePathname();
+  const buffet = useBuffetTimer(isDineIn && isBuffet, tableNo);
 
   useEffect(() => {
     const check = () => {
@@ -15,6 +18,7 @@ export default function DineInBar() {
       const table = localStorage.getItem("tableNo") || "";
       setIsDineIn(mode === "dinein");
       setTableNo(table);
+      setIsBuffet(localStorage.getItem("dineType") === "buffet");
     };
     check();
     window.addEventListener("storage", check);
@@ -35,6 +39,25 @@ export default function DineInBar() {
       {tableNo && (
         <span className="bg-amber-900 text-amber-100 text-[11px] md:text-xs font-medium px-3 py-1 rounded-full shadow">
           🪑 โต๊ะ {tableNo}
+        </span>
+      )}
+
+      {/* เวลาบุฟเฟต์ที่เหลือ (backend ห้ามสั่งเมื่อหมดเวลา — ตรงนี้แค่แสดงผล) */}
+      {buffet && (
+        <span
+          className={`text-[11px] md:text-xs font-semibold px-3 py-1 rounded-full shadow ${
+            buffet.expired
+              ? "bg-red-600 text-white"
+              : buffet.secondsLeft <= 10 * 60 && !buffet.notStarted
+                ? "bg-orange-500 text-white"
+                : "bg-white text-amber-800 border border-amber-200"
+          }`}
+        >
+          {buffet.notStarted
+            ? `⏱ บุฟเฟต์ ${buffet.totalMinutes} นาที เริ่มนับเมื่อสั่งรอบแรก`
+            : buffet.expired
+              ? "⏱ หมดเวลาบุฟเฟต์แล้ว"
+              : `⏱ เหลือเวลาสั่ง ${formatDuration(buffet.secondsLeft)}`}
         </span>
       )}
 
