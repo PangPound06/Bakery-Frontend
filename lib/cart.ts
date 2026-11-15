@@ -10,9 +10,16 @@ export type CartMode = "online" | "dinein";
 export const currentCartMode = (): CartMode => (getOrderMode() === "dinein" ? "dinein" : "online");
 
 /**
- * URL ของ /api/cart ที่ผูกกับตะกร้าของโหมดปัจจุบัน
+ * URL ของ /api/cart ของตะกร้าใบหนึ่ง
  *
  * @param path ต่อท้าย /api/cart เช่น "/add", "/clear" หรือ "" (ดูตะกร้า)
+ * @param mode ตะกร้าใบไหน — ไม่ระบุ = ตามโหมดที่ลูกค้าเลือกอยู่
  */
-export const cartUrl = (path = "") =>
-  `${process.env.NEXT_PUBLIC_API_URL}/api/cart${path}?mode=${currentCartMode()}`;
+export const cartUrl = (path = "", mode: CartMode = currentCartMode()) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/api/cart${path}?mode=${mode}`;
+
+/** หน้าตะกร้าของแต่ละโหมด — สั่งกลับบ้านกับทานในร้านอยู่คนละหน้า */
+export const CART_PAGE: Record<CartMode, string> = {
+  online: "/cart",
+  dinein: "/dine-in/cart",
+};

@@ -13,6 +13,8 @@ import UserMenu from "@/components/ui/UserMenu";
 import Swal from "sweetalert2";
 import type { ApiProduct } from "@/types/product";
 import { authHeaders } from "@/lib/auth";
+import { CART_PAGE } from "@/lib/cart";
+import { useOrderMode } from "@/lib/useOrderMode";
 
 interface Category {
   id: number;
@@ -106,6 +108,8 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  // ตะกร้าสั่งกลับบ้านกับทานในร้านอยู่คนละหน้า
+  const cartHref = CART_PAGE[useOrderMode()];
 
   // ✅ Dynamic categories
   const [categories, setCategories] = useState<Category[]>([]);
@@ -125,7 +129,7 @@ export default function Header() {
       label: cat.name,
       icon: cat.icon,
     })),
-    { href: "/cart", label: "Cart", icon: "🛒" },
+    { href: cartHref, label: "Cart", icon: "🛒" },
   ];
 
   // ✅ เมนูบัญชีผู้ใช้ (แสดงเมื่อกด hamburger บนมือถือ) — ตรงกับ UserMenu
@@ -378,7 +382,7 @@ export default function Header() {
   const onMenuPage = pathname?.startsWith("/menu") ?? false;
   // หน้า Menu/Cart/Search (ปลายทาง Bottom Nav) → Header เหลือแค่ hamburger
   const minimalHeader =
-    onMenuPage || (pathname?.startsWith("/cart") ?? false) || showSearch;
+    onMenuPage || (pathname?.startsWith(cartHref) ?? false) || showSearch;
   const hasAnyResults = searchResults.length > 0 || pageResults.length > 0;
 
   const mounted = useIsClient();
@@ -613,9 +617,9 @@ export default function Header() {
               {/* ✅ ตะกร้าสินค้า — มือถือ/แท็บเล็ต อยู่ข้างปุ่มค้นหา */}
               {!isAdmin && (
                 <Link
-                  href="/cart"
+                  href={cartHref}
                   aria-label="ตะกร้าสินค้า"
-                  className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-lg transition-colors hover:bg-amber-200/70 hover:text-amber-900 ${isActive("/cart") ? "bg-amber-500 text-white" : ""}`}
+                  className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-lg transition-colors hover:bg-amber-200/70 hover:text-amber-900 ${isActive(cartHref) ? "bg-amber-500 text-white" : ""}`}
                 >
                   <svg
                     className="w-6 h-6"
@@ -851,11 +855,11 @@ export default function Header() {
 
             {/* Cart */}
             <Link
-              href="/cart"
+              href={cartHref}
               aria-label="Cart"
-              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${isActive("/cart") ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${isActive(cartHref) ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
             >
-              {isActive("/cart") && (
+              {isActive(cartHref) && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
               )}
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>

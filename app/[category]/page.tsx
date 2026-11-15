@@ -96,7 +96,7 @@ const RESERVED_PATHS = [
   "profile",
   "register",
   "order-mode",
-  "qr-code",
+  "dine-in",
 ];
 
 export default function CategoryPage() {
