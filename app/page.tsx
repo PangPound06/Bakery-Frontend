@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link"; // ใช้ Link สำหรับ Next.js
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ButtonLink, cx, Spinner } from "@/components/ds";
 import PopularCarousel from "@/components/ui/PopularCarousel";
-import type { ApiProduct } from "@/types/product";
+import { productHref } from "@/components/ui/ProductCard";
+import { formatBaht } from "@/lib/dineIn";
+import type { ApiProduct, Category } from "@/types/product";
 
-// ━━━ TYPES ━━━
 interface Product {
   id: number;
   name: string;
@@ -19,403 +21,300 @@ interface Product {
   options?: string | null;
 }
 
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  icon: string;
-}
-
-// Hero images per category slug (fallback for new categories)
-const HERO_IMAGES: Record<string, string> = {
-  // "/images/hero/category.jpg", สำหรับรูปภาพที่มาจากเครื่อง อยยู่ใน public/images/hero/
+/** รูปประจำหมวด (public/images/hero/) — หมวดใหม่ที่ยังไม่มีรูปใช้พื้นสีแทน */
+const CATEGORY_IMAGES: Record<string, string> = {
   bakery: "/images/hero/Bakery.jpg",
   cake: "/images/hero/Cake.jpg",
   drink: "/images/hero/Drink.jpg",
   food: "/images/hero/Food.jpg",
   appetizer: "/images/hero/Appetizer.jpg",
-  // ใส่เพิ่มตรงนี้ได้เลยถ้ามีหมวดใหม่
 };
 
-// ━━━ COMPONENTS ━━━
-function BentoGrid({ categories }: { categories: Category[] }) {
-  const FALLBACK =
-    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80";
-  if (categories.length === 0) return null;
-  return (
-    <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory lg:grid lg:grid-cols-5 lg:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {categories.map((cat) => (
-        <Link
-          key={cat.id}
-          href={`/${cat.slug}`}
-          className="group snap-start shrink-0 w-[68%] sm:w-[40%] md:w-[30%] lg:w-auto"
-        >
-          <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-lg ring-1 ring-black/5 transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:shadow-2xl">
-            <img
-              src={HERO_IMAGES[cat.slug] || FALLBACK}
-              alt={cat.name}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-              <h3 className="font-bold text-white text-xl sm:text-2xl flex items-center gap-2 leading-tight">
-                <span>{cat.icon}</span>
-                <span className="truncate">{cat.name}</span>
-              </h3>
-              <div className="mt-1.5 flex items-center gap-1.5 text-white/80 group-hover:text-white text-xs sm:text-sm font-medium transition-colors">
-                ดูทั้งหมด
-                <svg
-                  className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-}
+/** เมนูยอดนิยมที่แสดงสูงสุด */
+const POPULAR_LIMIT = 10;
+/** เมนูแนะนำในกล่องใหญ่ (สลับดูได้) */
+const FEATURED_LIMIT = 3;
 
-const formatProductData = (data: ApiProduct[]): Product[] => {
-  return data.map((item) => ({
-    id: item.id,
-    name: item.name,
-    type: item.type || "Other",
-    category: item.category,
-    price: item.price,
-    img: item.image,
-    description: item.description,
-    stockQuantity: item.stockQuantity,
-    isAvailable: item.isAvailable,
-    options: item.options ?? null,
-  }));
-};
+const toProduct = (item: ApiProduct): Product => ({
+  id: item.id,
+  name: item.name,
+  type: item.type || "Other",
+  category: item.category,
+  price: item.price,
+  img: item.image,
+  description: item.description,
+  stockQuantity: item.stockQuantity,
+  isAvailable: item.isAvailable,
+  options: item.options ?? null,
+});
 
+const inStock = (p: Product) => p.isAvailable && (p.stockQuantity > 0 || p.stockQuantity === 9999);
+
+/**
+ * หน้าแรก — หัวเรื่อง + ปุ่มเริ่มสั่ง, กล่องลัด (เมนูแนะนำ จองโต๊ะ สาขา ทานที่ร้าน),
+ * หมวดหมู่ และเมนูขายดีจากยอดขายจริง (GET /api/orders/stats/top-products)
+ */
 export default function HomePage() {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [visibleSections, setVisibleSections] = useState<Set<string>>(
-    new Set(),
-  );
-  const [categoryList, setCategoryList] = useState<Category[]>([]);
-  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
-  const [heroOffset, setHeroOffset] = useState(0);
-
-  // parallax: เลื่อนภาพ hero ช้ากว่าการ scroll
-  useEffect(() => {
-    const onScroll = () =>
-      setHeroOffset(Math.min(window.scrollY * 0.12, 110));
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
-
-  // ━━━ FETCH LOGIC ━━━
-  const fetchData = useCallback(async () => {
-    try {
-      const [prodRes, catRes, topRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/active`),
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/top-products?days=all`,
-        ),
-      ]);
-
-      let fmt: Product[] = [];
-      if (prodRes.ok) {
-        const data = await prodRes.json();
-        fmt = formatProductData(data);
-        setAllProducts(fmt);
-      }
-      if (catRes.ok) {
-        setCategoryList(await catRes.json());
-      }
-      // เมนูยอดนิยม: เอาอันดับจาก top-products มา match สินค้าจริง (เอารูป/ราคา)
-      if (topRes.ok && fmt.length > 0) {
-        const topData = await topRes.json();
-        const tops: { productName: string }[] = topData.topProducts || [];
-        const seen = new Set<string>();
-        const pop: Product[] = [];
-        for (const t of tops) {
-          const m = fmt.find((p) => p.name === t.productName);
-          if (
-            m &&
-            !seen.has(m.name) &&
-            m.isAvailable &&
-            (m.stockQuantity > 0 || m.stockQuantity === 9999)
-          ) {
-            seen.add(m.name);
-            pop.push(m);
-          }
-          if (pop.length >= 10) break;
-        }
-        setPopularProducts(pop);
-      }
-    } catch (e) {
-      console.error("Fetch error:", e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // ━━━ SCROLL OBSERVER ━━━
-  useEffect(() => {
-    if (loading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisibleSections((prev) => new Set(prev).add(entry.target.id));
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
-    );
-
-    const currentRefs = sectionRefs.current;
-    Object.values(currentRefs).forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => observer.disconnect();
-  }, [loading]);
-
-  const setRef = (id: string) => (el: HTMLElement | null) => {
-    sectionRefs.current[id] = el;
-  };
-
-  const visible = (id: string) => visibleSections.has(id);
+  const { products, categories, popular, loading } = useHomeData();
+  const [featuredIndex, setFeaturedIndex] = useState(0);
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-full animate-spin"
-            style={{
-              borderWidth: 3,
-              borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
-            }}
-          ></div>
-          <p className="text-amber-700 text-sm font-medium">
-            กำลังโหลดข้อมูล...
-          </p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-cream text-brick">
+        <Spinner className="size-10" />
       </div>
     );
 
+  const featuredList = (popular.length > 0 ? popular : products.filter(inStock)).slice(0, FEATURED_LIMIT);
+  const featured = featuredList[Math.min(featuredIndex, featuredList.length - 1)];
+
   return (
-    <div
-      className="bg-amber-50 min-h-screen"
-      style={{ fontFamily: "var(--font-prompt), sans-serif" }}
-    >
-      {/* HERO SECTION */}
-      <section
-        id="hero"
-        ref={setRef("hero")}
-        className="relative h-[92vh] overflow-hidden"
-      >
-        {/* ภาพ hero — parallax (เลื่อนช้าตอน scroll) */}
-        <div
-          className="absolute left-0 right-0 -top-[20%] h-[140%]"
-          style={{
-            transform: `translateY(${heroOffset}px)`,
-            willChange: "transform",
-          }}
-        >
-          <img
-            src="https://www.orchardhotel.com.au/wp-content/uploads/2024/10/The-Orchard-Hotel-Chatswood-Restaurant-Bar-48.jpg"
-            alt="Bakery Hero"
-            className="w-full h-full object-cover"
-            style={{
-              transform: visible("hero") ? "scale(1)" : "scale(1.05)",
-              transition: "transform 8000ms ease-out",
-            }}
-          />
+    <div className="min-h-screen bg-cream font-body text-ink">
+      {/* ── หัวเรื่อง ── */}
+      <section className="mx-auto flex max-w-[1240px] flex-wrap items-end gap-10 px-4 pt-12 pb-10 sm:px-6 lg:pt-18 lg:pb-12">
+        <div className="min-w-0 flex-[999_1_560px]">
+          <h1 className="m-0 font-display text-[52px] leading-[1.1] font-bold tracking-tight sm:text-[88px]">
+            เนยแท้
+            <br />
+            หอมทั้งบ้าน
+          </h1>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-transparent to-[#faf8f5]" />
-
-        <div
-          className={`absolute inset-0 flex flex-col justify-end pb-16 sm:pb-24 px-5 sm:px-8 lg:px-16 transition-all duration-[1200ms] ease-out ${visible("hero") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-        >
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-3 mb-5">
-              <span className="block w-8 h-px bg-amber-200/70" />
-              <span className="text-amber-900 text-[11px] tracking-[0.4em] uppercase">
-                Est. 2026 · Bangkok
-              </span>
-            </div>
-            <h1 className="text-[clamp(2.5rem,8vw,6rem)] font-extralight text-amber-700/80 leading-[0.85] mb-4 sm:mb-6">
-              Pound
-              <br />
-              <span className="font-semibold">Bakery</span>
-            </h1>
-            <p className="text-amber-800/70 text-sm sm:text-base max-w-sm leading-relaxed mb-8 sm:mb-10">
-              อบสดใหม่ทุกวัน ด้วยส่วนผสมคัดสรร เพราะทุกคำควรเป็นความสุข
-            </p>
-            <div className="flex items-center gap-6">
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("bento")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="px-7 py-3 bg-amber-50 text-amber-900 text-sm tracking-wider rounded-full hover:bg-white transition-all duration-300 hover:scale-[1.03]"
-              >
-                สำรวจเมนู
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* INTRO STRIP */}
-      <section
-        id="intro"
-        ref={setRef("intro")}
-        className="py-10 sm:py-14 px-5 sm:px-8 lg:px-16 border-b border-amber-900/8"
-      >
-        <div
-          className={`max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 transition-all duration-700 ${visible("intro") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-        >
-          <p className="text-amber-900/50 text-sm sm:text-base text-center sm:text-left max-w-md">
-            เบเกอรี่ เครื่องดื่ม เค้กสุดพิเศษ และอาหารนานาชาติ —
-            เลือกสรรวัตถุดิบทุกชิ้นด้วยมือ
+        <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-6 pb-3">
+          <p className="m-0 text-lg leading-relaxed text-subtle">
+            ปอนด์เค้ก ขนมปัง และขนมอบ อบใหม่ทุกวัน สั่งออนไลน์ให้ส่งถึงบ้าน มารับที่ร้าน หรือนั่งทานที่ร้าน
           </p>
-          <div className="flex items-center gap-8 text-center">
-            {[
-              [`${allProducts.length}+`, "เมนู"],
-              ["100%", "สดใหม่"],
-              ["7", "วัน/สัปดาห์"],
-            ].map(([n, l]) => (
-              <div key={l}>
-                <p className="text-2xl sm:text-3xl font-light text-amber-900">
-                  {n}
-                </p>
-                <p className="text-amber-900/40 text-[10px] tracking-wider uppercase mt-0.5">
-                  {l}
-                </p>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/order-mode" size="lg">
+              เริ่มสั่งเลย
+            </ButtonLink>
+            <ButtonLink href="/reservation" variant="secondary" size="lg">
+              จองโต๊ะ
+            </ButtonLink>
+          </div>
+        </div>
+      </section>
+
+      {/* ── กล่องลัด ── */}
+      <section className="mx-auto max-w-[1240px] px-4 sm:px-6" aria-label="ทางลัด">
+        <div className="grid auto-rows-[minmax(220px,auto)] grid-cols-1 gap-4 sm:grid-cols-2 lg:auto-rows-[260px] lg:grid-cols-4">
+          {featured && (
+            <div className="relative flex min-w-0 flex-col justify-between gap-6 overflow-hidden rounded-[32px] bg-sand p-7 sm:col-span-2 sm:row-span-2 sm:p-8">
+              {featured.img && (
+                <img
+                  key={featured.id}
+                  src={featured.img}
+                  alt=""
+                  className="pointer-events-none absolute right-0 bottom-0 h-3/5 w-3/5 rounded-tl-[32px] object-cover opacity-90 motion-safe:animate-fade"
+                />
+              )}
+              {featuredList.length > 1 && (
+                <div role="tablist" aria-label="เมนูแนะนำ" className="relative flex flex-wrap gap-2">
+                  {featuredList.map((p, i) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={p.id === featured.id}
+                      onClick={() => setFeaturedIndex(i)}
+                      className={cx(
+                        "min-h-10 rounded-full px-4 text-sm font-semibold transition-colors",
+                        p.id === featured.id ? "bg-ink text-cream" : "bg-white/70 text-ink hover:bg-white",
+                      )}
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div key={featured.id} className="relative max-w-[60%] motion-safe:animate-rise">
+                <p className="m-0 mb-2 text-sm font-semibold text-subtle">{popular.length > 0 ? "ขายดีของร้าน" : "เมนูแนะนำ"}</p>
+                <h2 className="m-0 font-display text-[34px] leading-tight font-bold break-words sm:text-[52px]">{featured.name}</h2>
+                <div className="mt-6">
+                  <ButtonLink href={productHref(featured.category, featured.name)} variant="secondary">
+                    ดูสินค้า · {formatBaht(featured.price)}
+                  </ButtonLink>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* BENTO GRID */}
-      <section id="bento" ref={setRef("bento")} className="px-4 sm:px-6 lg:px-12 py-16 sm:py-24">
-        <div
-          className={`max-w-7xl mx-auto transition-all duration-[1000ms] delay-100 ${visible("bento") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-        >
-          <div className="mb-10 sm:mb-14">
-            <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
-              Browse
-            </p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-stone-800">
-              เลือกตาม<span className="font-semibold">หมวดหมู่</span>
-            </h2>
-          </div>
-          <BentoGrid categories={categoryList} />
-        </div>
-      </section>
-
-      {/* POPULAR (เมนูยอดนิยม) */}
-      {popularProducts.length > 0 && (
-        <section
-          id="popular"
-          ref={setRef("popular")}
-          className="px-4 sm:px-6 lg:px-12 pb-4 sm:pb-10"
-        >
-          <div
-            className={`max-w-7xl mx-auto transition-all duration-[1000ms] ${visible("popular") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-          >
-            <div className="mb-8 sm:mb-10">
-              <p className="text-stone-400 tracking-[0.3em] text-[10px] uppercase mb-2">
-                Trending
-              </p>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-stone-800">
-                เมนู<span className="font-semibold">ยอดนิยม</span>
-              </h2>
             </div>
-            <PopularCarousel items={popularProducts} />
+          )}
+
+          <ShortcutTile href="/reservation" tone="dark" title="จองโต๊ะ" description="เลือกวัน เวลา จำนวนคน" icon={<CalendarIcon />} />
+          <ShortcutTile href="/location" tone="green" title="สาขาของเรา" description="ที่อยู่ เวลาเปิด และแผนที่" icon={<PinIcon />} />
+          <ShortcutTile href="/order-mode" tone="light" title="ทานที่ร้าน" description="นั่งโต๊ะแล้วสั่งได้หลายรอบ จ่ายทีเดียวตอนเช็กบิล" />
+          <ShortcutTile href="/menu" tone="light" title="เมนูทั้งหมด" description={`${products.length} รายการ`} />
+        </div>
+      </section>
+
+      {/* ── หมวดหมู่ ── */}
+      {categories.length > 0 && (
+        <section className="mx-auto max-w-[1240px] px-4 pt-20 sm:px-6 lg:pt-28" aria-labelledby="home-categories">
+          <h2 id="home-categories" className="m-0 mb-8 font-display text-[32px] font-bold sm:text-[44px]">
+            เลือกตามหมวด
+          </h2>
+          <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:grid lg:grid-cols-5 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/${cat.slug}`}
+                className="group relative block aspect-[4/5] w-[68%] flex-none snap-start overflow-hidden rounded-[28px] bg-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brick sm:w-[40%] lg:w-auto"
+              >
+                {CATEGORY_IMAGES[cat.slug] && (
+                  <img
+                    src={CATEGORY_IMAGES[cat.slug]}
+                    alt=""
+                    className="absolute inset-0 size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105"
+                  />
+                )}
+                <span className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
+                <span className="absolute inset-x-0 bottom-0 p-5 text-cream">
+                  <span className="block font-display text-2xl font-bold">{cat.name}</span>
+                  <span className="mt-1 block text-sm text-mist group-hover:text-cream">ดูทั้งหมด →</span>
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
       )}
 
-      {/* STORY SECTION */}
-      <section
-        id="story"
-        ref={setRef("story")}
-        className="relative bg-amber-50 overflow-hidden py-20 sm:py-28"
-      >
-        <div
-          className={`relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-16 transition-all duration-[1000ms] ${visible("story") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-        >
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-5xl font-extralight text-amber-700 leading-tight mb-6">
-                อบด้วย<span className="font-semibold">ความรัก</span> ทุกวัน
-              </h2>
-              <p className="text-amber-700 text-sm leading-relaxed max-w-md">
-                ทุกชิ้นของขนม เครื่องดื่ม และอาหารที่ Pound Bakery
-                ถูกรังสรรค์ด้วยความใส่ใจ
-                เพื่อให้ทุกคำเป็นช่วงเวลาแห่งความสุขของคุณ
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { v: "500+", l: "ลูกค้า" },
-                { v: `${allProducts.length}+`, l: "เมนู" },
-                { v: "100%", l: "สดใหม่" },
-                { v: "7/7", l: "บริการ" },
-              ].map((s, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl p-6 text-center border border-amber-900/80 bg-amber-100/[0.02] backdrop-blur-sm"
-                >
-                  <p className="text-2xl font-light text-amber-700">{s.v}</p>
-                  <p className="text-amber-500 text-[10px] tracking-wider uppercase">
-                    {s.l}
-                  </p>
-                </div>
-              ))}
-            </div>
+      {/* ── ขายดี ── */}
+      {popular.length > 0 && (
+        <section className="mt-20 bg-ink py-16 text-cream lg:mt-28 lg:py-24" aria-labelledby="home-popular">
+          <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
+            <p className="m-0 mb-2 text-sm tracking-[0.12em] text-apricot">จากยอดขายจริงของร้าน</p>
+            <h2 id="home-popular" className="m-0 mb-10 font-display text-[32px] font-bold sm:text-[44px]">
+              เมนูขายดี
+            </h2>
+            <PopularCarousel items={popular} />
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.6s ease-out both;
-        }
-      `}</style>
+      {/* ── เรื่องของร้าน ── */}
+      <section className="mx-auto grid max-w-[1240px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28">
+        <div>
+          <h2 className="m-0 mb-6 font-display text-[36px] leading-tight font-bold sm:text-5xl">อบด้วยความใส่ใจ ทุกวัน</h2>
+          <p className="m-0 max-w-md leading-relaxed text-subtle">
+            ทุกชิ้นของขนม เครื่องดื่ม และอาหารที่ Pound Bakery ถูกรังสรรค์ด้วยความใส่ใจ เพื่อให้ทุกคำเป็นช่วงเวลาแห่งความสุขของคุณ
+          </p>
+        </div>
+        <dl className="m-0 grid grid-cols-2 gap-4">
+          {[
+            [`${products.length}`, "เมนู"],
+            [`${categories.length}`, "หมวด"],
+            ["ทุกวัน", "อบใหม่"],
+            ["3 แบบ", "ส่ง · รับ · ทานที่ร้าน"],
+          ].map(([value, label]) => (
+            <div key={label} className="flex flex-col-reverse rounded-[24px] border border-line bg-white p-6 text-center">
+              <dt className="mt-1 text-sm text-muted">{label}</dt>
+              <dd className="m-0 text-3xl font-bold">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </div>
+  );
+}
+
+/** สินค้าทั้งหมด หมวดที่เปิด และเมนูขายดี (จับคู่ชื่อจากสถิติกับสินค้าที่ยังขายอยู่) */
+function useHomeData() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [popular, setPopular] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const api = process.env.NEXT_PUBLIC_API_URL;
+    const load = async () => {
+      try {
+        const [prodRes, catRes, topRes] = await Promise.all([
+          fetch(`${api}/api/products`),
+          fetch(`${api}/api/categories/active`),
+          fetch(`${api}/api/orders/stats/top-products?days=all`),
+        ]);
+        const all: Product[] = prodRes.ok ? ((await prodRes.json()) as ApiProduct[]).map(toProduct) : [];
+        const cats: Category[] = catRes.ok ? await catRes.json() : [];
+        const tops: { productName: string }[] = topRes.ok ? ((await topRes.json()).topProducts ?? []) : [];
+
+        const seen = new Set<string>();
+        const pop: Product[] = [];
+        for (const t of tops) {
+          const match = all.find((p) => p.name === t.productName);
+          if (match && !seen.has(match.name) && inStock(match)) {
+            seen.add(match.name);
+            pop.push(match);
+          }
+          if (pop.length >= POPULAR_LIMIT) break;
+        }
+        if (cancelled) return;
+        setProducts(all);
+        setCategories(cats);
+        setPopular(pop);
+      } catch {
+        /* โหลดไม่ได้ — แสดงส่วนที่ไม่ต้องใช้ข้อมูลไปก่อน */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { products, categories, popular, loading };
+}
+
+const TILE_TONES = {
+  dark: "bg-ink text-cream",
+  green: "bg-success-soft text-success-ink",
+  light: "border border-line bg-white text-ink",
+} as const;
+
+function ShortcutTile({
+  href,
+  tone,
+  title,
+  description,
+  icon,
+}: {
+  href: string;
+  tone: keyof typeof TILE_TONES;
+  title: string;
+  description: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cx(
+        "flex min-h-[200px] flex-col justify-between rounded-[32px] p-7 transition-[transform,box-shadow] duration-300 hover:shadow-[0_18px_40px_rgba(31,26,22,0.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brick motion-safe:hover:-translate-y-1",
+        TILE_TONES[tone],
+      )}
+    >
+      <span aria-hidden="true">{icon ?? "→"}</span>
+      <span>
+        <span className="block font-display text-[28px] font-bold">{title}</span>
+        <span className={cx("mt-1.5 block text-[15px]", tone === "dark" ? "text-mist" : "opacity-80")}>{description}</span>
+      </span>
+    </Link>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </svg>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
   );
 }

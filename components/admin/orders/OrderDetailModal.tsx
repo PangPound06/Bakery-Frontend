@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { isPaid, isPaymentLocked, paymentMethodLabel, paymentStatusBadge } from "@/lib/payment";
+import { receiveSummary } from "@/lib/receive";
 import ActionButtons from "./ActionButtons";
 import OrderItemRow from "./OrderItemRow";
 import { CloseIcon, PrinterIcon } from "./icons";
@@ -204,6 +205,7 @@ function DeliverySection({ order }: { order: Order }) {
     ["เบอร์โทร", order.receiverPhone || "-"],
     ["ที่อยู่", order.receiverAddress || "-"],
   ];
+  if (order.orderType !== "dine-in") rows.splice(2, 0, ["รับสินค้า", receiveSummary(order)]);
   if (order.note) rows.push(["หมายเหตุ", order.note]);
   return (
     <div className="border-t pt-4">

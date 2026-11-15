@@ -24,16 +24,17 @@ const prompt = Prompt({
 
 // ฟอนต์ของดีไซน์ใหม่ — ใช้ผ่าน font-body / font-display (ดู app/globals.css)
 // หน้าที่ยังไม่ได้เปลี่ยนดีไซน์ยังใช้ Prompt ตามเดิม
+//
+// โหลดแบบ variable (ไม่ระบุ weight) — ไฟล์เดียวครอบทุกน้ำหนัก
+// ถ้าระบุ weight ทีละค่า Google บางครั้งตอบเป็น URL แบบ /l/font?kit=…&skey=… ที่ Turbopack อ่านไม่ได้ ทำให้ build พัง
 const anuphan = Anuphan({
   variable: "--font-anuphan",
-  weight: ["400", "500", "600", "700"],
   subsets: ["latin", "thai"],
   display: "swap",
 });
 
 const notoSerifThai = Noto_Serif_Thai({
   variable: "--font-noto-serif-thai",
-  weight: ["500", "700"],
   subsets: ["latin", "thai"],
   display: "swap",
 });

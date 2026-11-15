@@ -1,13 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, ButtonLink, Dialog, Spinner } from "@/components/ds";
+import { Button, ButtonLink, Dialog, Spinner, StateCard } from "@/components/ds";
 import PaymentPanel from "@/components/checkout/PaymentPanel";
 import BillRounds, { billTotalOf } from "@/components/dinein/BillRounds";
 import BuffetTimerChip from "@/components/dinein/BuffetTimerChip";
 import CheckoutBox, { type BillMethod } from "@/components/dinein/CheckoutBox";
 import { dineTypeLabel } from "@/components/dinein/DineInTopBar";
-import StateCard from "@/components/dinein/StateCard";
 import { useDineSession } from "@/components/dinein/useDineSession";
 import { authHeaders } from "@/lib/auth";
 import { useBuffetTimer } from "@/lib/diningSession";

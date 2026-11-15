@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { cx, Spinner } from "@/components/ds";
 import ProductCard from "@/components/ui/ProductCard";
 import type { ApiProduct } from "@/types/product";
 
@@ -170,133 +171,98 @@ export default function MenuPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-full animate-spin"
-            style={{
-              borderWidth: 3,
-              borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
-            }}
-          ></div>
-          <p className="text-amber-700 text-sm font-medium">
-            กำลังโหลดข้อมูล...
-          </p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-cream text-brick">
+        <Spinner className="size-10" />
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-[#faf7f2]">
-      {/* ส่วนหัว — sticky บนมือถือ, ปกติบนเดสก์ท็อป (เลี่ยงทับ Header หลัก) */}
-      <div className="bg-[#faf7f2] border-b border-stone-200/70">
-        {/* แท็บหมวดหมู่ — มือถือชิดซ้าย(เลื่อนได้), แท็บเล็ต/คอมพ์จัดกลาง */}
-        <div className="flex gap-2 overflow-x-auto px-3 pt-2 pb-3 xl:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {categories.map((cat) => {
-            const active = cat.slug === selectedSlug;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedSlug(cat.slug)}
-                className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-amber-600 text-white shadow-sm"
-                    : "bg-white text-stone-500 border border-stone-200 hover:border-amber-300 hover:text-amber-700"
-                }`}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.name}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── ที่มาของหมวดที่เลือก (storytelling) ── */}
-      {story && (
-        <div className="bg-white">
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 sm:py-20">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-              <div className="order-2 lg:order-1">
-                <p className="text-amber-500 sm:text-lg tracking-[0.3em] uppercase mb-4">
-                  {story.tagline}
-                </p>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-700 leading-[1.1] mb-5">
-                  {story.title}
-                </h2>
-                <p className="text-stone-500 text-base sm:text-lg leading-relaxed max-w-xl">
-                  {story.body}
-                </p>
-              </div>
-              <div className="order-1 lg:order-2 relative h-60 sm:h-80 lg:h-[460px] rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5">
-                {heroImage && (
-                  <img
-                    src={heroImage}
-                    alt={displayName}
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-            </div>
-          </section>
-
-          <section className="px-4 sm:px-6 lg:px-12 pb-12 sm:pb-20">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-amber-900 leading-snug">
-                {story.highlight}
-              </h2>
-              <p className="mt-3 text-stone-500 text-sm tracking-wide">
-                {story.highlightBody}
-              </p>
-            </div>
-          </section>
-        </div>
-      )}
-
-      {/* สินค้า */}
-      <div className="mx-auto max-w-7xl px-4 py-5 pb-28">
-        {loadingProducts ? (
-          <div className="flex justify-center py-20">
-            <div
-              className="w-10 h-10 rounded-full animate-spin"
-              style={{
-                borderWidth: 3,
-                borderStyle: "solid",
-                borderColor: "#f59e0b transparent transparent transparent",
-              }}
-            />
+    <div className="min-h-screen bg-cream font-body text-ink">
+      <main className="mx-auto max-w-[1240px] px-4 pt-10 pb-28 sm:px-6 lg:pt-14">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 lg:mb-8">
+          <div>
+            <p className="m-0 mb-2 text-sm text-muted">{loadingProducts ? "กำลังโหลด…" : `${filtered.length} รายการ`}</p>
+            <h1 className="m-0 font-display text-[40px] leading-tight font-bold sm:text-[64px]">{displayName || "เมนู"}</h1>
           </div>
-        ) : products.length === 0 ? (
-          <p className="text-center text-stone-400 text-sm py-20">
-            ไม่พบสินค้าในหมวดหมู่นี้
-          </p>
-        ) : (
-          <>
-            {/* แถวกรองประเภท + จำนวนรายการ */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-              <div className="flex flex-wrap gap-2">
-                {types.map((tp) => (
-                  <button
-                    key={tp}
-                    onClick={() => setSelectedType(tp)}
-                    className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${selectedType === tp ? "bg-amber-900 text-amber-50" : "bg-white text-stone-500 hover:text-stone-700 border border-stone-200 hover:border-stone-400"}`}
-                  >
-                    {tp}
-                  </button>
-                ))}
-              </div>
-              <p className="text-stone-400 text-xs">{filtered.length} รายการ</p>
-            </div>
+        </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} {...p} />
+        {/* หมวดหมู่ — มือถือเลื่อนซ้ายขวาได้ */}
+        <div className="-mx-4 mb-6 px-4 sm:mx-0 sm:px-0">
+          <div role="tablist" aria-label="หมวดหมู่" className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {categories.map((cat) => {
+              const active = cat.slug === selectedSlug;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setSelectedSlug(cat.slug)}
+                  className={cx(
+                    "min-h-11 flex-none rounded-full border-[1.5px] px-5 text-[15px] whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brick",
+                    active ? "border-ink bg-ink text-cream" : "border-line bg-white text-ink hover:border-line-strong",
+                  )}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+          </div>
+          {types.length > 2 && (
+            <div role="radiogroup" aria-label="ประเภท" className="mt-2 flex flex-wrap gap-2">
+              {types.map((tp) => (
+                <button
+                  key={tp}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedType === tp}
+                  onClick={() => setSelectedType(tp)}
+                  className={cx(
+                    "min-h-9 rounded-full px-4 text-sm transition-colors",
+                    selectedType === tp ? "bg-sand font-semibold text-ink" : "text-muted hover:text-ink",
+                  )}
+                >
+                  {tp === "All" ? "ทั้งหมด" : tp}
+                </button>
               ))}
             </div>
-          </>
+          )}
+        </div>
+
+        {loadingProducts ? (
+          <div className="flex justify-center py-20 text-brick">
+            <Spinner className="size-8" />
+          </div>
+        ) : products.length === 0 ? (
+          <p className="rounded-[28px] border-[1.5px] border-dashed border-line-strong px-6 py-16 text-center text-muted">
+            ยังไม่มีเมนูในหมวดนี้
+          </p>
+        ) : (
+          <div key={`${selectedSlug}-${selectedType}`} className="grid grid-cols-2 gap-3 motion-safe:animate-rise sm:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] sm:gap-6">
+            {filtered.map((p) => (
+              <ProductCard key={p.id} {...p} />
+            ))}
+          </div>
         )}
-      </div>
+      </main>
+
+      {/* ── ที่มาของหมวดที่เลือก ── */}
+      {story && (
+        <section className="bg-white">
+          <div className="mx-auto grid max-w-[1240px] items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
+            <div className="order-2 lg:order-1">
+              <p className="m-0 mb-4 text-sm tracking-[0.3em] text-brick uppercase">{story.tagline}</p>
+              <h2 className="m-0 mb-5 font-display text-3xl leading-tight font-bold sm:text-5xl">{story.title}</h2>
+              <p className="m-0 max-w-xl text-base leading-relaxed text-subtle sm:text-lg">{story.body}</p>
+              <p className="m-0 mt-8 font-display text-xl font-bold sm:text-2xl">{story.highlight}</p>
+              <p className="m-0 mt-2 text-sm text-muted">{story.highlightBody}</p>
+            </div>
+            <div className="relative order-1 h-60 overflow-hidden rounded-[32px] bg-sand sm:h-80 lg:order-2 lg:h-[460px]">
+              {heroImage && <img src={heroImage} alt={displayName} className="size-full object-cover" />}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

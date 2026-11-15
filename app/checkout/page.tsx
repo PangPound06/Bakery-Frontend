@@ -1,55 +1,58 @@
 "use client";
 
-import { Suspense, useState, useEffect, useRef } from "react";
-import { useStoreStatus } from "@/lib/useStoreStatus";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Button, ChoiceCard, cx, Spinner, TextField } from "@/components/ds";
+import { shippingFeeFor } from "@/components/cart/cartUtils";
+import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import PaymentPanel from "@/components/checkout/PaymentPanel";
+import ReceiveTimePicker from "@/components/checkout/ReceiveTimePicker";
+import { authHeaders, getToken, removeToken } from "@/lib/auth";
+import {
+  ASAP,
+  checkPhone,
+  fetchReceiveOptions,
+  fetchSummary,
+  formatPhone,
+  UnauthorizedError,
+  type CheckoutSummary,
+  type ReceiveOptions,
+} from "@/lib/checkout";
+import { formatBaht } from "@/lib/dineIn";
 import { toActiveIntent, type ActiveIntent, type CheckoutMethod } from "@/lib/paymentIntent";
+import type { Fulfillment } from "@/lib/receive";
+import { useStoreStatus } from "@/lib/useStoreStatus";
 
 /**
- * หน้าชำระเงิน — ทุกอย่างจบในเว็บเรา ไม่ redirect ออกไปหา Stripe
+ * หน้าชำระเงินออนไลน์ — ทุกอย่างจบในเว็บเรา ไม่ redirect ออกไปหา Stripe
  *
  * ═══ สองสถานะของหน้านี้ ═══
- * "form"    → กรอกที่อยู่ + เลือกวิธีจ่าย
- * "paying"  → แสดง QR หรือช่องกรอกบัตร (สลับมาแบบไม่เปลี่ยนหน้า)
- *
- * ═══ วิธีจ่าย ═══
- * promptpay → QR ของ Stripe ระบบยืนยันเองอัตโนมัติ
- * card      → ช่องกรอกบัตรของ Stripe
- * transfer  → QR พร้อมเพย์ของร้าน ลูกค้ากดแจ้งโอน แล้วแอดมินตรวจยอดเอง
+ * form   → เลือกวิธีรับ (จัดส่ง / มารับที่ร้าน) กรอกผู้รับ เลือกเวลารับ และวิธีจ่าย
+ * paying → QR / ช่องกรอกบัตร / โอนแนบสลิป (PaymentPanel ชุดเดียวกับบิลทานในร้าน)
  *
  * ═══ ยอดเงินมาจากไหน ═══
- * จาก GET /api/checkout/summary ซึ่ง backend คำนวณใหม่จาก tb_products
- * หน้านี้ไม่คำนวณราคาเองแม้แต่ตัวเดียว ตัวเลขที่เห็นเป็นแค่ "การแสดงผล"
- * ยอดที่เรียกเก็บจริงมาจาก PaymentIntent ที่ backend สร้าง
+ * GET /api/checkout/summary?fulfillment= — backend คิดราคาใหม่จาก tb_products (มารับที่ร้านไม่มีค่าส่ง)
+ * ยอดที่เรียกเก็บจริงมาจาก POST /api/checkout/intent ซึ่งคิดใหม่อีกรอบ หน้านี้แค่แสดงผล
+ *
+ * ═══ ป้องกันพลาดก่อนเกิด ═══
+ * เวลาและสาขาเป็นปุ่มให้เลือก ช่องเบอร์บอกผลทันที และปุ่มจ่ายบอกว่ายังขาดอะไร
+ * server ตรวจทุกอย่างซ้ำ (ReceiveDetailsService) — ค่าจากหน้านี้ไม่ถูกเชื่อเลย
  */
 
-type PaymentMethod = CheckoutMethod;
-type Phase = "form" | "paying";
+/** โหลดเวลารับใหม่ทุก 5 นาที — ช่วงเวลาแรกๆ หมดไปตามเวลาจริง */
+const OPTIONS_REFRESH_MS = 5 * 60_000;
 
-interface SummaryItem {
-  productId: number;
-  productName: string;
-  image: string | null;
-  selectedOption: string | null;
-  unitPrice: number;
-  quantity: number;
-  lineTotal: number;
-}
+const METHODS: { value: CheckoutMethod; title: string; description: string }[] = [
+  { value: "promptpay", title: "QR พร้อมเพย์ · ยืนยันอัตโนมัติ", description: "สแกนจ่าย ระบบรู้เองเมื่อเงินเข้า ไม่ต้องแนบสลิป" },
+  { value: "card", title: "บัตรเครดิต / เดบิต", description: "กรอกบัตรผ่าน Stripe" },
+  { value: "transfer", title: "โอนพร้อมเพย์ · แนบสลิป", description: "โอนเข้าบัญชีร้าน แนบสลิป แล้วรอร้านตรวจยอด" },
+];
 
-interface Summary {
-  items: SummaryItem[];
-  subtotal: number;
-  shipping: number;
-  total: number;
-}
-
-const formatPrice = (price: number) =>
-  price.toLocaleString("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+const PAY_LABEL: Record<CheckoutMethod, string> = {
+  promptpay: "สร้าง QR ชำระเงิน",
+  card: "ชำระด้วยบัตร",
+  transfer: "ไปโอนและแนบสลิป",
+};
 
 export default function CheckoutPage() {
   return (
@@ -61,17 +64,20 @@ export default function CheckoutPage() {
 
 function PageLoader() {
   return (
-    <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
-      <div
-        className="w-12 h-12 rounded-full animate-spin"
-        style={{
-          borderWidth: 3,
-          borderStyle: "solid",
-          borderColor: "#f59e0b transparent transparent transparent",
-        }}
-      />
+    <div className="flex min-h-screen items-center justify-center bg-cream text-brick">
+      <Spinner className="size-10" />
     </div>
   );
+}
+
+interface Recipient {
+  name: string;
+  /** ตัวเลขล้วน */
+  phone: string;
+  /** ลูกค้าพิมพ์อักขระที่ไม่ใช่ตัวเลขมาล่าสุด */
+  phoneTypedOther: boolean;
+  address: string;
+  note: string;
 }
 
 function CheckoutInner() {
@@ -79,166 +85,196 @@ function CheckoutInner() {
   const searchParams = useSearchParams();
   const { blockOnline, message: closedMessage, reopenAt } = useStoreStatus();
 
-  const [phase, setPhase] = useState<Phase>("form");
-  const [intent, setIntent] = useState<ActiveIntent | null>(null);
-
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState<PaymentMethod | null>(null);
-  /**
-   * กันกดซ้ำก่อนที่ React จะ re-render
-   *
-   * ปุ่ม disabled อิงกับ state ที่อัปเดตไม่ทันการดับเบิ้ลเร็วๆ
-   * ถ้าหลุดไปจะยิง /intent สองครั้งพร้อมกัน แล้วได้ order สองใบ
-   */
-  const startingRef = useRef(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-
-  const [shippingData, setShippingData] = useState({
-    fullname: "",
+  const [fulfillment, setFulfillment] = useState<Fulfillment>("delivery");
+  const [recipient, setRecipient] = useState<Recipient>({
+    name: "",
     phone: "",
+    phoneTypedOther: false,
     address: "",
     note: "",
   });
+  const [pickedBranch, setPickedBranch] = useState<number | null>(null);
+  const [pickedTime, setPickedTime] = useState<string | null>(null);
+  const [method, setMethod] = useState<CheckoutMethod | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const [summary, setSummary] = useState<CheckoutSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [options, setOptions] = useState<ReceiveOptions | null>(null);
+  const [intent, setIntent] = useState<ActiveIntent | null>(null);
+  const [starting, setStarting] = useState(false);
+  /** กันกดซ้ำก่อน React re-render — ถ้าหลุดจะได้ order สองใบ */
+  const startingRef = useRef(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState(searchParams.get("canceled") === "1" ? "ยกเลิกการชำระเงินแล้ว สินค้ายังอยู่ในตะกร้า" : "");
+
+  const toLogin = useCallback(() => {
+    removeToken();
+    router.replace("/login");
+  }, [router]);
+
+  // ─── ยอดจาก server (โหลดใหม่เมื่อเปลี่ยนวิธีรับ เพราะค่าส่งเปลี่ยน) ───
+  const summaryRequest = useRef(0);
+  const loadSummary = useCallback(
+    async (how: Fulfillment) => {
+      const requestId = ++summaryRequest.current;
+      setSummaryLoading(true);
+      try {
+        const result = await fetchSummary(how);
+        if (requestId !== summaryRequest.current) return; // มีคำขอใหม่กว่าแล้ว
+        if (result.ok) setSummary(result.summary);
+        else if (result.cartEmpty) router.replace("/cart");
+        else setError(result.message);
+      } catch (e) {
+        if (e instanceof UnauthorizedError) toLogin();
+        else setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
+      } finally {
+        if (requestId === summaryRequest.current) setSummaryLoading(false);
+      }
+    },
+    [router, toLogin],
+  );
 
   useEffect(() => {
-    if (searchParams.get("canceled") === "1") {
-      setNotice("ยกเลิกการชำระเงินแล้ว สินค้ายังอยู่ในตะกร้า");
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    loadSummary();
-    loadProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /** ดึงยอดที่ server คำนวณให้ */
-  const loadSummary = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!getToken()) {
       router.replace("/login");
       return;
     }
+    // setState เกิดหลัง await ใน loadSummary ไม่ใช่ใน effect ตรงๆ
+    void loadSummary(fulfillment);
+  }, [fulfillment, loadSummary, router]);
 
+  // ─── เวลารับและสาขา ───
+  const loadOptions = useCallback(async () => {
     try {
-      const res = await fetch(`${apiUrl}/api/checkout/summary`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setSummary(data.summary);
-      } else {
-        if (data.error?.includes("ว่าง")) {
-          router.replace("/cart");
-          return;
-        }
-        setError(data.error || "ไม่สามารถโหลดข้อมูลคำสั่งซื้อได้");
-      }
+      setOptions(await fetchReceiveOptions());
     } catch {
-      setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
-    } finally {
-      setLoading(false);
+      /* โหลดไม่ได้ — ปุ่มจ่ายจะบอกให้ลองใหม่ */
     }
-  };
+  }, []);
 
-  /** เติมชื่อ/เบอร์/ที่อยู่จากโปรไฟล์ให้อัตโนมัติ */
-  const loadProfile = async () => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+  useEffect(() => {
+    const first = setTimeout(() => void loadOptions(), 0);
+    const refresh = setInterval(() => void loadOptions(), OPTIONS_REFRESH_MS);
+    return () => {
+      clearTimeout(first);
+      clearInterval(refresh);
+    };
+  }, [loadOptions]);
 
-    if (user.fullname) {
-      setShippingData((prev) => ({ ...prev, fullname: user.fullname }));
-    }
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${apiUrl}/api/profile/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.success && data.profile) {
-        setShippingData((prev) => ({
-          ...prev,
-          fullname: data.profile.fullname || prev.fullname,
-          phone: data.profile.phone || "",
-          address: data.profile.address || "",
-        }));
+  // ─── เติมชื่อ/เบอร์/ที่อยู่จากโปรไฟล์ (เฉพาะช่องที่ยังว่าง) ───
+  useEffect(() => {
+    let cancelled = false;
+    const prefill = async () => {
+      let profile: { fullname?: string; phone?: string; address?: string } = {};
+      try {
+        profile = JSON.parse(localStorage.getItem("user") || "{}");
+      } catch {
+        /* user ในเครื่องเสีย — ข้าม */
       }
-    } catch {
-      /* โปรไฟล์โหลดไม่ได้ก็ให้กรอกเองได้ */
-    }
-  };
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profile/me`, { headers: authHeaders() });
+        const data = res.ok ? await res.json() : null;
+        if (data?.success && data.profile) profile = { ...profile, ...data.profile };
+      } catch {
+        /* โปรไฟล์โหลดไม่ได้ก็กรอกเองได้ */
+      }
+      if (cancelled) return;
+      setRecipient((r) => ({
+        ...r,
+        name: r.name || profile.fullname || "",
+        phone: r.phone || (profile.phone ?? "").replace(/\D/g, "").slice(0, 10),
+        address: r.address || profile.address || "",
+      }));
+    };
+    void prefill();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  /** สร้าง PaymentIntent แล้วสลับหน้าไปโหมดจ่ายเงิน */
-  const startPayment = async (method: PaymentMethod) => {
-    if (startingRef.current) return;
+  // ─── ค่าที่ใช้จริง (ค่าที่เลือกไว้ต้องยังมีอยู่ในตัวเลือกล่าสุด) ───
+  const branches = options?.branches ?? [];
+  const branchId =
+    pickedBranch !== null && branches.some((b) => b.id === pickedBranch)
+      ? pickedBranch
+      : branches.length === 1
+        ? branches[0].id
+        : null;
+  const timeValid = (v: string | null) =>
+    v !== null && (v === ASAP ? options?.asapAvailable === true : (options?.slots.some((s) => s.value === v) ?? false));
+  const receiveAt = timeValid(pickedTime) ? pickedTime : options?.asapAvailable ? ASAP : null;
+
+  const phone = checkPhone(recipient.phone, recipient.phoneTypedOther);
+  const pickup = fulfillment === "pickup";
+
+  /** สิ่งแรกที่ยังขาด — null = พร้อมจ่าย */
+  const missing = blockOnline
+    ? "ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว"
+    : !summary || summaryLoading
+      ? "กำลังโหลดยอด…"
+      : !recipient.name.trim()
+        ? "กรอกชื่อผู้รับก่อน"
+        : !phone.valid
+          ? "กรอกเบอร์โทรให้ครบก่อน"
+          : !pickup && !recipient.address.trim()
+            ? "กรอกที่อยู่จัดส่งก่อน"
+            : pickup && branchId === null
+              ? "เลือกสาขาที่จะไปรับก่อน"
+              : !options
+                ? "กำลังโหลดเวลารับ…"
+                : receiveAt === null
+                  ? "เลือกเวลารับสินค้าก่อน"
+                  : !method
+                    ? "เลือกวิธีชำระเงินก่อน"
+                    : null;
+
+  const startPayment = async () => {
+    if (missing || !method || startingRef.current) return;
+    startingRef.current = true;
+    setStarting(true);
     setError("");
     setNotice("");
-
-    if (!shippingData.fullname || !shippingData.phone || !shippingData.address) {
-      setError("กรุณากรอกข้อมูลการจัดส่งให้ครบถ้วน");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    if (shippingData.phone.length < 9) {
-      setError("เบอร์โทรศัพท์ไม่ถูกต้อง");
-      return;
-    }
-
-    startingRef.current = true;
-    setPending(method);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${apiUrl}/api/checkout/intent`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/checkout/intent`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        // ส่งแค่ข้อมูลจัดส่ง + วิธีจ่าย ไม่ส่งราคาหรือสถานะใดๆ
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        // ข้อมูลการรับ + วิธีจ่ายเท่านั้น ไม่ส่งราคาหรือสถานะใดๆ
         body: JSON.stringify({
-          receiverName: shippingData.fullname,
-          receiverPhone: shippingData.phone,
-          receiverAddress: shippingData.address,
-          note: shippingData.note,
+          fulfillment,
+          receiverName: recipient.name.trim(),
+          receiverPhone: recipient.phone,
+          receiverAddress: pickup ? null : recipient.address.trim(),
+          branchId: pickup ? branchId : null,
+          receiveAt,
+          note: recipient.note.trim() || null,
           paymentMethod: method,
         }),
       });
-
-      const data = await res.json();
+      if (res.status === 401) return toLogin();
+      const data = await res.json().catch(() => ({}));
 
       if (res.status === 403 && data.storeClosed) {
         setError(
-          (data.error || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว") +
-            (data.reopenAt ? ` (เปิดอีกครั้ง ${data.reopenAt})` : ""),
+          (data.error || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว") + (data.reopenAt ? ` (เปิดอีกครั้ง ${data.reopenAt})` : ""),
         );
-        setPending(null);
         return;
       }
-
       if (!res.ok || !data.success) {
         setError(data.error || "ไม่สามารถเริ่มการชำระเงินได้");
-        setPending(null);
+        // เวลา/สาขาอาจหมดไประหว่างกรอก ราคา/stock อาจเปลี่ยน
+        void loadOptions();
+        void loadSummary(fulfillment);
         return;
       }
 
       localStorage.setItem("lastOrderId", String(data.orderId));
-
       setIntent(toActiveIntent(method, data, summary?.total ?? 0));
-      setPhase("paying");
-      setPending(null);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
-      setPending(null);
     } finally {
       startingRef.current = false;
+      setStarting(false);
     }
   };
 
@@ -251,285 +287,246 @@ function CheckoutInner() {
   /** กลับมาหน้าฟอร์ม — order เดิมถูกยกเลิกไปแล้วจาก panel */
   const handleCancelPayment = () => {
     setIntent(null);
-    setPhase("form");
     setNotice("ยกเลิกแล้ว สินค้ายังอยู่ในตะกร้า เลือกวิธีชำระเงินใหม่ได้เลย");
-    loadSummary();
+    void loadSummary(fulfillment);
+    void loadOptions();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ─── UI ───────────────────────────────────────────────────
-
-  if (loading) return <PageLoader />;
+  if (!summary && summaryLoading) return <PageLoader />;
 
   // ═══ โหมดจ่ายเงิน ═══
-  if (phase === "paying" && intent) {
+  if (intent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
-        <div className="max-w-lg mx-auto px-4">
+      <div className="min-h-screen bg-cream font-body text-ink">
+        <main className="mx-auto max-w-[560px] px-4 pt-8 pb-28 sm:pt-12">
+          <CheckoutSteps current={2} />
           <PaymentPanel intent={intent} onDone={handlePaid} onCancel={handleCancelPayment} />
-        </div>
+        </main>
       </div>
     );
   }
 
-  // ═══ โหมดกรอกฟอร์ม ═══
-  const disabled = pending !== null || blockOnline || !summary;
-  const totalText = `฿${formatPrice(summary?.total ?? 0)}`;
+  const deliveryFee = shippingFeeFor(summary?.subtotal ?? 0);
+  const itemCount = summary?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
 
+  // ═══ โหมดกรอกฟอร์ม ═══
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="mb-8">
-          <Link
-            href="/cart"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
-          >
-            ← กลับไปตะกร้าสินค้า
-          </Link>
-          <h1 className="text-3xl font-bold text-amber-800">
-            💳 ดำเนินการชำระเงิน
-          </h1>
-        </div>
+    <div className="min-h-screen bg-cream font-body text-ink">
+      <main className="mx-auto max-w-[1240px] px-4 pt-8 pb-28 sm:px-6 lg:pt-12 lg:pb-24">
+        <CheckoutSteps current={2} />
+        <h1 className="m-0 mb-6 font-display text-[32px] font-bold sm:text-[52px] lg:mb-9">ชำระเงิน</h1>
 
         {blockOnline && (
-          <div className="mb-6 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
-            🔒 {closedMessage || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว"}
+          <Banner tone="warn">
+            {closedMessage || "ขณะนี้ร้านปิดรับออเดอร์ออนไลน์ชั่วคราว"}
             {reopenAt ? ` (เปิดอีกครั้ง ${reopenAt})` : ""}
-          </div>
+          </Banner>
         )}
+        {notice && <Banner tone="info">{notice}</Banner>}
+        {error && <Banner tone="error">{error}</Banner>}
 
-        {notice && (
-          <div className="mb-6 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
-            ℹ️ {notice}
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-            ⚠️ {error}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-amber-800 mb-4">
-                📦 ข้อมูลการจัดส่ง
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    ชื่อผู้รับ *
-                  </label>
-                  <input
-                    type="text"
-                    value={shippingData.fullname}
-                    onChange={(e) =>
-                      setShippingData({
-                        ...shippingData,
-                        fullname: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="ชื่อ-นามสกุล"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    เบอร์โทรศัพท์ *
-                  </label>
-                  <input
-                    type="tel"
-                    value={shippingData.phone}
-                    onChange={(e) =>
-                      setShippingData({
-                        ...shippingData,
-                        phone: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                    maxLength={10}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="0812345678"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    ที่อยู่จัดส่ง *
-                  </label>
-                  <textarea
-                    value={shippingData.address}
-                    onChange={(e) =>
-                      setShippingData({
-                        ...shippingData,
-                        address: e.target.value,
-                      })
-                    }
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    หมายเหตุ
-                  </label>
-                  <textarea
-                    value={shippingData.note}
-                    onChange={(e) =>
-                      setShippingData({ ...shippingData, note: e.target.value })
-                    }
-                    rows={2}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="เช่น ไม่ใส่เทียน / โทรก่อนส่ง"
-                  />
-                </div>
+        <div className="flex flex-wrap items-start gap-8">
+          <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-5">
+            <Section title="รับสินค้าแบบไหน">
+              <div role="radiogroup" aria-label="วิธีรับสินค้า" className="flex flex-col gap-2">
+                <ChoiceCard
+                  checked={!pickup}
+                  onSelect={() => setFulfillment("delivery")}
+                  title="จัดส่งถึงบ้าน"
+                  description="ส่งถึงที่อยู่ของคุณ · ส่งฟรีเมื่อซื้อเกิน 500 ฿"
+                  trailing={deliveryFee === 0 ? "ส่งฟรี" : `+${deliveryFee} ฿`}
+                />
+                <ChoiceCard
+                  checked={pickup}
+                  onSelect={() => setFulfillment("pickup")}
+                  disabled={options !== null && branches.length === 0}
+                  title="มารับที่ร้าน"
+                  description={options !== null && branches.length === 0 ? "ยังไม่มีสาขาเปิดรับ" : "ไม่ต้องกรอกที่อยู่ ไม่มีค่าส่ง"}
+                  trailing="ไม่มีค่าส่ง"
+                />
               </div>
-            </div>
+            </Section>
 
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-amber-800 mb-4">
-                🔐 วิธีชำระเงิน
-              </h2>
-              <div className="border-2 border-amber-200 bg-amber-50 rounded-xl p-5">
-                <p className="text-sm text-amber-700">
-                  เลือกวิธีที่ต้องการจากปุ่มด้านขวา
-                </p>
-                <ul className="mt-2 text-xs text-amber-700 space-y-1 list-disc list-inside">
-                  <li>QR PromptPay / บัตร — ยืนยันการชำระเงินอัตโนมัติทันที</li>
-                  <li>
-                    โอนพร้อมเพย์ — โอนเข้าบัญชีร้านโดยตรง ร้านจะยืนยันหลังตรวจยอด
-                  </li>
-                </ul>
+            <Section title="ข้อมูลผู้รับ">
+              <div className="grid gap-3.5 sm:grid-cols-2">
+                <TextField
+                  label="ชื่อผู้รับ"
+                  autoComplete="name"
+                  maxLength={100}
+                  value={recipient.name}
+                  onChange={(e) => setRecipient((r) => ({ ...r, name: e.target.value }))}
+                />
+                <TextField
+                  label="เบอร์โทร"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder="0XX-XXX-XXXX"
+                  value={formatPhone(recipient.phone)}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setRecipient((r) => ({
+                      ...r,
+                      phone: raw.replace(/\D/g, "").slice(0, 10),
+                      phoneTypedOther: /[^\d\-\s]/.test(raw),
+                    }));
+                  }}
+                  help={phone.help}
+                  tone={phone.tone}
+                />
               </div>
-            </div>
-          </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-              <h2 className="text-xl font-semibold text-amber-800 mb-4">
-                🧾 สรุปคำสั่งซื้อ
-              </h2>
-
-              <div className="space-y-3 mb-4 max-h-72 overflow-y-auto">
-                {summary?.items.map((item, idx) => (
-                  <div key={idx} className="flex gap-3 text-sm">
-                    {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.productName}
-                        className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-800 truncate">
-                        {item.productName}
-                      </p>
-                      {item.selectedOption && (
-                        <p className="text-xs text-gray-500 truncate">
-                          {item.selectedOption}
-                        </p>
-                      )}
-                      <p className="text-xs text-gray-500">
-                        ฿{formatPrice(item.unitPrice)} × {item.quantity}
-                      </p>
+              {pickup ? (
+                <fieldset className="m-0 border-0 p-0">
+                  <legend className="mb-2 p-0 text-sm text-muted">สาขาที่จะไปรับ</legend>
+                  {options === null ? (
+                    <Spinner className="text-brick" />
+                  ) : (
+                    <div role="radiogroup" aria-label="สาขาที่จะไปรับ" className="flex flex-col gap-2">
+                      {branches.map((b) => (
+                        <ChoiceCard
+                          key={b.id}
+                          checked={branchId === b.id}
+                          onSelect={() => setPickedBranch(b.id)}
+                          title={b.name}
+                          description={[b.address, b.hours].filter(Boolean).join(" · ") || undefined}
+                        />
+                      ))}
                     </div>
-                    <p className="font-medium text-amber-700 whitespace-nowrap">
-                      ฿{formatPrice(item.lineTotal)}
-                    </p>
-                  </div>
+                  )}
+                </fieldset>
+              ) : (
+                <TextField
+                  multiline
+                  label="ที่อยู่จัดส่ง"
+                  autoComplete="street-address"
+                  maxLength={500}
+                  rows={3}
+                  placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
+                  value={recipient.address}
+                  onChange={(e) => setRecipient((r) => ({ ...r, address: e.target.value }))}
+                />
+              )}
+
+              {options === null ? (
+                <div className="flex items-center gap-2 text-sm text-muted">
+                  <Spinner className="size-4" /> กำลังโหลดเวลารับ…
+                </div>
+              ) : (
+                <ReceiveTimePicker
+                  legend={pickup ? "เวลามารับที่ร้าน" : "เวลาที่สะดวกรับของ"}
+                  asapAvailable={options.asapAvailable}
+                  slots={options.slots}
+                  value={receiveAt}
+                  onChange={setPickedTime}
+                />
+              )}
+
+              <TextField
+                multiline
+                label="หมายเหตุ (ไม่บังคับ)"
+                maxLength={500}
+                rows={2}
+                placeholder={pickup ? "เช่น ใส่กล่องแยก / ขอเทียน 1 เล่ม" : "เช่น ไม่ใส่เทียน / โทรก่อนส่ง"}
+                value={recipient.note}
+                onChange={(e) => setRecipient((r) => ({ ...r, note: e.target.value }))}
+              />
+            </Section>
+
+            <Section title={`รายการสินค้า · ${itemCount} ชิ้น`}>
+              <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
+                {summary?.items.map((item) => (
+                  <li key={`${item.productId}-${item.selectedOption ?? ""}`} className="flex items-center gap-3.5">
+                    <span className="size-14 flex-none overflow-hidden rounded-[14px] bg-sand">
+                      {item.image && (
+                        // รูปสินค้ามาจากหลายโดเมน (ตั้งค่าใน admin) — ใช้ img ธรรมดา
+                        <img src={item.image} alt="" className="size-full object-cover" />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold break-words">{item.productName}</span>
+                      <span className="block text-sm text-muted">
+                        {[item.selectedOption, `× ${item.quantity}`].filter(Boolean).join(" · ")}
+                      </span>
+                    </span>
+                    <span className="flex-none font-semibold">{formatBaht(item.lineTotal)}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          </div>
+
+          <aside
+            className="flex w-full min-w-0 flex-col gap-5 rounded-[32px] bg-ink p-6 text-cream sm:p-7 lg:sticky lg:top-24 lg:w-auto lg:flex-[1_1_380px]"
+            aria-label="ชำระเงิน"
+          >
+            <fieldset className="m-0 border-0 p-0">
+              <legend className="mb-2 p-0 text-sm text-mist">วิธีชำระเงิน</legend>
+              <div role="radiogroup" aria-label="วิธีชำระเงิน" className="flex flex-col gap-2">
+                {METHODS.map((m) => (
+                  <ChoiceCard
+                    key={m.value}
+                    tone="dark"
+                    checked={method === m.value}
+                    onSelect={() => setMethod(m.value)}
+                    title={m.title}
+                    description={m.description}
+                  />
                 ))}
               </div>
+            </fieldset>
 
-              <div className="border-t pt-4 space-y-2 text-sm">
-                <div className="flex justify-between text-gray-600">
-                  <span>ยอดสินค้า</span>
-                  <span>฿{formatPrice(summary?.subtotal ?? 0)}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>ค่าจัดส่ง</span>
-                  <span>
-                    {summary?.shipping === 0 ? (
-                      <span className="text-green-600 font-medium">ฟรี</span>
-                    ) : (
-                      `฿${formatPrice(summary?.shipping ?? 0)}`
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between text-lg font-bold text-amber-800 border-t pt-3">
-                  <span>ยอดชำระ</span>
-                  <span>{totalText}</span>
-                </div>
+            <dl className={cx("m-0 flex flex-col gap-2 border-t border-ink-line pt-4", summaryLoading && "opacity-60")}>
+              <Line label="ยอดสินค้า" value={formatBaht(summary?.subtotal ?? 0)} />
+              <Line
+                label={pickup ? "ค่าส่ง (มารับที่ร้าน)" : "ค่าจัดส่ง"}
+                value={(summary?.shipping ?? 0) === 0 ? "ฟรี" : formatBaht(summary?.shipping ?? 0)}
+              />
+              <div className="flex items-baseline justify-between pt-1">
+                <dt>ยอดชำระ</dt>
+                <dd className="m-0 text-[30px] font-bold">{formatBaht(summary?.total ?? 0)}</dd>
               </div>
+            </dl>
 
-              <div className="mt-6 space-y-3">
-                <button
-                  onClick={() => startPayment("promptpay")}
-                  disabled={disabled}
-                  className={`w-full py-4 rounded-xl font-semibold text-white transition-colors ${
-                    disabled
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-amber-500 hover:bg-amber-600"
-                  }`}
-                >
-                  {pending === "promptpay" ? (
-                    <ButtonSpinner label="กำลังสร้าง QR..." light />
-                  ) : (
-                    <>📱 สแกน QR PromptPay — {totalText}</>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => startPayment("card")}
-                  disabled={disabled}
-                  className={`w-full py-3.5 rounded-xl font-semibold border-2 transition-colors ${
-                    disabled
-                      ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                      : "border-amber-500 text-amber-600 hover:bg-amber-50"
-                  }`}
-                >
-                  {pending === "card" ? (
-                    <ButtonSpinner label="กำลังเตรียมช่องกรอกบัตร..." />
-                  ) : (
-                    <>💳 จ่ายด้วยบัตรเครดิต / เดบิต</>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => startPayment("transfer")}
-                  disabled={disabled}
-                  className={`w-full py-3.5 rounded-xl font-semibold border-2 transition-colors ${
-                    disabled
-                      ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                      : "border-amber-500 text-amber-600 hover:bg-amber-50"
-                  }`}
-                >
-                  {pending === "transfer" ? (
-                    <ButtonSpinner label="กำลังสร้าง QR..." />
-                  ) : (
-                    <>🏦 โอนพร้อมเพย์ (ร้านยืนยันยอด)</>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+            <Button variant="primaryOnDark" size="lg" block disabled={missing !== null} loading={starting} onClick={startPayment}>
+              {missing ?? `${PAY_LABEL[method as CheckoutMethod]} · ${formatBaht(summary?.total ?? 0)}`}
+            </Button>
+          </aside>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-function ButtonSpinner({ label, light }: { label: string; light?: boolean }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <span className="flex items-center justify-center gap-2">
-      <span
-        className="w-5 h-5 rounded-full animate-spin"
-        style={{
-          borderWidth: 2,
-          borderStyle: "solid",
-          borderColor: `${light ? "#fff" : "#f59e0b"} transparent transparent transparent`,
-        }}
-      />
-      {label}
-    </span>
+    <section className="flex flex-col gap-4 rounded-[28px] border border-line bg-white p-5 sm:p-7">
+      <h2 className="m-0 text-xl font-bold">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Line({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between text-mist">
+      <dt>{label}</dt>
+      <dd className="m-0 text-cream">{value}</dd>
+    </div>
+  );
+}
+
+const BANNER = {
+  warn: "border-warn-line bg-warn-bg text-warn-ink",
+  info: "border-line bg-white text-body",
+  error: "border-danger-line bg-danger-soft text-danger",
+} as const;
+
+function Banner({ tone, children }: { tone: keyof typeof BANNER; children: React.ReactNode }) {
+  return (
+    <p role={tone === "error" ? "alert" : "status"} className={cx("m-0 mb-5 rounded-2xl border px-4 py-3 text-[15px]", BANNER[tone])}>
+      {children}
+    </p>
   );
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import CancelRequestModal from "@/components/orders/CancelRequestModal";
 import Pagination from "@/components/ui/Pagination";
+import { receiveSummary } from "@/lib/receive";
 import {
   isAwaitingVerification,
   isPaid,
@@ -38,6 +39,8 @@ interface Order {
   receiverName: string;
   receiverPhone: string;
   receiverAddress: string;
+  fulfillment?: string | null;
+  receiveAt?: string | null;
   note: string;
   slipImage: string;
   createdAt: string;
@@ -853,6 +856,12 @@ export default function OrdersPage() {
                         {selectedOrder.receiverPhone}
                       </span>
                     </p>
+                    {selectedOrder.orderType !== "dine-in" && (
+                      <p>
+                        <span className="text-gray-500">รับสินค้า:</span>{" "}
+                        <span className="font-medium">{receiveSummary(selectedOrder)}</span>
+                      </p>
+                    )}
                     <p>
                       <span className="text-gray-500">ที่อยู่:</span>{" "}
                       <span className="font-medium">

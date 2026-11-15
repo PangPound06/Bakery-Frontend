@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 import Pagination from "@/components/ui/Pagination";
 import { paymentStatusBadge } from "@/lib/payment";
+import { receiveSummary } from "@/lib/receive";
 import ActionButtons from "./ActionButtons";
 import {
   channelBadge,
@@ -89,6 +90,7 @@ function OrderRow({ order, striped, updating, onOpen, onAction, onViewSlip }: Ro
         <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${channel.className}`}>
           {channel.text}
         </span>
+        {order.orderType !== "dine-in" && <p className="mt-1 text-xs text-gray-600">{receiveSummary(order)}</p>}
       </td>
 
       <td className="px-4 py-4 font-semibold text-amber-600">฿{formatPrice(order.total)}</td>

@@ -2,8 +2,11 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { ButtonLink, Spinner, StateCard } from "@/components/ds";
+import CheckoutSteps from "@/components/checkout/CheckoutSteps";
+import { formatBaht } from "@/lib/dineIn";
 import { PAYMENT_STATUS } from "@/lib/payment";
+import { formatReceiveAt, fulfillmentLabel } from "@/lib/receive";
 
 /**
  * หน้าหลังชำระเงิน
@@ -31,7 +34,7 @@ const MAX_ATTEMPTS = 20; // ~40 วินาที
 /** useSearchParams() ต้องอยู่ใต้ <Suspense> ไม่งั้น `next build` จะ error */
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-amber-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-cream" />}>
       <SuccessInner />
     </Suspense>
   );
@@ -42,6 +45,7 @@ function SuccessInner() {
   const [phase, setPhase] = useState<Phase>("checking");
   const [ordCode, setOrdCode] = useState("");
   const [total, setTotal] = useState<number | null>(null);
+  const [receive, setReceive] = useState<Receive | null>(null);
   const attempts = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -73,6 +77,12 @@ function SuccessInner() {
         if (data.success) {
           if (data.ordCode) setOrdCode(data.ordCode);
           if (typeof data.total === "number") setTotal(data.total);
+          if (data.orderType === "online")
+            setReceive({
+              fulfillment: data.fulfillment,
+              receiveAt: data.receiveAt ?? null,
+              address: data.receiverAddress ?? null,
+            });
 
           if (
             data.paymentStatus === PAYMENT_STATUS.PAID ||
@@ -112,193 +122,108 @@ function SuccessInner() {
     };
   }, [searchParams]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
-          {phase === "checking" && <Checking />}
-          {phase === "paid" && <Paid ordCode={ordCode} total={total} />}
-          {phase === "verifying" && <Verifying ordCode={ordCode} total={total} />}
-          {phase === "pending" && <Pending ordCode={ordCode} />}
-          {phase === "failed" && <Failed />}
-          {phase === "notfound" && <NotFound />}
+  const done = phase !== "checking";
 
-          {phase !== "checking" && (
-            <div className="space-y-3 mt-6">
-              <Link
-                href="/user/orders"
-                className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-colors"
-              >
-                📋 ดูคำสั่งซื้อของฉัน
-              </Link>
-              <Link
-                href="/"
-                className="block w-full py-3 border-2 border-amber-500 text-amber-600 hover:bg-amber-50 font-semibold rounded-xl transition-colors"
-              >
-                🏠 กลับหน้าหลัก
-              </Link>
+  return (
+    <div className="min-h-screen bg-cream font-body text-ink">
+      <main className="mx-auto max-w-[560px] px-4 pt-8 pb-28 sm:pt-12">
+        <CheckoutSteps current={3} />
+        <div role="status" aria-live="polite">
+          {phase === "checking" && (
+            <div className="flex flex-col items-center gap-4 rounded-[32px] border border-line bg-white px-6 py-14 text-center">
+              <Spinner className="size-10 text-brick" />
+              <h1 className="m-0 font-display text-2xl font-bold">กำลังตรวจสอบการชำระเงิน</h1>
+              <p className="m-0 text-subtle">กรุณารอสักครู่ อย่าเพิ่งปิดหน้านี้</p>
             </div>
+          )}
+          {phase === "paid" && (
+            <StateCard tone="done" title="ชำระเงินสำเร็จ">
+              <OrderFacts ordCode={ordCode} total={total} totalLabel="ยอดชำระ" receive={receive} />
+              <p className="m-0 mt-3">
+                {receive?.fulfillment === "pickup"
+                  ? "ร้านจะเตรียมสินค้าให้ทันเวลาที่เลือก ติดตามสถานะได้ที่หน้าคำสั่งซื้อของฉัน"
+                  : "ร้านจะเตรียมและจัดส่งตามเวลาที่เลือก ติดตามสถานะได้ที่หน้าคำสั่งซื้อของฉัน"}
+              </p>
+            </StateCard>
+          )}
+          {phase === "verifying" && (
+            <StateCard tone="warning" title="แจ้งโอนแล้ว รอร้านตรวจยอด">
+              <OrderFacts ordCode={ordCode} total={total} totalLabel="ยอดโอน" receive={receive} />
+              <p className="m-0 mt-3">เมื่อร้านยืนยันแล้ว สถานะจะเปลี่ยนเป็น &quot;ชำระแล้ว&quot; ในหน้าคำสั่งซื้อของฉัน ไม่ต้องแจ้งซ้ำ</p>
+            </StateCard>
+          )}
+          {phase === "pending" && (
+            <StateCard tone="warning" title="กำลังรอการยืนยันจากธนาคาร">
+              {ordCode && <OrderFacts ordCode={ordCode} total={null} totalLabel="" receive={null} />}
+              <p className="m-0 mt-3">ถ้าชำระเงินแล้ว สถานะจะอัปเดตเองในหน้าคำสั่งซื้อของฉัน</p>
+            </StateCard>
+          )}
+          {phase === "failed" && (
+            <StateCard tone="danger" title="การชำระเงินไม่สำเร็จ">
+              คำสั่งซื้อถูกยกเลิกและยังไม่มีการเรียกเก็บเงิน สินค้ายังอยู่ในตะกร้า สั่งใหม่ได้ทุกเมื่อ
+            </StateCard>
+          )}
+          {phase === "notfound" && (
+            <StateCard tone="danger" title="ไม่พบคำสั่งซื้อนี้">
+              ลองตรวจสอบที่หน้าคำสั่งซื้อของฉัน
+            </StateCard>
           )}
         </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-500 text-sm">
-            🧁 Pound Bakery - อบสดใหม่ทุกวัน ส่งตรงถึงบ้านคุณ
-          </p>
-        </div>
-      </div>
+        {done && (
+          <div className="mt-5 flex flex-col gap-2.5">
+            {phase === "failed" ? (
+              <ButtonLink href="/cart" size="lg" block>
+                กลับไปที่ตะกร้า
+              </ButtonLink>
+            ) : (
+              <ButtonLink href="/user/orders" size="lg" block>
+                ดูคำสั่งซื้อของฉัน
+              </ButtonLink>
+            )}
+            <ButtonLink href="/" variant="secondary" block>
+              กลับหน้าหลัก
+            </ButtonLink>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
 
-// ─── สถานะย่อย ──────────────────────────────────────────────
-
-function Checking() {
-  return (
-    <>
-      <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 bg-amber-50">
-        <div
-          className="w-12 h-12 rounded-full animate-spin"
-          style={{
-            borderWidth: 3,
-            borderStyle: "solid",
-            borderColor: "#f59e0b transparent transparent transparent",
-          }}
-        />
-      </div>
-      <h1 className="text-2xl font-bold text-amber-700 mb-2">
-        กำลังตรวจสอบการชำระเงิน
-      </h1>
-      <p className="text-amber-800 text-sm">
-        กรุณารอสักครู่ อย่าเพิ่งปิดหน้านี้
-      </p>
-    </>
-  );
+interface Receive {
+  fulfillment?: string | null;
+  receiveAt: string | null;
+  /** มารับที่ร้าน = "รับที่ร้าน: <สาขา>" */
+  address: string | null;
 }
 
-function Paid({ ordCode, total }: { ordCode: string; total: number | null }) {
+/** เลขคำสั่งซื้อ ยอด และการรับสินค้า */
+function OrderFacts({
+  ordCode,
+  total,
+  totalLabel,
+  receive,
+}: {
+  ordCode: string;
+  total: number | null;
+  totalLabel: string;
+  receive: Receive | null;
+}) {
+  const rows: [string, string][] = [["เลขคำสั่งซื้อ", ordCode || "-"]];
+  if (total !== null) rows.push([totalLabel, formatBaht(total)]);
+  if (receive) {
+    rows.push([fulfillmentLabel(receive.fulfillment), formatReceiveAt(receive.receiveAt)]);
+    if (receive.fulfillment === "pickup" && receive.address) rows.push(["สาขา", receive.address.replace(/^รับที่ร้าน:\s*/, "")]);
+  }
   return (
-    <>
-      <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <span className="text-6xl">✅</span>
-      </div>
-      <h1 className="text-3xl font-bold text-amber-700 mb-2">ชำระเงินสำเร็จ!</h1>
-      <p className="text-amber-800 mb-6">ขอบคุณที่สั่งซื้อสินค้ากับเรา</p>
-
-      <div className="bg-gray-50 rounded-xl p-4 mb-6">
-        <p className="text-sm text-gray-500 mb-1">หมายเลขคำสั่งซื้อ</p>
-        <p className="text-xl font-bold text-amber-600">{ordCode || "-"}</p>
-        {total !== null && (
-          <p className="text-sm text-gray-600 mt-2">
-            ยอดชำระ ฿
-            {total.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
-          </p>
-        )}
-      </div>
-
-      <div className="bg-amber-50 rounded-xl p-4 text-left">
-        <h3 className="font-semibold text-amber-700 mb-2">📦 ขั้นตอนถัดไป</h3>
-        <ul className="text-sm text-amber-800 space-y-2">
-          <li className="flex items-start gap-2">
-            <span className="text-green-500">✓</span>
-            <span>คุณจะได้รับอีเมลยืนยันคำสั่งซื้อ</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-green-500">✓</span>
-            <span>เราจะเตรียมสินค้าและจัดส่งให้เร็วที่สุด</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-green-500">✓</span>
-            <span>ติดตามสถานะได้ที่หน้า &quot;คำสั่งซื้อของฉัน&quot;</span>
-          </li>
-        </ul>
-      </div>
-    </>
-  );
-}
-
-function Verifying({ ordCode, total }: { ordCode: string; total: number | null }) {
-  return (
-    <>
-      <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <span className="text-6xl">🧾</span>
-      </div>
-      <h1 className="text-2xl font-bold text-amber-700 mb-2">ได้รับแจ้งโอนแล้ว</h1>
-      <p className="text-gray-600 text-sm mb-6">
-        ร้านกำลังตรวจสอบยอดโอน เมื่อยืนยันแล้ว สถานะจะเปลี่ยนเป็น &quot;ชำระแล้ว&quot;
-        ในหน้า &quot;คำสั่งซื้อของฉัน&quot;
-      </p>
-      <div className="bg-gray-50 rounded-xl p-4">
-        <p className="text-sm text-gray-500 mb-1">หมายเลขคำสั่งซื้อ</p>
-        <p className="text-xl font-bold text-amber-600">{ordCode || "-"}</p>
-        {total !== null && (
-          <p className="text-sm text-gray-600 mt-2">
-            ยอดโอน ฿{total.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
-          </p>
-        )}
-      </div>
-    </>
-  );
-}
-
-function Pending({ ordCode }: { ordCode: string }) {
-  return (
-    <>
-      <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <span className="text-6xl">⏳</span>
-      </div>
-      <h1 className="text-2xl font-bold text-amber-700 mb-2">
-        กำลังรอการยืนยัน
-      </h1>
-      <p className="text-gray-600 text-sm mb-4">
-        ธนาคารอาจใช้เวลาสักครู่ในการยืนยัน หากคุณชำระเงินเรียบร้อยแล้ว
-        สถานะจะอัปเดตเองในหน้า &quot;คำสั่งซื้อของฉัน&quot;
-      </p>
-      {ordCode && (
-        <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-sm text-gray-500 mb-1">หมายเลขคำสั่งซื้อ</p>
-          <p className="text-lg font-bold text-amber-600">{ordCode}</p>
+    <dl className="m-0 flex flex-col gap-2 rounded-2xl bg-sand px-4 py-3.5">
+      {rows.map(([label, value]) => (
+        <div key={label} className="flex justify-between gap-3">
+          <dt className="text-muted">{label}</dt>
+          <dd className="m-0 text-right font-semibold text-ink">{value}</dd>
         </div>
-      )}
-    </>
-  );
-}
-
-function Failed() {
-  return (
-    <>
-      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <span className="text-6xl">❌</span>
-      </div>
-      <h1 className="text-2xl font-bold text-red-600 mb-2">
-        การชำระเงินไม่สำเร็จ
-      </h1>
-      <p className="text-gray-600 text-sm">
-        คำสั่งซื้อถูกยกเลิกและยังไม่มีการเรียกเก็บเงิน
-        คุณสามารถสั่งซื้อใหม่ได้ทุกเมื่อ
-      </p>
-      <Link
-        href="/cart"
-        className="inline-block mt-4 text-amber-600 hover:text-amber-700 font-medium"
-      >
-        ← กลับไปที่ตะกร้า
-      </Link>
-    </>
-  );
-}
-
-function NotFound() {
-  return (
-    <>
-      <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <span className="text-6xl">🔍</span>
-      </div>
-      <h1 className="text-2xl font-bold text-gray-700 mb-2">
-        ไม่พบคำสั่งซื้อนี้
-      </h1>
-      <p className="text-gray-600 text-sm">
-        ลองตรวจสอบที่หน้า &quot;คำสั่งซื้อของฉัน&quot;
-      </p>
-    </>
+      ))}
+    </dl>
   );
 }

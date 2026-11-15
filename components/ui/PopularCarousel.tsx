@@ -76,7 +76,7 @@ export default function PopularCarousel({
           go(current - 1);
         }}
         aria-label="ก่อนหน้า"
-        className="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-md text-amber-700 hover:bg-white hover:scale-105 transition-all"
+        className="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-md text-ink hover:bg-white hover:scale-105 transition-all"
       >
         ‹
       </button>
@@ -87,7 +87,7 @@ export default function PopularCarousel({
           go(current + 1);
         }}
         aria-label="ถัดไป"
-        className="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-md text-amber-700 hover:bg-white hover:scale-105 transition-all"
+        className="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-md text-ink hover:bg-white hover:scale-105 transition-all"
       >
         ›
       </button>
@@ -122,8 +122,8 @@ export default function PopularCarousel({
             aria-label={`ไปสไลด์ที่ ${i + 1}`}
             className={`h-2 rounded-full transition-all duration-300 ${
               i === current
-                ? "w-6 bg-amber-600"
-                : "w-2 bg-amber-300 hover:bg-amber-400"
+                ? "w-6 bg-apricot"
+                : "w-2 bg-ink-edge hover:bg-mist"
             }`}
           />
         ))}
@@ -131,7 +131,7 @@ export default function PopularCarousel({
           type="button"
           onClick={() => setPaused((p) => !p)}
           aria-label={paused ? "เล่นสไลด์" : "หยุดสไลด์"}
-          className="ml-2 w-7 h-7 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 flex items-center justify-center text-[11px] transition-colors"
+          className="ml-2 w-7 h-7 rounded-full bg-ink-line text-cream hover:bg-ink-edge flex items-center justify-center text-[11px] transition-colors"
         >
           {paused ? "▶" : "❚❚"}
         </button>

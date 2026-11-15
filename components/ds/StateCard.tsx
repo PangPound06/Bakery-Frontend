@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cx } from "@/components/ds";
+import { cx } from "./cx";
 
 type Tone = "success" | "warning" | "done" | "danger";
 
@@ -30,7 +30,7 @@ interface Props {
   actions?: ReactNode;
 }
 
-/** การ์ดสถานะหลังเช็กบิล (เรียกพนักงาน / รอร้านตรวจยอด / ชำระแล้ว / ไม่สำเร็จ) */
+/** การ์ดสถานะผลลัพธ์ (ชำระแล้ว / รอร้านตรวจยอด / ไม่สำเร็จ ฯลฯ) — ใช้ทั้งหน้าเช็กบิลและหน้าสั่งซื้อสำเร็จ */
 export default function StateCard({ tone, title, children, actions }: Props) {
   return (
     <div className="flex flex-col gap-3.5 rounded-[32px] border border-line bg-white p-7 motion-safe:animate-rise sm:p-8">

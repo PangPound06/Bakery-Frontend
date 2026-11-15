@@ -2,23 +2,28 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
 import { authHeaders, getToken } from "@/lib/auth";
 import { cartUrl, type CartMode } from "@/lib/cart";
 import type { CartResponse } from "@/types/cart";
 
 /**
- * ตะกร้าใบหนึ่ง (ออนไลน์ หรือ ทานในร้าน) — โหลด แก้จำนวน ลบ ล้าง
+ * ตะกร้าใบหนึ่ง — โหลด แก้จำนวน ลบ ล้าง
  *
- * ใช้ร่วมกันทั้งสองหน้าตะกร้า หน้าแต่ละหน้าแค่บอกว่าเป็นตะกร้าใบไหน
+ * การถามยืนยันก่อนลบเป็นหน้าที่ของหน้าจอ (Dialog) hook นี้ทำตามคำสั่งเลย
  * ยังไม่ login → ไปหน้า login / token หมดอายุ (401) → ล้าง token แล้วไปหน้า login
  */
 export function useCart(mode: CartMode) {
   const router = useRouter();
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  /** id ของแถวที่กำลังแก้จำนวน */
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  /** id ของแถวที่กำลังแก้ / "all" = กำลังล้างตะกร้า */
+  const [busyId, setBusyId] = useState<number | "all" | null>(null);
+  const [error, setError] = useState("");
+
+  const toLogin = useCallback(() => {
+    localStorage.removeItem("token");
+    router.replace("/login");
+  }, [router]);
 
   const refresh = useCallback(async () => {
     if (!getToken()) {
@@ -27,80 +32,55 @@ export function useCart(mode: CartMode) {
     }
     try {
       const res = await fetch(cartUrl("", mode), { headers: authHeaders() });
-      if (res.status === 401) {
-        localStorage.removeItem("token");
-        router.replace("/login");
-        return;
-      }
+      if (res.status === 401) return toLogin();
       if (res.ok) setCart(await res.json());
-    } catch (error) {
-      console.error("โหลดตะกร้าไม่สำเร็จ:", error);
+      else setError("โหลดตะกร้าไม่สำเร็จ กรุณาลองใหม่");
+    } catch {
+      setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
     } finally {
       setLoading(false);
     }
-  }, [mode, router]);
+  }, [mode, router, toLogin]);
 
   useEffect(() => {
     // setState เกิดหลัง await ใน refresh ไม่ใช่ใน effect ตรงๆ
     void refresh();
   }, [refresh]);
 
-  const updateQuantity = async (cartId: number, quantity: number) => {
-    if (quantity < 1) return;
-    setUpdatingId(cartId);
+  /** ส่งคำสั่งหนึ่งอย่างแล้วโหลดตะกร้าใหม่ — ข้อความผิดพลาดจาก server แสดงใน error */
+  const run = async (target: number | "all", request: () => Promise<Response>) => {
+    setBusyId(target);
+    setError("");
     try {
-      const res = await fetch(cartUrl(`/${cartId}`, mode), {
+      const res = await request();
+      if (res.status === 401) return toLogin();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(typeof data.error === "string" ? data.error : "ทำรายการไม่สำเร็จ กรุณาลองใหม่");
+      }
+      await refresh();
+    } catch {
+      setError("เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const updateQuantity = (cartId: number, quantity: number) => {
+    if (quantity < 1) return;
+    return run(cartId, () =>
+      fetch(cartUrl(`/${cartId}`, mode), {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ quantity }),
-      });
-      if (res.ok) await refresh();
-    } catch (error) {
-      console.error("แก้จำนวนไม่สำเร็จ:", error);
-    } finally {
-      setUpdatingId(null);
-    }
+      }),
+    );
   };
 
-  const removeItem = async (cartId: number) => {
-    const confirm = await Swal.fire({
-      title: "ลบสินค้า?",
-      text: "ต้องการลบสินค้านี้ออกจากตะกร้าหรือไม่?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "ลบ",
-      cancelButtonText: "ยกเลิก",
-    });
-    if (!confirm.isConfirmed) return;
-    try {
-      const res = await fetch(cartUrl(`/${cartId}`, mode), { method: "DELETE", headers: authHeaders() });
-      if (res.ok) await refresh();
-    } catch (error) {
-      console.error("ลบสินค้าไม่สำเร็จ:", error);
-    }
-  };
+  const removeItem = (cartId: number) =>
+    run(cartId, () => fetch(cartUrl(`/${cartId}`, mode), { method: "DELETE", headers: authHeaders() }));
 
-  const clearAll = async () => {
-    const confirm = await Swal.fire({
-      title: "ล้างตะกร้า?",
-      text: "ต้องการลบสินค้าทั้งหมดออกจากตะกร้าหรือไม่?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "ล้างตะกร้า",
-      cancelButtonText: "ยกเลิก",
-    });
-    if (!confirm.isConfirmed) return;
-    try {
-      const res = await fetch(cartUrl("/clear", mode), { method: "DELETE", headers: authHeaders() });
-      if (res.ok) await refresh();
-    } catch (error) {
-      console.error("ล้างตะกร้าไม่สำเร็จ:", error);
-    }
-  };
+  const clearAll = () => run("all", () => fetch(cartUrl("/clear", mode), { method: "DELETE", headers: authHeaders() }));
 
-  return { cart, loading, updatingId, refresh, updateQuantity, removeItem, clearAll };
+  return { cart, loading, busyId, error, refresh, updateQuantity, removeItem, clearAll };
 }

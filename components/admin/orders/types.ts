@@ -26,6 +26,10 @@ export interface Order {
   receiverName: string;
   receiverPhone: string;
   receiverAddress: string;
+  /** delivery / pickup — order เก่าเป็น delivery */
+  fulfillment?: string | null;
+  /** เวลาที่ลูกค้าเลือกรับ — null = เร็วที่สุด */
+  receiveAt?: string | null;
   note: string;
   slipImage: string;
   createdAt: string;

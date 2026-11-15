@@ -1,7 +1,6 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import TiltCard from "@/components/ui/TiltCard";
+import Link from "next/link";
+import { cx } from "@/components/ds";
+import { formatBaht } from "@/lib/dineIn";
 
 interface ProductOption {
   name: string;
@@ -18,27 +17,32 @@ interface Product {
   description?: string;
   stockQuantity?: number;
   isAvailable?: boolean;
-  options?: string | null; // ✅ JSON string
+  /** JSON string ของ ProductOption[] */
+  options?: string | null;
 }
 
 const FRESH_STOCK_VALUE = 9999;
-const FRESH_DISPLAY_LIMIT = 10;
+/** เหลือน้อยกว่าหรือเท่านี้ บอกจำนวนที่เหลือ */
+const LOW_STOCK = 5;
 
-const parseOptions = (optionsStr?: string | null): ProductOption[] => {
-  if (!optionsStr) return [];
+const optionCount = (raw?: string | null) => {
+  if (!raw) return 0;
   try {
-    return JSON.parse(optionsStr);
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as ProductOption[]).length : 0;
   } catch {
-    return [];
+    return 0;
   }
 };
 
-const formatPrice = (price: number) =>
-  price.toLocaleString("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+/** URL หน้าสินค้า — ชื่อสินค้าแทนช่องว่างด้วย "-" (ตรงกับ [category]/[name]) */
+export const productHref = (category: string, name: string) => `/${category}/${name.replace(/\s+/g, "-")}`;
 
+/**
+ * การ์ดสินค้า — ทั้งใบกดไปหน้าสินค้า (เลือกขนาด/ตัวเลือกแล้วเพิ่มลงตะกร้าที่นั่น)
+ *
+ * ของหมด: รูปจางและมีป้าย "หมดชั่วคราว" · เหลือน้อย: บอกจำนวนที่เหลือ
+ */
 export default function ProductCard({
   name,
   type,
@@ -50,124 +54,56 @@ export default function ProductCard({
   isAvailable = true,
   options,
 }: Product) {
-  const router = useRouter();
-  const currentStock = stockQuantity;
+  const fresh = stockQuantity === FRESH_STOCK_VALUE;
+  const soldOut = !isAvailable || (!fresh && stockQuantity <= 0);
+  const low = !fresh && !soldOut && stockQuantity <= LOW_STOCK;
+  const hasChoices = category === "cake" || optionCount(options) > 0;
 
-  const isFresh =
-    currentStock === FRESH_STOCK_VALUE || stockQuantity === FRESH_STOCK_VALUE;
-  const displayStock = isFresh ? FRESH_DISPLAY_LIMIT : currentStock;
-  const isOutOfStock = isFresh ? false : currentStock <= 0 || !isAvailable;
-  const productOptions = parseOptions(options);
-  const hasOptions = productOptions.length > 0;
+  const note = soldOut ? "หมดชั่วคราว" : low ? `เหลือ ${stockQuantity} ชิ้น` : fresh ? "ทำสดทุกแก้ว" : hasChoices ? "มีให้เลือก" : "";
 
   return (
-    <>
-      <TiltCard>
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group flex flex-col h-full">
-        <div className="relative overflow-hidden h-56 shrink-0">
+    <Link
+      href={productHref(category, name)}
+      className="group relative flex h-full flex-col gap-3.5 rounded-[28px] border border-line bg-white px-2.5 pt-2.5 pb-4.5 text-ink transition-[transform,box-shadow] duration-300 hover:shadow-[0_16px_36px_rgba(31,26,22,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brick motion-safe:hover:-translate-y-1"
+    >
+      <span className={cx("block aspect-[4/5] overflow-hidden rounded-[20px] bg-sand", soldOut && "opacity-45")}>
+        {img && (
+          // รูปสินค้ามาจากหลายโดเมน (ตั้งค่าใน admin) — ใช้ img ธรรมดา
           <img
             src={img}
-            alt={name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            alt=""
+            loading="lazy"
+            className="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105"
           />
-          {isOutOfStock && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <span className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold">
-                สินค้าหมด
-              </span>
-            </div>
+        )}
+      </span>
+      <span className="absolute top-[22px] left-[22px] flex flex-wrap gap-1.5">
+        {soldOut ? (
+          <span className="rounded-full bg-ink px-2.5 py-1 text-xs font-semibold text-cream">หมดชั่วคราว</span>
+        ) : (
+          type && <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink">{type}</span>
+        )}
+      </span>
+      <span className="flex items-center justify-between gap-3 px-2">
+        <span className="min-w-0">
+          <span className="block text-[17px] font-semibold break-words">{name}</span>
+          <span className="mt-1 block text-[15px] text-muted">
+            {hasChoices ? "เริ่ม " : ""}
+            {formatBaht(price)}
+          </span>
+          {note && <span className={cx("mt-0.5 block text-xs", soldOut || low ? "text-danger" : "text-muted")}>{note}</span>}
+          {description && <span className="sr-only">{description}</span>}
+        </span>
+        <span
+          aria-hidden="true"
+          className={cx(
+            "flex size-11 flex-none items-center justify-center rounded-full text-xl transition-colors",
+            soldOut ? "bg-line text-faint" : "bg-ink text-white group-hover:bg-brick",
           )}
-          <div className="absolute top-3 left-3 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-            {type}
-          </div>
-          {!isFresh && currentStock > 0 && currentStock <= 5 && (
-            <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md">
-              เหลือ {currentStock} ชิ้น
-            </div>
-          )}
-        </div>
-
-        <div className="p-4 sm:p-5 flex flex-col flex-grow">
-          <h3 className="text-base sm:text-base font-bold text-amber-800 mb-2 line-clamp-2 h-14">
-            {name}
-          </h3>
-          <div className="h-10 mb-3">
-            {description ? (
-              <p className="text-gray-500 text-sm line-clamp-2">
-                {description}
-              </p>
-            ) : (
-              <div className="h-full"></div>
-            )}
-          </div>
-
-          {/* ✅ แสดง options badges */}
-          {hasOptions && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {productOptions.map((o) => (
-                <span
-                  key={o.name}
-                  className="text-[10px] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200"
-                >
-                  {o.name}
-                  {o.extraPrice > 0 ? ` +฿${o.extraPrice}` : ""}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-auto pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <span className="text-lg sm:text-xl font-extrabold text-amber-600 leading-none whitespace-nowrap">
-                ฿{formatPrice(price)}
-              </span>
-              {isFresh ? (
-                <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-1 rounded-full whitespace-nowrap">
-                  🥤 ทำสด
-                </span>
-              ) : (
-                <span
-                  className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${currentStock <= 5 ? "text-red-600 bg-red-50" : "text-emerald-700 bg-emerald-50"}`}
-                >
-                  เหลือ {displayStock} ชิ้น
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(`/${category}/${name.replace(/\s+/g, "-")}`);
-                }}
-                className="w-full py-3 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-                <span>View Details</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      </TiltCard>
-    </>
+        >
+          →
+        </span>
+      </span>
+    </Link>
   );
 }
