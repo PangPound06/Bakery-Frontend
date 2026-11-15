@@ -41,7 +41,8 @@
 - แถวใหม่ของลูกค้าคนเดิมได้เลขที่จองไว้ — `OrderCodeService.codeForNewOrder`
 - จ่ายสำเร็จ → ล้างการจอง — `OrderCodeService.forget` (เรียกจาก `PaymentStateService.finalizePaid`)
 
-**test ที่คุมกฎนี้:** `OrderCodeRulesTest` (ทำได้ 6 ข้อ / ทำไม่ได้ 8 ข้อ)
+**test ที่คุมกฎนี้:** `OrderCodeRulesTest` (ทำได้ 6 ข้อ / ทำไม่ได้ 8 ข้อ — "ทำไม่ได้" = test ที่ตรวจว่าระบบไม่ยอมให้เกิด ทุกข้อต้องผ่าน)
+และ `DineInBillServiceTest` ชุด "เลขบิล" 4 ข้อ (เช็กบิล à la carte / บุฟเฟต์ หลังยกเลิกรอบก่อนได้เลขเดิม · ไม่มีเลขค้างได้เลขใหม่ · สลับวิธีจ่ายเลขไม่เปลี่ยน)
 
 ---
 
