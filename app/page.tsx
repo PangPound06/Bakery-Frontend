@@ -98,17 +98,10 @@ export default function HomePage() {
       <section className="mx-auto max-w-[1240px] px-4 sm:px-6" aria-label="ทางลัด">
         <div className="grid auto-rows-[minmax(220px,auto)] grid-cols-1 gap-4 sm:grid-cols-2 lg:auto-rows-[260px] lg:grid-cols-4">
           {featured && (
-            <div className="relative flex min-w-0 flex-col justify-between gap-6 overflow-hidden rounded-[32px] bg-sand p-7 sm:col-span-2 sm:row-span-2 sm:p-8">
-              {featured.img && (
-                <img
-                  key={featured.id}
-                  src={featured.img}
-                  alt=""
-                  className="pointer-events-none absolute right-0 bottom-0 h-3/5 w-3/5 rounded-tl-[32px] object-cover opacity-90 motion-safe:animate-fade"
-                />
-              )}
+            // ข้อความกับรูปอยู่คนละช่อง (ไม่ซ้อนกัน) — มือถือเรียงบนลงล่าง จอกว้างวางข้างกัน
+            <div className="flex min-w-0 flex-col gap-5 overflow-hidden rounded-[32px] bg-sand p-5 sm:col-span-2 sm:row-span-2 sm:p-8">
               {featuredList.length > 1 && (
-                <div role="tablist" aria-label="เมนูแนะนำ" className="relative flex flex-wrap gap-2">
+                <div role="tablist" aria-label="เมนูแนะนำ" className="flex flex-wrap gap-2">
                   {featuredList.map((p, i) => (
                     <button
                       key={p.id}
@@ -117,7 +110,7 @@ export default function HomePage() {
                       aria-selected={p.id === featured.id}
                       onClick={() => setFeaturedIndex(i)}
                       className={cx(
-                        "min-h-10 rounded-full px-4 text-sm font-semibold transition-colors",
+                        "min-h-10 max-w-full truncate rounded-full px-4 text-sm font-semibold transition-colors",
                         p.id === featured.id ? "bg-ink text-cream" : "bg-white/70 text-ink hover:bg-white",
                       )}
                     >
@@ -126,14 +119,23 @@ export default function HomePage() {
                   ))}
                 </div>
               )}
-              <div key={featured.id} className="relative max-w-[60%] motion-safe:animate-rise">
-                <p className="m-0 mb-2 text-sm font-semibold text-subtle">{popular.length > 0 ? "ขายดีของร้าน" : "เมนูแนะนำ"}</p>
-                <h2 className="m-0 font-display text-[34px] leading-tight font-bold break-words sm:text-[52px]">{featured.name}</h2>
-                <div className="mt-6">
-                  <ButtonLink href={productHref(featured.category, featured.name)} variant="secondary">
-                    ดูสินค้า · {formatBaht(featured.price)}
-                  </ButtonLink>
+              <div key={featured.id} className="grid min-h-0 flex-1 gap-5 motion-safe:animate-rise md:grid-cols-2 md:items-end">
+                <div className="order-2 min-w-0 md:order-1">
+                  <p className="m-0 mb-2 text-sm font-semibold text-subtle">{popular.length > 0 ? "ขายดีของร้าน" : "เมนูแนะนำ"}</p>
+                  <h2 className="m-0 font-display text-[30px] leading-tight font-bold break-words sm:text-[44px]">{featured.name}</h2>
+                  <div className="mt-5">
+                    <ButtonLink href={productHref(featured.category, featured.name)} variant="secondary">
+                      ดูสินค้า · {formatBaht(featured.price)}
+                    </ButtonLink>
+                  </div>
                 </div>
+                {featured.img && (
+                  <img
+                    src={featured.img}
+                    alt={featured.name}
+                    className="order-1 aspect-[4/3] w-full rounded-[24px] object-cover md:order-2 md:aspect-square"
+                  />
+                )}
               </div>
             </div>
           )}
