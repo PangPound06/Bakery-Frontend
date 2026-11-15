@@ -50,11 +50,11 @@ const formatPrice = (n: number) =>
 export default function CardPaymentPanel(props: Props) {
   if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-        <p className="text-red-600 font-medium mb-2">
+      <div className="bg-white rounded-[28px] border border-line p-6 text-center">
+        <p className="text-error font-medium mb-2">
           ยังไม่ได้ตั้งค่า Stripe publishable key
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted">
           เพิ่ม NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ใน .env.local
           แล้วรีสตาร์ท dev server
         </p>
@@ -71,9 +71,9 @@ export default function CardPaymentPanel(props: Props) {
         appearance: {
           theme: "flat",
           variables: {
-            colorPrimary: "#f59e0b",
+            colorPrimary: "#a84a0e",
             colorBackground: "#ffffff",
-            colorText: "#374151",
+            colorText: "#1f1a16",
             borderRadius: "10px",
             fontSizeBase: "15px",
           },
@@ -153,22 +153,22 @@ function CardForm({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+    <div className="bg-white rounded-[28px] border border-line p-6 md:p-8">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-amber-800 mb-1">
+        <h2 className="font-display text-[28px] font-bold text-ink mb-1">
           ชำระด้วยบัตร
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted">
           กรอกข้อมูลบัตรเครดิตหรือเดบิตของคุณ
         </p>
       </div>
 
       <div className="text-center mb-6">
-        <p className="text-4xl font-bold text-amber-600">
+        <p className="text-4xl font-bold text-ink">
           ฿{formatPrice(total)}
         </p>
         {ordCode && (
-          <p className="text-xs text-gray-400 mt-1">คำสั่งซื้อ {ordCode}</p>
+          <p className="text-xs text-muted mt-1">คำสั่งซื้อ {ordCode}</p>
         )}
       </div>
 
@@ -176,13 +176,13 @@ function CardForm({
       <div className="mb-5 min-h-[180px]">
         <PaymentElement onReady={() => setReady(true)} />
         {!ready && (
-          <div className="flex items-center justify-center py-8 gap-2 text-sm text-gray-400">
+          <div className="flex items-center justify-center py-8 gap-2 text-sm text-muted">
             <span
               className="w-4 h-4 rounded-full animate-spin"
               style={{
                 borderWidth: 2,
                 borderStyle: "solid",
-                borderColor: "#f59e0b transparent transparent transparent",
+                borderColor: "#a84a0e transparent transparent transparent",
               }}
             />
             กำลังโหลดช่องกรอกบัตร...
@@ -191,12 +191,12 @@ function CardForm({
       </div>
 
       {error && (
-        <div className="mb-5 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+        <div className="mb-5 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-2xl text-sm">
           ⚠️ {error}
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-2 mb-4 text-xs text-gray-400">
+      <div className="flex items-center justify-center gap-2 mb-4 text-xs text-muted">
         <span>🔒</span>
         <span>ข้อมูลบัตรถูกส่งตรงไปยัง Stripe ไม่ผ่านเซิร์ฟเวอร์ของร้าน</span>
       </div>
@@ -204,10 +204,10 @@ function CardForm({
       <button
         onClick={handleSubmit}
         disabled={!stripe || !ready || submitting || canceling}
-        className={`w-full py-4 rounded-xl font-semibold text-white transition-colors ${
+        className={`w-full min-h-14 rounded-full font-semibold text-white transition-colors ${
           !stripe || !ready || submitting || canceling
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-amber-500 hover:bg-amber-600"
+            ? "bg-line text-muted cursor-not-allowed"
+            : "bg-brick hover:bg-brick-hover"
         }`}
       >
         {submitting ? (
@@ -230,7 +230,7 @@ function CardForm({
       <button
         onClick={handleCancel}
         disabled={submitting || canceling}
-        className="w-full mt-3 py-3 rounded-xl font-semibold border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+        className="w-full mt-3 min-h-12 rounded-full font-semibold border-[1.5px] border-ink text-ink hover:bg-ink/5 transition-colors disabled:opacity-50"
       >
         {canceling ? "กำลังยกเลิก..." : "← เปลี่ยนวิธีชำระเงิน"}
       </button>

@@ -90,6 +90,8 @@ export const logout = (): void => {
   localStorage.removeItem(USER_TYPE_KEY);
   localStorage.removeItem(ORDER_MODE_KEY);
   localStorage.removeItem(TABLE_NO_KEY);
+  // ค่ามื้อทานในร้าน (lib/dineIn.ts DINE_KEYS) และค่าเก่าจากหน้าเวอร์ชันก่อน
+  ["dineType", "buffetPax", "buffetPrice"].forEach((k) => localStorage.removeItem(k));
 };
 
 // ตรวจว่ามี token อยู่ไหม

@@ -22,7 +22,10 @@ interface Order {
   subtotal: number;
   total: number;
   orderStatus: string;
-  tableNo?: string; // ← เปลี่ยนจาก note
+  tableNo?: string;
+  /** หมายเหตุถึงครัวที่ลูกค้าพิมพ์ตอนส่งรอบนี้ (ไม่บังคับ) */
+  note?: string | null;
+  dineType?: string | null;
   createdAt: string;
 }
 
@@ -584,6 +587,11 @@ export default function AdminRestaurantPage() {
                         ) : (
                           <span className="text-xs text-gray-400">—</span>
                         )}
+                        {order.note && (
+                          <p className="mt-1 max-w-[220px] text-xs text-orange-700 break-words">
+                            📝 {order.note}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-4">
                         <p className="text-sm text-gray-700">{order.email}</p>
@@ -688,6 +696,13 @@ export default function AdminRestaurantPage() {
                     {getStatus(selectedOrder.orderStatus).text}
                   </span>
                 </div>
+
+                {selectedOrder.note && (
+                  <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                    <p className="text-xs font-semibold text-orange-700">หมายเหตุถึงครัว</p>
+                    <p className="mt-0.5 text-sm text-gray-800 break-words">{selectedOrder.note}</p>
+                  </div>
+                )}
 
                 {/* Action buttons */}
                 {getNextActions(selectedOrder.orderStatus).length > 0 && (

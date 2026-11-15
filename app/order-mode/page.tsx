@@ -1,548 +1,267 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button, ChoiceCard, cx, QuantityStepper } from "@/components/ds";
+import { authHeaders, getToken } from "@/lib/auth";
+import {
+  BUFFET_MINUTES,
+  BUFFET_PRICE_PER_PERSON,
+  DINE_KEYS,
+  formatBaht,
+  MAX_BUFFET_PAX,
+  parseDineType,
+  parsePax,
+  saveDineSelection,
+  switchToOnline,
+  TABLE_GROUPS,
+  tableCapacity,
+  type DineType,
+} from "@/lib/dineIn";
 
-/** ฟิลด์ที่หน้านี้ใช้จาก GET /api/dinein/my-orders */
-interface DineInOrderSummary {
-  tableNo?: string;
-  orderStatus?: string;
-  paymentStatus?: string | null;
+/** มื้อที่ยังไม่จ่ายของลูกค้า (จาก GET /api/dinein/my-orders) — ต้องกลับโต๊ะเดิม ห้ามเปิดโต๊ะใหม่ */
+interface OpenMeal {
+  tableNo: string;
+  dineType: DineType;
 }
 
+type Step = "mode" | "dine";
+
+/**
+ * เลือกว่าจะสั่งกลับบ้าน หรือทานที่ร้าน (เลือกโต๊ะ → ประเภท → จำนวนคน)
+ *
+ * ทุกช่องเป็นปุ่มให้เลือก ไม่มีช่องพิมพ์ — เลือกครบแล้วปุ่มเริ่มสั่งถึงจะกดได้
+ * ถ้ามีมื้อที่ยังไม่จ่ายค้างอยู่ ให้กลับโต๊ะเดิมเท่านั้น (backend ผูกบิลกับโต๊ะนั้น)
+ */
 export default function OrderModePage() {
   const router = useRouter();
-  const [selectedMode, setSelectedMode] = useState<string | null>(null);
-  const [tableInput, setTableInput] = useState("");
-  const [showTableModal, setShowTableModal] = useState(false);
-
-  const [showDineTypeModal, setShowDineTypeModal] = useState(false);
-  const [buffetPrice, setBuffetPrice] = useState<number | null>(null);
-  const [buffetPax, setBuffetPax] = useState(1); // ← จำนวนคน
-  const [tableCapacity, setTableCapacity] = useState(8); // จำนวนคนมากสุดที่ร้านรองรับ (ใช้สำหรับ validation)
-  const BUFFET_PRICES = [1599];
-
-  const [hasActiveOrder, setHasActiveOrder] = useState(false);
-  const [lockedTable, setLockedTable] = useState("");
-  const [lockedDineType, setLockedDineType] = useState("");
+  const [step, setStep] = useState<Step>("mode");
+  const [openMeal, setOpenMeal] = useState<OpenMeal | null>(null);
+  const [table, setTable] = useState<number | null>(null);
+  const [dineType, setDineType] = useState<DineType | null>(null);
+  const [pax, setPax] = useState(1);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        const list: DineInOrderSummary[] = Array.isArray(data)
-          ? data
-          : (data.orders ?? []);
-        const active = list.filter(
-          (o) => o.orderStatus !== "cancelled" && o.paymentStatus !== "paid",
+    if (!getToken()) return;
+    let cancelled = false;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dinein/my-orders`, { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: unknown) => {
+        if (cancelled || !Array.isArray(data)) return;
+        const open = (data as { tableNo?: string; dineType?: string | null; orderStatus?: string }[]).find(
+          (o) => o.orderStatus !== "cancelled" && o.tableNo,
         );
-        if (active.length > 0) {
-          const tableNoFromOrder = active[0].tableNo || "";
-          const existingDineType =
-            localStorage.getItem("dineType") || "alacarte";
-          const existingBuffetPrice = localStorage.getItem("buffetPrice");
-
-          localStorage.setItem("orderMode", "dinein");
-          localStorage.setItem("tableNo", tableNoFromOrder);
-
-          setHasActiveOrder(true);
-          setLockedTable(tableNoFromOrder);
-          setLockedDineType(existingDineType);
-
-          if (existingBuffetPrice) {
-            localStorage.setItem("buffetPrice", existingBuffetPrice);
-          }
-        }
+        if (open?.tableNo) setOpenMeal({ tableNo: open.tableNo, dineType: parseDineType(open.dineType) });
       })
-      .catch(() => {});
+      .catch(() => {
+        /* เช็กไม่ได้ก็เลือกโหมดตามปกติ — backend กันเปิดบิลซ้อนอยู่แล้ว */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleOnline = () => {
-    localStorage.setItem("orderMode", "online");
-    localStorage.removeItem("tableNo");
-    window.dispatchEvent(new Event("orderModeChanged"));
-    setSelectedMode("online");
-    setTimeout(() => router.push("/"), 1200);
+  const capacity = table ? Math.min(tableCapacity(table), MAX_BUFFET_PAX) : 1;
+  const ready = table !== null && dineType !== null;
+
+  const pickTable = (n: number) => {
+    setTable(n);
+    setPax((p) => Math.min(p, Math.min(tableCapacity(n), MAX_BUFFET_PAX)));
   };
 
-  const handleDineIn = () => {
-    setShowTableModal(true);
+  const goOnline = () => {
+    setLeaving(true);
+    switchToOnline();
+    router.push("/");
   };
 
-  const handleTableSubmit = () => {
-    if (!tableInput.trim()) return;
-    setShowTableModal(false);
-    setShowDineTypeModal(true);
+  const startDineIn = () => {
+    if (table === null || dineType === null) return;
+    setLeaving(true);
+    saveDineSelection({ tableNo: String(table), dineType, pax: dineType === "buffet" ? pax : 1 });
+    router.push("/dine-in");
   };
 
-  const handleDineTypeConfirm = (type: "alacarte" | "buffet") => {
-    localStorage.setItem("orderMode", "dinein");
-    localStorage.setItem("tableNo", tableInput.trim());
-    localStorage.setItem("dineType", type);
-    if (type === "buffet" && buffetPrice) {
-      localStorage.setItem("buffetPrice", String(buffetPrice));
-      localStorage.setItem("buffetPax", String(buffetPax)); // ← บันทึกจำนวนคน
-    } else {
-      localStorage.removeItem("buffetPrice");
-      localStorage.removeItem("buffetPax");
-    }
-    window.dispatchEvent(new Event("orderModeChanged"));
-    setShowDineTypeModal(false);
-    setSelectedMode("dinein");
-    setTimeout(() => router.push("/"), 1200);
-  };
-
-  // reset pax เมื่อปิด modal
-  const handleCloseDineTypeModal = () => {
-    setShowDineTypeModal(false);
-    setShowTableModal(true);
-    setBuffetPrice(null);
-    setBuffetPax(1);
-  };
-
-  const getCapacity = (table: number) => {
-    if (table <= 5) return 2;
-    if (table <= 25) return 4;
-    return 8;
+  const resumeMeal = (meal: OpenMeal) => {
+    setLeaving(true);
+    saveDineSelection({ ...meal, pax: parsePax(localStorage.getItem(DINE_KEYS.pax)) });
+    router.push("/dine-in");
   };
 
   return (
-    <div className="min-h-screen bg-amber-50 flex items-center justify-center py-16 px-4">
-      <div className="w-full max-w-lg">
-        {/* Logo & Title */}
-        <div className="text-center mb-10">
-          <div className="text-5xl mb-3 animate-bounce">🧁</div>
-          <h1 className="text-3xl font-bold text-amber-700 mb-2">
-            Pound Bakery
+    <div className="min-h-screen bg-cream px-4 py-10 font-body text-ink sm:py-16">
+      <div className="mx-auto flex w-full max-w-[560px] flex-col gap-6">
+        <header className="flex flex-col gap-2">
+          <Link href="/" className="self-start text-sm font-semibold text-muted hover:text-brick">
+            ← Pound Bakery
+          </Link>
+          <h1 className="m-0 font-display text-[32px] font-bold sm:text-[44px]">
+            {step === "mode" ? "วันนี้สั่งแบบไหนดี" : "ทานที่ร้าน"}
           </h1>
-          <p className="text-stone-500 text-sm">
-            สวัสดี! คุณต้องการสั่งแบบไหน?
+          <p className="m-0 text-subtle">
+            {step === "mode" ? "เลือกได้ทุกเมื่อ เปลี่ยนภายหลังได้จากหน้านี้" : "เลือกโต๊ะและแบบการทาน แล้วเริ่มสั่งได้เลย"}
           </p>
-        </div>
+        </header>
 
-        {/* ถ้ามี active order — แสดง locked state */}
-        {hasActiveOrder && (
-          <div className="bg-white rounded-2xl p-6 border-2 border-amber-400 shadow-lg mb-4">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
-                🪑
-              </div>
-              <div>
-                <p className="font-bold text-amber-800">กำลังใช้งานอยู่</p>
-                <p className="text-sm text-stone-500">
-                  โต๊ะ {lockedTable} ·{" "}
-                  {lockedDineType === "buffet" ? "🍱 Buffet" : "🍜 A la carte"}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                localStorage.setItem("orderMode", "dinein");
-                localStorage.setItem("tableNo", lockedTable);
-                localStorage.setItem("dineType", lockedDineType);
-                window.dispatchEvent(new Event("orderModeChanged"));
-                router.push("/");
-              }}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all"
-            >
-              กลับไปยังโต๊ะ {lockedTable} →
-            </button>
+        {openMeal ? (
+          <section className="flex flex-col gap-4 rounded-[28px] bg-ink p-6 text-cream sm:p-7" aria-label="มื้อที่ยังไม่ชำระ">
+            <p className="m-0 font-display text-2xl font-bold">โต๊ะ {openMeal.tableNo} ยังไม่ได้เช็กบิล</p>
+            <p className="m-0 text-mist">
+              {openMeal.dineType === "buffet" ? "บุฟเฟต์" : "A la carte"} · ชำระเงินมื้อนี้ก่อนจึงจะเปิดโต๊ะใหม่หรือสั่งกลับบ้านได้
+            </p>
+            <Button variant="primaryOnDark" size="lg" block loading={leaving} onClick={() => resumeMeal(openMeal)}>
+              กลับไปที่โต๊ะ {openMeal.tableNo}
+            </Button>
+          </section>
+        ) : step === "mode" ? (
+          <div className="flex flex-col gap-3" role="list">
+            <ModeCard
+              title="สั่งกลับบ้าน / จัดส่ง"
+              description="สั่งออนไลน์ จ่ายเงินแล้วรอรับหรือรอส่งถึงบ้าน"
+              onClick={goOnline}
+              disabled={leaving}
+            />
+            <ModeCard
+              title="ทานที่ร้าน"
+              description="นั่งอยู่ที่ร้าน สั่งจากโต๊ะได้หลายรอบ จ่ายทีเดียวตอนเช็กบิล"
+              onClick={() => setStep("dine")}
+              disabled={leaving}
+            />
+            <ModeCard title="จองโต๊ะล่วงหน้า" description="เลือกวัน เวลา และจำนวนคน" href="/reservation" />
           </div>
-        )}
+        ) : (
+          <>
+            <section className="flex flex-col gap-4 rounded-[28px] border border-line bg-white p-5 sm:p-6" aria-labelledby="pick-table">
+              <h2 id="pick-table" className="m-0 text-lg font-bold">
+                1. โต๊ะของคุณ
+              </h2>
+              <p className="m-0 -mt-2 text-sm text-muted">ดูเลขโต๊ะได้จากป้ายบนโต๊ะ</p>
+              {TABLE_GROUPS.map((group) => (
+                <div key={group.seats} className="flex flex-col gap-2">
+                  <p className="m-0 text-[13px] font-semibold text-muted">โต๊ะ {group.seats} ที่นั่ง</p>
+                  <div role="radiogroup" aria-label={`โต๊ะ ${group.seats} ที่นั่ง`} className="grid grid-cols-5 gap-2">
+                    {group.tables.map((n) => {
+                      const on = table === n;
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          aria-label={`โต๊ะ ${n}`}
+                          onClick={() => pickTable(n)}
+                          className={cx(
+                            "h-12 rounded-2xl border-2 text-base font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brick",
+                            on ? "border-brick bg-brick text-white" : "border-line bg-cream text-ink hover:border-line-strong",
+                          )}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </section>
 
-        {/* Cards */}
-        {!hasActiveOrder && (
-          <div className="space-y-4">
-            {/* Online Order */}
-            <button
-              onClick={handleOnline}
-              className="w-full bg-white rounded-2xl p-6 border-2 border-transparent hover:border-orange-400 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-left group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-orange-50 group-hover:bg-gradient-to-br group-hover:from-orange-500 group-hover:to-amber-400 flex items-center justify-center text-2xl transition-all duration-300 flex-shrink-0">
-                  📦
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-amber-700 mb-1">
-                    สั่งออนไลน์
-                  </h2>
-                  <p className="text-stone-500 text-sm">
-                    สั่งซื้อสินค้าแล้วจัดส่งถึงบ้าน
-                  </p>
-                </div>
-                <div className="w-9 h-9 rounded-lg bg-stone-100 group-hover:bg-orange-500 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-stone-400 group-hover:text-white transition-colors"
-                  >
-                    <path d="M5 12h14" />
-                    <path d="M12 5l7 7-7 7" />
-                  </svg>
-                </div>
+            <section className="flex flex-col gap-3 rounded-[28px] border border-line bg-white p-5 sm:p-6" aria-labelledby="pick-type">
+              <h2 id="pick-type" className="m-0 text-lg font-bold">
+                2. แบบการทาน
+              </h2>
+              <div role="radiogroup" aria-labelledby="pick-type" className="flex flex-col gap-2">
+                <ChoiceCard
+                  checked={dineType === "alacarte"}
+                  onSelect={() => setDineType("alacarte")}
+                  title="A la carte"
+                  description="สั่งตามเมนู จ่ายตามที่สั่งจริง"
+                />
+                <ChoiceCard
+                  checked={dineType === "buffet"}
+                  onSelect={() => setDineType("buffet")}
+                  title="บุฟเฟต์"
+                  description={`สั่งได้ไม่อั้น ${BUFFET_MINUTES} นาที นับจากรอบแรก`}
+                  trailing={`${BUFFET_PRICE_PER_PERSON.toLocaleString("th-TH")} ฿/คน`}
+                />
               </div>
-            </button>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4 px-2">
-              <div className="flex-1 h-px bg-stone-200"></div>
-              <span className="text-xs text-stone-400 font-medium">หรือ</span>
-              <div className="flex-1 h-px bg-stone-200"></div>
+              {dineType === "buffet" && (
+                <div className="flex flex-col gap-3 rounded-2xl bg-sand px-4 py-3.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="block font-semibold">จำนวนคน</span>
+                      <span className="block text-[13px] text-muted">
+                        {table ? `โต๊ะ ${table} นั่งได้ ${capacity} คน` : "เลือกโต๊ะก่อน"}
+                      </span>
+                    </span>
+                    <QuantityStepper
+                      label="จำนวนคน"
+                      value={pax}
+                      onDecrease={() => setPax((p) => Math.max(1, p - 1))}
+                      onIncrease={() => setPax((p) => Math.min(capacity, p + 1))}
+                      decreaseDisabled={pax <= 1}
+                      increaseDisabled={pax >= capacity}
+                    />
+                  </div>
+                  <div className="flex items-baseline justify-between border-t border-line-strong pt-3">
+                    <span className="text-muted">
+                      {BUFFET_PRICE_PER_PERSON.toLocaleString("th-TH")} ฿ × {pax} คน
+                    </span>
+                    <span className="text-xl font-bold">{formatBaht(BUFFET_PRICE_PER_PERSON * pax)}</span>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <div className="flex flex-col gap-2.5">
+              <Button size="lg" block disabled={!ready} loading={leaving} onClick={startDineIn}>
+                {!table ? "เลือกโต๊ะก่อน" : !dineType ? "เลือกแบบการทานก่อน" : `เริ่มสั่งอาหาร · โต๊ะ ${table}`}
+              </Button>
+              <Button variant="ghost" onClick={() => setStep("mode")} disabled={leaving}>
+                ← เปลี่ยนแบบการสั่ง
+              </Button>
             </div>
-
-            {/* Dine-in Order */}
-            <button
-              onClick={handleDineIn}
-              className="w-full bg-white rounded-2xl p-6 border-2 border-transparent hover:border-amber-400 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-left group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-amber-50 group-hover:bg-gradient-to-br group-hover:from-amber-500 group-hover:to-yellow-400 flex items-center justify-center text-2xl transition-all duration-300 flex-shrink-0">
-                  🪑
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-amber-700">
-                    สั่งในร้าน
-                  </h2>
-                  <p className="text-stone-500 text-sm">
-                    นั่งอยู่ในร้าน สั่งจากโต๊ะได้เลย
-                  </p>
-                </div>
-                <div className="w-9 h-9 rounded-lg bg-stone-100 group-hover:bg-amber-500 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-stone-400 group-hover:text-white transition-colors"
-                  >
-                    <path d="M5 12h14" />
-                    <path d="M12 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4 px-2">
-              <div className="flex-1 h-px bg-stone-200"></div>
-              <span className="text-xs text-stone-400 font-medium">หรือ</span>
-              <div className="flex-1 h-px bg-stone-200"></div>
-            </div>
-
-            {/* จองโต๊ะล่วงหน้า */}
-            <Link
-              href="/reservation"
-              className="w-full bg-white rounded-2xl p-6 border-2 border-transparent hover:border-green-400 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 text-left group flex items-center gap-4"
-            >
-              <div className="w-14 h-14 rounded-xl bg-green-50 group-hover:bg-gradient-to-br group-hover:from-green-500 group-hover:to-emerald-400 flex items-center justify-center text-2xl transition-all duration-300 flex-shrink-0">
-                🗓️
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold text-amber-700">
-                  จองโต๊ะล่วงหน้า
-                </h2>
-                <p className="text-stone-500 text-sm">
-                  เลือกวัน เวลา และโต๊ะที่ต้องการ
-                </p>
-              </div>
-              <div className="w-9 h-9 rounded-lg bg-stone-100 group-hover:bg-green-500 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-stone-400 group-hover:text-white transition-colors"
-                >
-                  <path d="M5 12h14" />
-                  <path d="M12 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-          </div>
+          </>
         )}
       </div>
+    </div>
+  );
+}
 
-      {/* Table Number Modal */}
-      {showTableModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6"
-          onClick={() => setShowTableModal(false)}
-        >
-          <div
-            className="w-full max-w-sm bg-white rounded-3xl p-8 shadow-2xl text-center animate-[scaleIn_0.3s_ease]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <style>{`@keyframes scaleIn { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }`}</style>
-            <div className="text-5xl mb-3">🪑</div>
-            <h3 className="text-xl font-bold text-stone-800 mb-1">
-              กรุณาระบุหมายเลขโต๊ะ
-            </h3>
-            <p className="text-sm text-stone-500 mb-6 leading-relaxed">
-              ดูหมายเลขโต๊ะได้จากป้ายบนโต๊ะ
-              <br />
-              หรือสแกน QR Code ที่โต๊ะ
-            </p>
-            <input
-              type="number"
-              placeholder="เลขโต๊ะ"
-              value={tableInput}
-              onChange={(e) => setTableInput(e.target.value)}
-              autoFocus
-              className={`w-full h-14 rounded-xl border-2 ${
-                tableInput ? "border-orange-500" : "border-stone-200"
-              } bg-stone-50 text-center text-3xl font-extrabold text-stone-800 outline-none transition-colors tracking-widest`}
-              onKeyDown={(e) => e.key === "Enter" && handleTableSubmit()}
-            />
-            <div className="mt-4 mb-6 space-y-3">
-              <div>
-                <p className="text-xs text-stone-400 font-medium mb-2 text-left">
-                  🪑 โต๊ะ 2 ที่นั่ง
-                </p>
-                <div className="grid grid-cols-5 gap-2">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => {
-                        setTableInput(String(n));
-                        setTableCapacity(getCapacity(n));
-                        setBuffetPax(1); // reset เมื่อเปลี่ยนโต๊ะ
-                      }}
-                      className={`h-11 rounded-xl text-base font-bold transition-all duration-200 ${
-                        tableInput === String(n)
-                          ? "bg-orange-500 text-white shadow-md shadow-orange-200"
-                          : "bg-blue-100 text-stone-600 hover:bg-blue-200"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
+interface ModeCardProps {
+  title: string;
+  description: string;
+  onClick?: () => void;
+  href?: string;
+  disabled?: boolean;
+}
 
-              <div>
-                <p className="text-xs text-stone-400 font-medium mb-2 text-left">
-                  🪑 โต๊ะ 4 ที่นั่ง
-                </p>
-                <div className="grid grid-cols-5 gap-2">
-                  {[
-                    6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-                    22, 23, 24, 25,
-                  ].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => {
-                        setTableInput(String(n));
-                        setTableCapacity(getCapacity(n));
-                        setBuffetPax(1); // reset เมื่อเปลี่ยนโต๊ะ
-                      }}
-                      className={`h-11 rounded-xl text-base font-bold transition-all duration-200 ${
-                        tableInput === String(n)
-                          ? "bg-orange-500 text-white shadow-md shadow-orange-200"
-                          : "bg-amber-100 text-amber-700 hover:bg-amber-200"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs text-stone-400 font-medium mb-2 text-left">
-                  🪑 โต๊ะ 8 ที่นั่ง
-                </p>
-                <div className="grid grid-cols-5 gap-2">
-                  {[26, 27, 28, 29, 30].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => {
-                        setTableInput(String(n));
-                        setTableCapacity(getCapacity(n));
-                        setBuffetPax(1); // reset เมื่อเปลี่ยนโต๊ะ
-                      }}
-                      className={`h-11 rounded-xl text-base font-bold transition-all duration-200 ${
-                        tableInput === String(n)
-                          ? "bg-orange-500 text-white shadow-md shadow-orange-200"
-                          : "bg-red-100 text-orange-700 hover:bg-red-200"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowTableModal(false)}
-                className="flex-1 h-12 rounded-xl border-2 border-stone-200 text-stone-600 font-semibold text-sm hover:bg-stone-50 transition-colors"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={handleTableSubmit}
-                disabled={!tableInput.trim()}
-                className={`flex-1 h-12 rounded-xl text-white font-bold text-sm transition-all duration-200 ${
-                  tableInput.trim()
-                    ? "bg-orange-500 hover:bg-orange-600 shadow-md shadow-orange-200"
-                    : "bg-stone-300 cursor-not-allowed"
-                }`}
-              >
-                เข้าสู่เมนู 🍽️
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading overlay */}
-      {selectedMode && (
-        <div className="fixed inset-0 z-[100] bg-amber-50/95 backdrop-blur-md flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-5xl mb-4">
-              {selectedMode === "online" ? "📦" : "🍽️"}
-            </div>
-            <h2 className="text-xl font-bold text-stone-800 mb-2">
-              {selectedMode === "online"
-                ? "กำลังเข้าสู่ร้านค้า..."
-                : `กำลังเข้าสู่เมนู โต๊ะ ${tableInput}...`}
-            </h2>
-            <div className="w-8 h-8 border-[3px] border-stone-200 border-t-orange-500 rounded-full animate-spin mx-auto mt-4" />
-          </div>
-        </div>
-      )}
-
-      {/* Dine Type Modal */}
-      {showDineTypeModal && (
-        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-8 shadow-2xl text-center animate-[scaleIn_0.3s_ease]">
-            <div className="text-5xl mb-3">🍽️</div>
-            <h3 className="text-xl font-bold text-stone-800 mb-1">
-              เลือกประเภทการสั่ง
-            </h3>
-            <p className="text-sm text-stone-500 mb-6">โต๊ะ {tableInput}</p>
-
-            <div className="space-y-3 mb-6">
-              {/* A la carte */}
-              <button
-                onClick={() => handleDineTypeConfirm("alacarte")}
-                className="w-full bg-white rounded-2xl p-5 border-2 border-stone-200 hover:border-orange-400 hover:shadow-md transition-all text-left group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-orange-50 group-hover:bg-orange-500 flex items-center justify-center text-2xl transition-all">
-                    🍜
-                  </div>
-                  <div>
-                    <p className="font-bold text-stone-800">A la carte</p>
-                    <p className="text-sm text-stone-500">
-                      สั่งตามรายการ คิดราคาต่อจาน
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Buffet */}
-              <div className="bg-white rounded-2xl p-5 border-2 border-stone-200 text-left">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-2xl">
-                    🍱
-                  </div>
-                  <div>
-                    <p className="font-bold text-stone-800">Buffet</p>
-                    <p className="text-sm text-stone-500">เลือกราคาบุฟเฟ่ต์</p>
-                    <p className="text-xs text-amber-700 mt-0.5">⏱ สั่งได้ 100 นาที นับจากออเดอร์แรก</p>
-                  </div>
-                </div>
-
-                {/* ราคา */}
-                <div className="flex gap-2 mb-3">
-                  {BUFFET_PRICES.map((price) => (
-                    <button
-                      key={price}
-                      onClick={() => setBuffetPrice(price)}
-                      className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                        buffetPrice === price
-                          ? "bg-amber-600 text-white shadow-md ring-2 ring-amber-300"
-                          : "bg-amber-500 text-white hover:bg-amber-600"
-                      }`}
-                    >
-                      ฿{price.toLocaleString()}
-                    </button>
-                  ))}
-                </div>
-
-                {/* ── จำนวนคน (แสดงเมื่อเลือกราคาแล้ว) ── */}
-                {buffetPrice && (
-                  <>
-                    <div className="flex items-center justify-between bg-amber-50 rounded-xl px-4 py-3 mb-3">
-                      <span className="text-sm text-stone-600 font-medium">
-                        จำนวนคน
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() =>
-                            setBuffetPax((p) => Math.max(1, p - 1))
-                          }
-                          className="w-8 h-8 rounded-full bg-white border border-stone-200 text-stone-700 text-lg font-bold flex items-center justify-center hover:bg-stone-100 transition"
-                        >
-                          −
-                        </button>
-                        <span className="text-lg font-bold text-stone-800 w-6 text-center">
-                          {buffetPax}
-                        </span>
-                        <button
-                          onClick={() =>
-                            setBuffetPax((p) => Math.min(tableCapacity, p + 1))
-                          }
-                          className="w-8 h-8 rounded-full bg-white border border-stone-200 text-stone-700 text-lg font-bold flex items-center justify-center hover:bg-stone-100 transition"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* ยอดรวม + ปุ่มยืนยัน */}
-                    <button
-                      onClick={() => handleDineTypeConfirm("buffet")}
-                      className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-all"
-                    >
-                      ยืนยัน Buffet ฿
-                      {(buffetPrice * buffetPax).toLocaleString()} ({buffetPax}{" "}
-                      คน) 🍱
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <button
-              onClick={handleCloseDineTypeModal}
-              className="w-full h-11 rounded-xl border-2 border-stone-200 text-stone-600 font-semibold text-sm hover:bg-stone-50 transition-colors"
-            >
-              ← ย้อนกลับ
-            </button>
-          </div>
-        </div>
+/** การ์ดเลือกแบบการสั่ง — ทั้งใบกดได้ */
+function ModeCard({ title, description, onClick, href, disabled }: ModeCardProps) {
+  const body = (
+    <>
+      <span className="min-w-0 flex-1">
+        <span className="block font-display text-xl font-bold">{title}</span>
+        <span className="mt-1 block text-[15px] text-subtle">{description}</span>
+      </span>
+      <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-full bg-sand text-brick transition-colors group-hover:bg-brick group-hover:text-white">
+        →
+      </span>
+    </>
+  );
+  const style =
+    "group flex w-full items-center gap-4 rounded-[24px] border-2 border-line bg-white p-5 text-left transition-colors hover:border-brick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brick disabled:cursor-not-allowed disabled:opacity-60 sm:p-6";
+  return (
+    <div role="listitem">
+      {href ? (
+        <Link href={href} className={style}>
+          {body}
+        </Link>
+      ) : (
+        <button type="button" onClick={onClick} disabled={disabled} className={style}>
+          {body}
+        </button>
       )}
     </div>
   );

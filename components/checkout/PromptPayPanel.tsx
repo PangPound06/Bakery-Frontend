@@ -127,23 +127,23 @@ export default function PromptPayPanel({
   const expired = secondsLeft <= 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+    <div className="bg-white rounded-[28px] border border-line p-6 md:p-8">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-amber-800 mb-1">
+        <h2 className="font-display text-[28px] font-bold text-ink mb-1">
           สแกนเพื่อชำระเงิน
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted">
           เปิดแอปธนาคารของคุณแล้วสแกน QR ด้านล่าง
         </p>
       </div>
 
       {/* ═══ ยอดเงิน ═══ */}
       <div className="text-center mb-5">
-        <p className="text-4xl font-bold text-amber-600">
+        <p className="text-4xl font-bold text-ink">
           ฿{formatPrice(total)}
         </p>
         {ordCode && (
-          <p className="text-xs text-gray-400 mt-1">คำสั่งซื้อ {ordCode}</p>
+          <p className="text-xs text-muted mt-1">คำสั่งซื้อ {ordCode}</p>
         )}
       </div>
 
@@ -151,7 +151,7 @@ export default function PromptPayPanel({
       <div className="flex justify-center mb-5">
         <div
           className={`relative rounded-2xl border-2 p-4 bg-white ${
-            expired || failed ? "border-gray-200" : "border-amber-200"
+            expired || failed ? "border-line" : "border-warn-line"
           }`}
         >
           <img
@@ -167,10 +167,10 @@ export default function PromptPayPanel({
           {(expired || failed) && (
             <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-white/85 px-6 text-center">
               <span className="text-4xl mb-2">⏰</span>
-              <p className="font-semibold text-gray-700">
+              <p className="font-semibold text-body">
                 {failed ? "ชำระเงินไม่สำเร็จ" : "QR หมดอายุแล้ว"}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted mt-1">
                 กดปุ่มด้านล่างเพื่อเริ่มใหม่
               </p>
             </div>
@@ -183,11 +183,11 @@ export default function PromptPayPanel({
           แอปธนาคารจะอ่านไม่ออก ต้องกดลิงก์นี้แทน
           แสดงตาม testMode ที่ backend ส่งมา — ใช้คีย์โหมดจริงเมื่อไหร่ลิงก์จะหายเอง */}
       {hostedUrl && testMode && (
-        <div className="mb-5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3 text-center">
-          <p className="text-xs text-gray-500 mb-1">โหมดทดสอบ</p>
+        <div className="mb-5 rounded-xl border border-dashed border-line-strong bg-sand p-3 text-center">
+          <p className="text-xs text-muted mb-1">โหมดทดสอบ</p>
           <a
             href={hostedUrl}
-            className="text-sm font-medium text-amber-600 underline hover:text-amber-700"
+            className="text-sm font-medium text-brick underline hover:text-brick-hover"
           >
             เปิดหน้าจำลองการชำระเงินของ Stripe →
           </a>
@@ -202,33 +202,33 @@ export default function PromptPayPanel({
             style={{
               borderWidth: 2,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           />
-          <span className="text-amber-700 font-medium">
+          <span className="text-warn-ink font-medium">
             รอการชำระเงิน · QR หมดอายุใน {mmss(secondsLeft)}
           </span>
         </div>
       )}
 
       {failed && (
-        <div className="mb-5 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+        <div className="mb-5 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-2xl text-sm text-center">
           {failed}
         </div>
       )}
 
       {/* ═══ วิธีสแกน ═══ */}
       {!expired && !failed && (
-        <div className="bg-amber-50 rounded-xl p-4 mb-5">
-          <p className="text-sm font-semibold text-amber-800 mb-2">
+        <div className="bg-warn-bg rounded-xl p-4 mb-5">
+          <p className="text-sm font-semibold text-ink mb-2">
             วิธีชำระเงิน
           </p>
-          <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+          <ol className="text-sm text-warn-ink space-y-1 list-decimal list-inside">
             <li>เปิดแอปธนาคารของคุณ เลือกเมนูสแกน</li>
             <li>สแกน QR ด้านบน ตรวจสอบยอดให้ตรง</li>
             <li>ยืนยันการโอน แล้วรอสักครู่</li>
           </ol>
-          <p className="text-xs text-amber-600 mt-3">
+          <p className="text-xs text-brick mt-3">
             หน้านี้จะเปลี่ยนเองอัตโนมัติเมื่อได้รับเงิน ไม่ต้องกดอะไรเพิ่ม
             และไม่ต้องอัปโหลดสลิป
           </p>
@@ -239,7 +239,7 @@ export default function PromptPayPanel({
       <button
         onClick={handleCancel}
         disabled={canceling}
-        className="w-full py-3 rounded-xl font-semibold border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+        className="w-full min-h-12 rounded-full font-semibold border-[1.5px] border-ink text-ink hover:bg-ink/5 transition-colors disabled:opacity-50"
       >
         {canceling
           ? "กำลังยกเลิก..."
@@ -248,7 +248,7 @@ export default function PromptPayPanel({
             : "ยกเลิกการชำระเงิน"}
       </button>
 
-      <p className="text-xs text-gray-400 text-center mt-3">
+      <p className="text-xs text-muted text-center mt-3">
         อย่าปิดหน้านี้จนกว่าการชำระเงินจะเสร็จสิ้น
       </p>
     </div>

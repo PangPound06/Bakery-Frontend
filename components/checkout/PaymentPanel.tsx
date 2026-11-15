@@ -62,9 +62,9 @@ export default function PaymentPanel({ intent, onDone, onCancel }: Props) {
     );
   }
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-      <p className="text-red-600">ข้อมูลการชำระเงินไม่ครบ</p>
-      <button onClick={onCancel} className="mt-4 text-amber-600 font-medium">
+    <div className="bg-white rounded-[28px] border border-line p-6 text-center">
+      <p className="text-error">ข้อมูลการชำระเงินไม่ครบ</p>
+      <button onClick={onCancel} className="mt-4 text-brick font-medium">
         ← กลับไปเริ่มใหม่
       </button>
     </div>

@@ -18,6 +18,15 @@ const nextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // หน้าทานในร้านเวอร์ชันก่อน → หน้าใหม่ (ลิงก์/บุ๊กมาร์กเก่ายังใช้ได้)
+  async redirects() {
+    return [
+      { source: '/dine-in/cart', destination: '/dine-in', permanent: false },
+      { source: '/order-detail', destination: '/dine-in/bill', permanent: false },
+      { source: '/bill', destination: '/dine-in/bill', permanent: false },
+      { source: '/bill/:path*', destination: '/dine-in/bill', permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

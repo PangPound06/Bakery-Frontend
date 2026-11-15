@@ -12,7 +12,7 @@ import { useOrderMode } from "@/lib/useOrderMode";
 /**
  * ตะกร้าสั่งกลับบ้าน (ออนไลน์) → ไปชำระเงินที่ /checkout
  *
- * ตะกร้าทานในร้านอยู่ที่ /dine-in/cart — ลูกค้าที่อยู่โหมดทานในร้านถูกพาไปหน้านั้น
+ * ทานในร้านสั่งที่หน้า /dine-in — ลูกค้าที่อยู่โหมดทานในร้านถูกพาไปหน้านั้น
  */
 export default function OnlineCartPage() {
   const router = useRouter();

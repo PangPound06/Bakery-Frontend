@@ -77,31 +77,31 @@ export default function SlipPicker({ disabled = false, onValidSlipChange }: Prop
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={disabled || status.kind === "checking"}
-          className="shrink-0 py-2 px-4 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
+          className="shrink-0 min-h-11 px-5 rounded-full border-[1.5px] border-ink text-ink text-sm font-semibold hover:bg-ink/5 transition-colors disabled:opacity-50"
         >
           📎 {fileName ? "เปลี่ยนรูปสลิป" : "เลือกรูปสลิป"}
         </button>
-        <span className="min-w-0 truncate text-sm text-gray-600 select-none pointer-events-none">
+        <span className="min-w-0 truncate text-sm text-subtle select-none pointer-events-none">
           {fileName || "ยังไม่ได้เลือกรูป"}
         </span>
       </div>
 
       {status.kind === "checking" && (
-        <p className="mt-2 text-xs text-amber-700">กำลังตรวจหา QR Code ในสลิป...</p>
+        <p className="mt-2 text-xs text-warn-ink">กำลังตรวจหา QR Code ในสลิป...</p>
       )}
       {status.kind === "valid" && (
-        <p className="mt-2 text-xs text-green-600">✓ พบ QR Code ของสลิปแล้ว</p>
+        <p className="mt-2 text-xs text-ok">✓ พบ QR Code ของสลิปแล้ว</p>
       )}
       {status.kind === "invalid" && (
-        <p className="mt-2 text-xs text-red-600">✗ {status.reason}</p>
+        <p className="mt-2 text-xs text-error">✗ {status.reason}</p>
       )}
 
       {preview && (
         <img
           src={preview}
           alt="ตัวอย่างสลิป"
-          className={`mt-3 max-h-48 rounded-lg border mx-auto ${
-            status.kind === "invalid" ? "border-red-300 opacity-60" : "border-amber-200"
+          className={`mt-3 max-h-48 rounded-2xl border mx-auto ${
+            status.kind === "invalid" ? "border-danger-line opacity-60" : "border-warn-line"
           }`}
         />
       )}

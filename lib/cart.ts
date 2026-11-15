@@ -18,8 +18,8 @@ export const currentCartMode = (): CartMode => (getOrderMode() === "dinein" ? "d
 export const cartUrl = (path = "", mode: CartMode = currentCartMode()) =>
   `${process.env.NEXT_PUBLIC_API_URL}/api/cart${path}?mode=${mode}`;
 
-/** หน้าตะกร้าของแต่ละโหมด — สั่งกลับบ้านกับทานในร้านอยู่คนละหน้า */
+/** หน้าตะกร้าของแต่ละโหมด — ทานในร้านเลือกเมนูและดูรอบที่กำลังสั่งในหน้าเดียวกัน */
 export const CART_PAGE: Record<CartMode, string> = {
   online: "/cart",
-  dinein: "/dine-in/cart",
+  dinein: "/dine-in",
 };

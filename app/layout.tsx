@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Prompt } from "next/font/google";
+import { Anuphan, Geist, Geist_Mono, Noto_Serif_Thai, Prompt } from "next/font/google";
 import "./globals.css";
 
 import Chrome from "@/components/layout/Chrome";
@@ -18,6 +18,22 @@ const geistMono = Geist_Mono({
 const prompt = Prompt({
   variable: "--font-prompt",
   weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin", "thai"],
+  display: "swap",
+});
+
+// ฟอนต์ของดีไซน์ใหม่ — ใช้ผ่าน font-body / font-display (ดู app/globals.css)
+// หน้าที่ยังไม่ได้เปลี่ยนดีไซน์ยังใช้ Prompt ตามเดิม
+const anuphan = Anuphan({
+  variable: "--font-anuphan",
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin", "thai"],
+  display: "swap",
+});
+
+const notoSerifThai = Noto_Serif_Thai({
+  variable: "--font-noto-serif-thai",
+  weight: ["500", "700"],
   subsets: ["latin", "thai"],
   display: "swap",
 });
@@ -44,7 +60,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${prompt.variable} ${prompt.className} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${prompt.variable} ${anuphan.variable} ${notoSerifThai.variable} ${prompt.className} antialiased`}
       >
         <Chrome>{children}</Chrome>
       </body>

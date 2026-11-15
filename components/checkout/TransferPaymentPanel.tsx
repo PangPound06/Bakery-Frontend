@@ -107,25 +107,25 @@ export default function TransferPaymentPanel({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+    <div className="bg-white rounded-[28px] border border-line p-6 md:p-8">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-amber-800 mb-1">โอนผ่านพร้อมเพย์</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="font-display text-[28px] font-bold text-ink mb-1">โอนผ่านพร้อมเพย์</h2>
+        <p className="text-sm text-muted">
           สแกน QR ด้วยแอปธนาคาร โอนแล้วกด &quot;แจ้งโอนแล้ว&quot; ด้านล่าง
         </p>
       </div>
 
       {/* ═══ ยอดเงิน ═══ */}
       <div className="text-center mb-5">
-        <p className="text-4xl font-bold text-amber-600">฿{formatPrice(total)}</p>
-        {ordCode && <p className="text-xs text-gray-400 mt-1">คำสั่งซื้อ {ordCode}</p>}
+        <p className="text-4xl font-bold text-ink">฿{formatPrice(total)}</p>
+        {ordCode && <p className="text-xs text-muted mt-1">คำสั่งซื้อ {ordCode}</p>}
       </div>
 
       {/* ═══ QR ═══ */}
       <div className="flex flex-col items-center mb-5">
         <div
           className={`relative rounded-2xl border-2 p-4 bg-white ${
-            expired ? "border-gray-200" : "border-amber-200"
+            expired ? "border-line" : "border-warn-line"
           }`}
         >
           <img
@@ -138,8 +138,8 @@ export default function TransferPaymentPanel({
           {expired && (
             <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-white/85 px-6 text-center">
               <span className="text-4xl mb-2">⏰</span>
-              <p className="font-semibold text-gray-700">หมดเวลาโอนแล้ว</p>
-              <p className="text-xs text-gray-500 mt-1">ถ้าโอนไปแล้ว กดแจ้งโอนทันที หรือติดต่อร้าน</p>
+              <p className="font-semibold text-body">หมดเวลาโอนแล้ว</p>
+              <p className="text-xs text-muted mt-1">ถ้าโอนไปแล้ว กดแจ้งโอนทันที หรือติดต่อร้าน</p>
             </div>
           )}
         </div>
@@ -148,13 +148,13 @@ export default function TransferPaymentPanel({
         <a
           href={qrImageUrl}
           download={`promptpay-${ordCode || orderId}.png`}
-          className="mt-3 text-sm font-medium text-amber-600 underline hover:text-amber-700"
+          className="mt-3 text-sm font-medium text-brick underline hover:text-brick-hover"
         >
           บันทึกรูป QR (สำหรับสแกนจากแกลเลอรี)
         </a>
 
         {(promptPayId || accountName) && (
-          <p className="mt-2 text-xs text-gray-500 text-center">
+          <p className="mt-2 text-xs text-muted text-center">
             พร้อมเพย์ {promptPayId}
             {accountName ? ` · ${accountName}` : ""}
           </p>
@@ -162,24 +162,24 @@ export default function TransferPaymentPanel({
       </div>
 
       {!expired && (
-        <p className="text-center text-sm text-amber-700 font-medium mb-5">
+        <p className="text-center text-sm text-warn-ink font-medium mb-5">
           กรุณาโอนและแจ้งภายใน {mmss(secondsLeft)} นาที
         </p>
       )}
 
       {/* ═══ สลิป (บังคับ) ═══ */}
-      <div className="bg-amber-50 rounded-xl p-4 mb-5">
-        <p className="text-sm font-semibold text-amber-800 mb-1">
-          แนบสลิป <span className="text-red-500">*</span>
+      <div className="bg-warn-bg rounded-xl p-4 mb-5">
+        <p className="text-sm font-semibold text-ink mb-1">
+          แนบสลิป <span className="text-error">*</span>
         </p>
-        <p className="text-xs text-amber-700 mb-3">
+        <p className="text-xs text-warn-ink mb-3">
           ใช้รูปสลิปจากแอปธนาคาร (JPG/PNG) ที่เห็น QR Code ชัดเจน
         </p>
         <SlipPicker disabled={busy !== null} onValidSlipChange={setSlip} />
       </div>
 
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+        <div className="mb-4 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-2xl text-sm text-center">
           {error}
         </div>
       )}
@@ -188,22 +188,22 @@ export default function TransferPaymentPanel({
       <button
         onClick={handleSubmit}
         disabled={!slip || busy !== null}
-        className="w-full py-4 mb-3 rounded-xl font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="w-full min-h-14 mb-3 rounded-full font-semibold text-white bg-brick hover:bg-brick-hover transition-colors disabled:bg-line disabled:text-muted disabled:cursor-not-allowed"
       >
         {busy === "submit" ? "กำลังแจ้งโอน..." : "✅ แจ้งโอนแล้ว"}
       </button>
       {!slip && (
-        <p className="-mt-1 mb-3 text-xs text-center text-gray-500">แนบสลิปที่มี QR Code ก่อนจึงจะแจ้งโอนได้</p>
+        <p className="-mt-1 mb-3 text-xs text-center text-muted">แนบสลิปที่มี QR Code ก่อนจึงจะแจ้งโอนได้</p>
       )}
       <button
         onClick={handleCancel}
         disabled={busy !== null}
-        className="w-full py-3 rounded-xl font-semibold border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+        className="w-full min-h-12 rounded-full font-semibold border-[1.5px] border-ink text-ink hover:bg-ink/5 transition-colors disabled:opacity-50"
       >
         {busy === "cancel" ? "กำลังยกเลิก..." : "ยกเลิก (ยังไม่ได้โอน)"}
       </button>
 
-      <p className="text-xs text-gray-400 text-center mt-3">
+      <p className="text-xs text-muted text-center mt-3">
         ร้านจะยืนยันคำสั่งซื้อหลังตรวจพบยอดโอนในบัญชี
       </p>
     </div>
