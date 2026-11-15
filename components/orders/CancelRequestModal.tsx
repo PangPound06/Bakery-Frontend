@@ -213,12 +213,12 @@ export default function CancelRequestModal({
       title: "ส่งคำขอยกเลิก?",
       html:
         `${detail} ของ ${ordCode}${refundLine}` +
-        `<br/><span style="font-size:0.85em;color:#6b7280">` +
+        `<br/><span style="font-size:0.85em;color:#6b5e52">` +
         `ทางร้านจะเป็นผู้พิจารณา ยอดคืนจริงอาจต่างจากนี้</span>`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ส่งคำขอ",
       cancelButtonText: "ยังไม่ส่ง",
     });
@@ -258,16 +258,16 @@ export default function CancelRequestModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* ─── หัวข้อ ─── */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-brick rounded-t-2xl">
           <div>
             <h2 className="text-xl font-bold text-white">
               ❌ ขอยกเลิกคำสั่งซื้อ
             </h2>
-            <p className="text-sm text-amber-100 mt-0.5">#{ordCode}</p>
+            <p className="text-sm text-cream mt-0.5">#{ordCode}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-amber-600 rounded-lg transition-colors text-white"
+            className="p-2 hover:bg-brick-hover rounded-lg transition-colors text-white"
             aria-label="ปิด"
           >
             <svg
@@ -287,8 +287,8 @@ export default function CancelRequestModal({
         </div>
 
         <div className="p-6 space-y-5">
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
-            <p className="text-sm text-amber-700">
+          <div className="bg-warn-bg border-2 border-line rounded-xl p-4">
+            <p className="text-sm text-body">
               คำขอจะส่งให้ทางร้านพิจารณา ยอดคืนจริงและเวลาที่เงินเข้าบัญชี
               ขึ้นอยู่กับการอนุมัติของร้านและธนาคารของคุณ
             </p>
@@ -296,7 +296,7 @@ export default function CancelRequestModal({
 
           {/* ─── ขอบเขต ─── */}
           <div>
-            <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+            <h3 className="font-semibold text-ink mb-2 flex items-center gap-2">
               🧾 ต้องการยกเลิกแค่ไหน
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -304,8 +304,8 @@ export default function CancelRequestModal({
                 onClick={() => setScope("full")}
                 className={`py-3 rounded-xl border-2 text-sm font-semibold transition-colors ${
                   scope === "full"
-                    ? "border-amber-500 bg-amber-50 text-amber-700"
-                    : "border-gray-200 text-gray-600 hover:border-amber-300"
+                    ? "border-brick bg-warn-bg text-body"
+                    : "border-line text-subtle hover:border-line-strong"
                 }`}
               >
                 ทั้งคำสั่งซื้อ
@@ -315,8 +315,8 @@ export default function CancelRequestModal({
                 disabled={allCancelled}
                 className={`py-3 rounded-xl border-2 text-sm font-semibold transition-colors ${
                   scope === "partial"
-                    ? "border-amber-500 bg-amber-50 text-amber-700"
-                    : "border-gray-200 text-gray-600 hover:border-amber-300"
+                    ? "border-brick bg-warn-bg text-body"
+                    : "border-line text-subtle hover:border-line-strong"
                 } ${allCancelled ? "opacity-40 cursor-not-allowed" : ""}`}
               >
                 บางรายการ
@@ -327,7 +327,7 @@ export default function CancelRequestModal({
           {/* ─── เลือกรายการ ─── */}
           {scope === "partial" && (
             <div>
-              <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+              <h3 className="font-semibold text-ink mb-2 flex items-center gap-2">
                 🛒 เลือกรายการที่จะยกเลิก
               </h3>
               <div className="space-y-2">
@@ -339,8 +339,8 @@ export default function CancelRequestModal({
                       key={it.id}
                       className={`rounded-xl border-2 p-3 transition-colors ${
                         selected
-                          ? "border-amber-400 bg-amber-50"
-                          : "border-gray-200 bg-white hover:border-amber-200"
+                          ? "border-line-strong bg-warn-bg"
+                          : "border-line bg-white hover:border-line"
                       }`}
                     >
                       <label className="flex items-start gap-3 cursor-pointer">
@@ -348,22 +348,22 @@ export default function CancelRequestModal({
                           type="checkbox"
                           checked={selected}
                           onChange={() => toggleItem(it.id, it.remainingUnits)}
-                          className="mt-1 w-4 h-4 accent-amber-500"
+                          className="mt-1 w-4 h-4 accent-brick"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-amber-700">
+                          <p className="font-medium text-body">
                             {it.productName}
                           </p>
                           {it.selectedOption && (
-                            <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                            <span className="inline-block px-2 py-0.5 bg-new-soft text-new-ink text-xs rounded-full mt-0.5">
                               {it.selectedOption}
                             </span>
                           )}
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-xs text-muted mt-0.5">
                             ฿{formatPrice(it.price)} × คงเหลือ{" "}
                             {it.remainingUnits}
                             {(it.cancelledQty ?? 0) > 0 && (
-                              <span className="text-red-500">
+                              <span className="text-error">
                                 {" "}
                                 (ยกเลิกไปแล้วบางส่วน)
                               </span>
@@ -374,24 +374,24 @@ export default function CancelRequestModal({
 
                       {selected && it.remainingUnits > 1 && (
                         <div className="flex items-center gap-3 mt-3 pl-7">
-                          <span className="text-xs text-gray-500">จำนวน</span>
-                          <div className="flex items-center border-2 border-amber-300 rounded-lg overflow-hidden bg-white">
+                          <span className="text-xs text-muted">จำนวน</span>
+                          <div className="flex items-center border-2 border-line-strong rounded-lg overflow-hidden bg-white">
                             <button
                               onClick={() =>
                                 setQty(it.id, qty - 1, it.remainingUnits)
                               }
-                              className="px-3 py-1 text-amber-600 hover:bg-amber-100 font-bold"
+                              className="px-3 py-1 text-brick hover:bg-warn-soft font-bold"
                             >
                               −
                             </button>
-                            <span className="px-3 text-sm font-semibold text-amber-800">
+                            <span className="px-3 text-sm font-semibold text-ink">
                               {qty}
                             </span>
                             <button
                               onClick={() =>
                                 setQty(it.id, qty + 1, it.remainingUnits)
                               }
-                              className="px-3 py-1 text-amber-600 hover:bg-amber-100 font-bold"
+                              className="px-3 py-1 text-brick hover:bg-warn-soft font-bold"
                             >
                               +
                             </button>
@@ -407,13 +407,13 @@ export default function CancelRequestModal({
 
           {/* ─── เหตุผล ─── */}
           <div>
-            <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+            <h3 className="font-semibold text-ink mb-2 flex items-center gap-2">
               💬 เหตุผลในการยกเลิก
             </h3>
             <select
               value={reasonCode}
               onChange={(e) => setReasonCode(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-4 py-3 border-2 border-line rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brick"
             >
               <option value="">เลือกเหตุผล</option>
               {REASONS.map((r) => (
@@ -433,49 +433,49 @@ export default function CancelRequestModal({
                   ? "ระบุเหตุผล (จำเป็น)"
                   : "รายละเอียดเพิ่มเติม (ไม่บังคับ)"
               }
-              className="w-full mt-2 px-4 py-3 border-2 border-amber-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full mt-2 px-4 py-3 border-2 border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
             />
           </div>
 
           {/* ─── ยอดที่จะได้คืน ─── */}
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
-            <h3 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
+          <div className="bg-warn-bg border-2 border-line rounded-xl p-4">
+            <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
               💰 ยอดที่คาดว่าจะได้คืน
             </h3>
 
             {previewing && (
-              <p className="text-sm text-amber-500">กำลังคำนวณ...</p>
+              <p className="text-sm text-brick">กำลังคำนวณ...</p>
             )}
 
             {!previewing && previewError && (
-              <p className="text-sm text-red-600">{previewError}</p>
+              <p className="text-sm text-error">{previewError}</p>
             )}
 
             {!previewing && !previewError && !preview && (
-              <p className="text-sm text-amber-500">เลือกรายการเพื่อดูยอดคืน</p>
+              <p className="text-sm text-brick">เลือกรายการเพื่อดูยอดคืน</p>
             )}
 
             {!previewing && preview && (
               <div className="space-y-1.5 text-sm">
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-subtle">
                   <span>ยอดที่ยกเลิก</span>
                   <span>฿{formatPrice(preview.grossAmount)}</span>
                 </div>
                 {preview.feeDeducted > 0 && (
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-subtle">
                     <span>หักค่าธรรมเนียมชำระเงิน</span>
-                    <span className="text-red-500">
+                    <span className="text-error">
                       −฿{formatPrice(preview.feeDeducted)}
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-amber-800 border-t border-amber-200 pt-2 text-base">
+                <div className="flex justify-between font-bold text-ink border-t border-line pt-2 text-base">
                   <span>ได้คืนโดยประมาณ</span>
-                  <span className="text-amber-600">
+                  <span className="text-brick">
                     ฿{formatPrice(preview.refundAmount)}
                   </span>
                 </div>
-                <p className="text-xs text-amber-600 pt-1">
+                <p className="text-xs text-brick pt-1">
                   {preview.includesShipping
                     ? "รวมค่าจัดส่งที่จ่ายไป"
                     : "ค่าจัดส่งไม่คืน เพราะยังมีสินค้าที่ต้องส่งอยู่"}
@@ -485,25 +485,25 @@ export default function CancelRequestModal({
           </div>
 
           {error && (
-            <div className="bg-red-50 border-2 border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+            <div className="bg-danger-soft border-2 border-danger-line text-error px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
         </div>
 
         {/* ─── ปุ่ม ─── */}
-        <div className="sticky bottom-0 bg-white border-t border-amber-100 p-6 pt-4 rounded-b-2xl flex gap-3">
+        <div className="sticky bottom-0 bg-white border-t border-line p-6 pt-4 rounded-b-2xl flex gap-3">
           <button
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+            className="flex-1 py-3 bg-sand text-body rounded-xl hover:bg-line transition-colors font-medium disabled:opacity-50"
           >
             ยังไม่ยกเลิก
           </button>
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex-1 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium disabled:bg-gray-300"
+            className="flex-1 py-3 bg-error text-white rounded-xl hover:bg-error transition-colors font-medium disabled:bg-line-strong"
           >
             {submitting ? "กำลังส่ง..." : "❌ ส่งคำขอยกเลิก"}
           </button>

@@ -186,7 +186,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "กรุณากรอกข้อมูลให้ครบ",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -224,7 +224,7 @@ export default function SupplierPage() {
         title: "เกิดข้อผิดพลาด",
         text: err instanceof Error && err.message ? err.message : "ไม่สามารถเชื่อมต่อ Backend ได้",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -234,7 +234,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "กรุณากรอกชื่อสินค้า",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -277,7 +277,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -292,7 +292,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "กรุณากรอกข้อมูลให้ครบ",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -319,7 +319,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -331,8 +331,8 @@ export default function SupplierPage() {
       text: `ต้องการ${action} ${sup.name} หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#a84a0e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: `ยืนยัน${action}`,
       cancelButtonText: "ยกเลิก",
     });
@@ -350,7 +350,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -365,13 +365,13 @@ export default function SupplierPage() {
       html:
         `ลบ <b>${sup.name}</b> ออกจากระบบถาวร` +
         (poCount > 0
-          ? `<br/><span class="text-sm text-red-500">คำสั่งซื้อ (PO) ${poCount} รายการที่ผูกอยู่จะถูกลบไปด้วย</span>`
+          ? `<br/><span class="text-sm text-error">คำสั่งซื้อ (PO) ${poCount} รายการที่ผูกอยู่จะถูกลบไปด้วย</span>`
           : "") +
-        `<br/><span class="text-sm text-gray-500">การกระทำนี้ไม่สามารถยกเลิกได้</span>`,
+        `<br/><span class="text-sm text-muted">การกระทำนี้ไม่สามารถยกเลิกได้</span>`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ใช่ ลบ Supplier",
       cancelButtonText: "ยกเลิก",
     });
@@ -406,7 +406,7 @@ export default function SupplierPage() {
         title: "เกิดข้อผิดพลาด",
         text: err instanceof Error && err.message ? err.message : "ไม่สามารถลบได้",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -417,15 +417,15 @@ export default function SupplierPage() {
       html: `
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
         ${[
-          { value: "pending", label: "⏳ รอดำเนินการ", color: "#f59e0b" },
+          { value: "pending", label: "⏳ รอดำเนินการ", color: "#a84a0e" },
           { value: "confirmed", label: "✅ ยืนยันแล้ว", color: "#3b82f6" },
-          { value: "delivered", label: "📦 ได้รับแล้ว", color: "#10b981" },
-          { value: "rejected", label: "❌ ปฏิเสธ", color: "#ef4444" },
+          { value: "delivered", label: "📦 ได้รับแล้ว", color: "#2f7d4f" },
+          { value: "rejected", label: "❌ ปฏิเสธ", color: "#b3261e" },
         ]
           .map(
             (opt) => `
           <button type="button" onclick="document.getElementById('swal-po-val').value='${opt.value}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.opacity='0.4');this.style.opacity='1';this.style.outline='2px solid ${opt.color}'"
-            style="padding:10px 16px;border-radius:12px;border:1.5px solid #e5e7eb;background:white;font-size:14px;cursor:pointer;text-align:left;transition:all 0.15s;${currentStatus === opt.value ? `opacity:1;outline:2px solid ${opt.color}` : "opacity:0.7"}">
+            style="padding:10px 16px;border-radius:12px;border:1.5px solid #ece3d6;background:white;font-size:14px;cursor:pointer;text-align:left;transition:all 0.15s;${currentStatus === opt.value ? `opacity:1;outline:2px solid ${opt.color}` : "opacity:0.7"}">
             ${opt.label}
           </button>
         `,
@@ -435,7 +435,7 @@ export default function SupplierPage() {
       </div>
     `,
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
+      confirmButtonColor: "#a84a0e",
       cancelButtonText: "ยกเลิก",
       confirmButtonText: "บันทึก",
       preConfirm: () =>
@@ -454,7 +454,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -468,14 +468,14 @@ export default function SupplierPage() {
       html: `
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
         ${[
-          { value: "unpaid", label: "⏳ ยังไม่ชำระ", color: "#f59e0b" },
-          { value: "paid", label: "✅ ชำระแล้ว", color: "#10b981" },
-          { value: "cancelled", label: "❌ ยกเลิก", color: "#ef4444" },
+          { value: "unpaid", label: "⏳ ยังไม่ชำระ", color: "#a84a0e" },
+          { value: "paid", label: "✅ ชำระแล้ว", color: "#2f7d4f" },
+          { value: "cancelled", label: "❌ ยกเลิก", color: "#b3261e" },
         ]
           .map(
             (opt) => `
           <button type="button" onclick="document.getElementById('swal-pay-val').value='${opt.value}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.opacity='0.4');this.style.opacity='1';this.style.outline='2px solid ${opt.color}'"
-            style="padding:10px 16px;border-radius:12px;border:1.5px solid #e5e7eb;background:white;font-size:14px;cursor:pointer;text-align:left;transition:all 0.15s;${currentStatus === opt.value ? `opacity:1;outline:2px solid ${opt.color}` : "opacity:0.7"}">
+            style="padding:10px 16px;border-radius:12px;border:1.5px solid #ece3d6;background:white;font-size:14px;cursor:pointer;text-align:left;transition:all 0.15s;${currentStatus === opt.value ? `opacity:1;outline:2px solid ${opt.color}` : "opacity:0.7"}">
             ${opt.label}
           </button>
         `,
@@ -485,7 +485,7 @@ export default function SupplierPage() {
       </div>
     `,
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
+      confirmButtonColor: "#a84a0e",
       cancelButtonText: "ยกเลิก",
       confirmButtonText: "บันทึก",
       preConfirm: () =>
@@ -507,7 +507,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -517,7 +517,7 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "กรุณากรอกชื่อสินค้า",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -542,17 +542,17 @@ export default function SupplierPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
 
   const getStatusTag = (status: string) => {
     const map: Record<string, string> = {
-      pending: "bg-amber-100 text-amber-800",
-      confirmed: "bg-blue-100 text-blue-800",
-      rejected: "bg-red-100 text-red-800",
-      delivered: "bg-emerald-100 text-emerald-800",
+      pending: "bg-warn-soft text-ink",
+      confirmed: "bg-new-soft text-new-ink",
+      rejected: "bg-danger-soft text-danger",
+      delivered: "bg-success-soft text-success-ink",
     };
     const text: Record<string, string> = {
       pending: "รอดำเนินการ",
@@ -562,7 +562,7 @@ export default function SupplierPage() {
     };
     return (
       <span
-        className={`text-xs px-2 py-0.5 rounded-full font-medium ${map[status] || "bg-gray-100 text-gray-700"}`}
+        className={`text-xs px-2 py-0.5 rounded-full font-medium ${map[status] || "bg-sand text-body"}`}
       >
         {text[status] || status}
       </span>
@@ -571,17 +571,17 @@ export default function SupplierPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -589,23 +589,23 @@ export default function SupplierPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 flex">
+    <div className="min-h-screen bg-warn-bg flex">
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 p-3 md:p-6 overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-6 gap-3">
               <div>
-                <h1 className="text-lg md:text-2xl font-bold text-amber-900 flex items-center gap-2">
+                <h1 className="text-lg md:text-2xl font-bold text-ink flex items-center gap-2">
                   <span>⭐</span> Manage Supplier
                 </h1>
-                <p className="text-amber-600 text-sm mt-0.5">
+                <p className="text-brick text-sm mt-0.5">
                   ข้อมูลผู้จัดจำหน่ายและการดำเนินการ
                 </p>
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs md:text-sm font-medium transition-colors flex items-center gap-2 shrink-0"
+                className="px-3 md:px-4 py-2 bg-brick hover:bg-brick-hover text-white rounded-full text-xs md:text-sm font-medium transition-colors flex items-center gap-2 shrink-0"
               >
                 <span>+</span>
                 <span className="hidden sm:inline">เพิ่ม Supplier</span>
@@ -621,34 +621,34 @@ export default function SupplierPage() {
                   labelMobile: "Supplier",
                   value: kpi.total,
                   sub: `${suppliers.filter((s) => s.status === "active").length} ใช้งานอยู่`,
-                  subColor: "text-emerald-600",
+                  subColor: "text-ok",
                 },
                 {
                   label: "PO รอดำเนินการ",
                   labelMobile: "PO รอ",
                   value: kpi.pendingPO,
                   sub: `${pos.filter((p) => p.status === "confirmed").length} ยืนยันแล้ว`,
-                  subColor: "text-blue-600",
+                  subColor: "text-new-ink",
                 },
                 {
                   label: "ค้างชำระ",
                   labelMobile: "ค้างชำระ",
                   value: kpi.unpaidInvoice,
                   sub: `฿${formatPrice(kpi.unpaidTotal)} รวม`,
-                  subColor: "text-red-500",
+                  subColor: "text-error",
                 },
               ].map((card, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-2xl p-3 md:p-5 shadow-sm border border-amber-100"
+                  className="bg-white rounded-2xl p-3 md:p-5 shadow-sm border border-line"
                 >
-                  <p className="text-[10px] md:text-xs text-gray-500 mb-1 truncate md:hidden">
+                  <p className="text-[10px] md:text-xs text-muted mb-1 truncate md:hidden">
                     {card.labelMobile}
                   </p>
-                  <p className="text-xs text-gray-500 mb-1 truncate hidden md:block">
+                  <p className="text-xs text-muted mb-1 truncate hidden md:block">
                     {card.label}
                   </p>
-                  <p className="text-lg md:text-2xl font-bold text-amber-700">
+                  <p className="text-lg md:text-2xl font-bold text-body">
                     {card.value}
                   </p>
                   <p
@@ -661,8 +661,8 @@ export default function SupplierPage() {
             </div>
 
             {/* Tabs */}
-            <div className="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-              <div className="flex border-b border-gray-100 px-2 overflow-x-auto scrollbar-hide">
+            <div className="bg-white rounded-2xl shadow-sm border border-line overflow-hidden">
+              <div className="flex border-b border-line px-2 overflow-x-auto scrollbar-hide">
                 {(
                   [
                     ["list", "รายชื่อ Supplier"],
@@ -674,12 +674,12 @@ export default function SupplierPage() {
                   <button
                     key={key}
                     onClick={() => setActiveTab(key)}
-                    className={`px-4 md:px-5 py-3.5 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === key ? "border-amber-500 text-amber-700" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                    className={`px-4 md:px-5 py-3.5 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === key ? "border-brick text-body" : "border-transparent text-muted hover:text-body"}`}
                   >
                     {label}
                     {key === "po" &&
                       pos.filter((p) => p.status === "pending").length > 0 && (
-                        <span className="ml-1.5 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                        <span className="ml-1.5 bg-error text-white text-xs px-1.5 py-0.5 rounded-full">
                           {pos.filter((p) => p.status === "pending").length}
                         </span>
                       )}
@@ -695,7 +695,7 @@ export default function SupplierPage() {
                     <div className="flex flex-col sm:flex-row gap-2 md:gap-3 mb-4">
                       <div className="relative flex-1">
                         <svg
-                          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -708,7 +708,7 @@ export default function SupplierPage() {
                           />
                         </svg>
                         <input
-                          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                          className="w-full pl-9 pr-4 py-2 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                           placeholder="ค้นหา Supplier..."
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
@@ -716,7 +716,7 @@ export default function SupplierPage() {
                       </div>
                       <div className="flex gap-2">
                         <select
-                          className="flex-1 sm:flex-none px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none"
+                          className="flex-1 sm:flex-none px-3 py-2 border border-line rounded-xl text-sm focus:outline-none"
                           value={filterCat}
                           onChange={(e) => setFilterCat(e.target.value)}
                         >
@@ -727,7 +727,7 @@ export default function SupplierPage() {
                           )}
                         </select>
                         <select
-                          className="flex-1 sm:flex-none px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none"
+                          className="flex-1 sm:flex-none px-3 py-2 border border-line rounded-xl text-sm focus:outline-none"
                           value={filterStatus}
                           onChange={(e) => setFilterStatus(e.target.value)}
                         >
@@ -742,7 +742,7 @@ export default function SupplierPage() {
                       <table className="w-full">
                         {/* ✅ thead responsive */}
                         <thead>
-                          <tr className="bg-gray-50 text-xs text-gray-500 font-medium">
+                          <tr className="bg-sand text-xs text-muted font-medium">
                             <th className="text-left px-4 py-3 rounded-l-lg">
                               บริษัท
                             </th>
@@ -770,16 +770,16 @@ export default function SupplierPage() {
                                 )[0];
                               const initials = sup.name.slice(0, 2);
                               const colors = [
-                                "bg-amber-100 text-amber-800",
-                                "bg-blue-100 text-blue-800",
-                                "bg-emerald-100 text-emerald-800",
-                                "bg-purple-100 text-purple-800",
+                                "bg-warn-soft text-ink",
+                                "bg-new-soft text-new-ink",
+                                "bg-success-soft text-success-ink",
+                                "bg-new-soft text-new-ink",
                               ];
                               return (
                                 <tr
                                   key={sup.id}
                                   onClick={() => setSelectedSupplier(sup)}
-                                  className={`border-t border-gray-50 cursor-pointer transition-colors ${selectedSupplier?.id === sup.id ? "bg-amber-50" : "hover:bg-gray-50"}`}
+                                  className={`border-t border-line cursor-pointer transition-colors ${selectedSupplier?.id === sup.id ? "bg-warn-bg" : "hover:bg-sand"}`}
                                 >
                                   {/* บริษัท — แสดงตลอด + badge สถานะบนมือถือ */}
                                   <td className="px-4 py-3">
@@ -790,10 +790,10 @@ export default function SupplierPage() {
                                         {initials}
                                       </div>
                                       <div className="min-w-0">
-                                        <p className="text-sm font-medium text-amber-700 truncate">
+                                        <p className="text-sm font-medium text-body truncate">
                                           {sup.name}
                                         </p>
-                                        <p className="text-xs text-gray-400 truncate max-w-[140px]">
+                                        <p className="text-xs text-muted truncate max-w-[140px]">
                                           {(sup.note || "").slice(0, 20)}
                                           {(sup.note || "").length > 20
                                             ? "..."
@@ -805,17 +805,17 @@ export default function SupplierPage() {
 
                                   <td className="px-4 py-3">
                                     <span
-                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${sup.category === "วัตถุดิบ" ? "bg-blue-50 text-blue-700" : sup.category === "บรรจุภัณฑ์" ? "bg-emerald-50 text-emerald-700" : "bg-purple-50 text-purple-700"}`}
+                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${sup.category === "วัตถุดิบ" ? "bg-new-soft text-new-ink" : sup.category === "บรรจุภัณฑ์" ? "bg-success-soft text-success" : "bg-new-soft text-new-ink"}`}
                                     >
                                       {sup.category}
                                     </span>
                                   </td>
 
                                   <td className="px-4 py-3">
-                                    <p className="text-xs text-amber-700">
+                                    <p className="text-xs text-body">
                                       {sup.contactName}
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-muted">
                                       {sup.phone}
                                     </p>
                                   </td>
@@ -823,21 +823,21 @@ export default function SupplierPage() {
                                   <td className="px-4 py-3">
                                     {lastPO ? (
                                       <div>
-                                        <p className="text-xs font-medium text-amber-700">
+                                        <p className="text-xs font-medium text-body">
                                           {lastPO.poCode}
                                         </p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-muted">
                                           {lastPO.createdAt?.slice(0, 10)}
                                         </p>
                                       </div>
                                     ) : (
-                                      <p className="text-xs text-gray-400">-</p>
+                                      <p className="text-xs text-muted">-</p>
                                     )}
                                   </td>
 
                                   <td className="px-4 py-3">
                                     <span
-                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${sup.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
+                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${sup.status === "active" ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}
                                     >
                                       {sup.status === "active"
                                         ? "ใช้งานอยู่"
@@ -854,7 +854,7 @@ export default function SupplierPage() {
                                           setPoTarget(sup);
                                           setShowPOModal(true);
                                         }}
-                                        className="px-2.5 py-1 bg-amber-500 text-white rounded-lg text-xs font-medium hover:bg-amber-600 transition-colors"
+                                        className="px-2.5 py-1 bg-brick text-white rounded-lg text-xs font-medium hover:bg-brick-hover transition-colors"
                                       >
                                         PO ใหม่
                                       </button>
@@ -863,7 +863,7 @@ export default function SupplierPage() {
                                           e.stopPropagation();
                                           handleSuspend(sup);
                                         }}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${sup.status === "active" ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"}`}
+                                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${sup.status === "active" ? "bg-danger-soft text-error hover:bg-danger-soft" : "bg-success-soft text-ok hover:bg-success-soft"}`}
                                       >
                                         {sup.status === "active"
                                           ? "ระงับ"
@@ -874,7 +874,7 @@ export default function SupplierPage() {
                                           e.stopPropagation();
                                           handleDelete(sup);
                                         }}
-                                        className="px-2.5 py-1 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors"
+                                        className="px-2.5 py-1 bg-error text-white rounded-lg text-xs font-medium hover:bg-error transition-colors"
                                         title="ลบ Supplier ถาวร"
                                       >
                                         🗑️ ลบ
@@ -887,7 +887,7 @@ export default function SupplierPage() {
                         </tbody>
                       </table>
                       {suppliers.length === 0 && (
-                        <div className="text-center py-12 text-gray-400">
+                        <div className="text-center py-12 text-muted">
                           <p className="text-4xl mb-2">🔍</p>
                           <p className="text-sm">ไม่พบ Supplier</p>
                         </div>
@@ -901,7 +901,7 @@ export default function SupplierPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px]">
                       <thead>
-                        <tr className="bg-gray-50 text-xs text-gray-500 font-medium">
+                        <tr className="bg-sand text-xs text-muted font-medium">
                           <th className="text-left px-4 py-3 rounded-l-lg">
                             รหัส PO
                           </th>
@@ -925,18 +925,18 @@ export default function SupplierPage() {
                             return (
                               <tr
                                 key={po.id}
-                                className="border-t border-gray-50 hover:bg-gray-50"
+                                className="border-t border-line hover:bg-sand"
                               >
-                                <td className="px-4 py-3 font-bold text-amber-700 text-sm">
+                                <td className="px-4 py-3 font-bold text-body text-sm">
                                   {po.poCode}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-amber-700">
+                                <td className="px-4 py-3 text-sm text-body">
                                   {po.supplierName}
                                 </td>
-                                <td className="px-4 py-3 text-xs text-gray-500">
+                                <td className="px-4 py-3 text-xs text-muted">
                                   {po.itemName} x{po.itemQty} {po.itemUnit}
                                 </td>
-                                <td className="px-4 py-3 font-semibold text-amber-600 text-sm">
+                                <td className="px-4 py-3 font-semibold text-brick text-sm">
                                   ฿{formatPrice(po.total ?? 0)}
                                 </td>
                                 <td className="px-4 py-3">
@@ -958,7 +958,7 @@ export default function SupplierPage() {
                                         po.paymentStatus,
                                       )
                                     }
-                                    className={`text-xs px-2 py-0.5 rounded-full font-medium hover:opacity-70 transition-opacity ${po.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" : po.paymentStatus === "cancelled" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}
+                                    className={`text-xs px-2 py-0.5 rounded-full font-medium hover:opacity-70 transition-opacity ${po.paymentStatus === "paid" ? "bg-success-soft text-success" : po.paymentStatus === "cancelled" ? "bg-danger-soft text-danger" : "bg-warn-soft text-body"}`}
                                     title="คลิกเพื่อเปลี่ยนสถานะการชำระ"
                                   >
                                     {po.paymentStatus === "paid"
@@ -968,7 +968,7 @@ export default function SupplierPage() {
                                         : "ยังไม่ชำระ"}
                                   </button>
                                 </td>
-                                <td className="px-4 py-3 text-xs text-gray-500">
+                                <td className="px-4 py-3 text-xs text-muted">
                                   {po.createdAt?.slice(0, 10)}
                                 </td>
                                 <td className="px-4 py-3">
@@ -983,7 +983,7 @@ export default function SupplierPage() {
                                       });
                                       setShowEditPOModal(true);
                                     }}
-                                    className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
+                                    className="px-2.5 py-1 bg-new-soft text-new-ink rounded-lg text-xs font-medium hover:bg-new-soft transition-colors"
                                   >
                                     ✏️ แก้ไข
                                   </button>
@@ -1000,11 +1000,11 @@ export default function SupplierPage() {
                 {activeTab === "invoice" && (
                   <div>
                     <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
-                      <div className="bg-amber-50 rounded-xl p-3 md:p-4 border border-amber-100">
-                        <p className="text-[10px] md:text-xs text-amber-700 mb-1 truncate">
+                      <div className="bg-warn-bg rounded-xl p-3 md:p-4 border border-line">
+                        <p className="text-[10px] md:text-xs text-body mb-1 truncate">
                           ค้างชำระทั้งหมด
                         </p>
-                        <p className="text-base md:text-2xl font-bold text-amber-800 truncate">
+                        <p className="text-base md:text-2xl font-bold text-ink truncate">
                           ฿
                           {formatPrice(
                             pos
@@ -1013,11 +1013,11 @@ export default function SupplierPage() {
                           )}
                         </p>
                       </div>
-                      <div className="bg-emerald-50 rounded-xl p-3 md:p-4 border border-emerald-100">
-                        <p className="text-[10px] md:text-xs text-emerald-700 mb-1 truncate">
+                      <div className="bg-success-soft rounded-xl p-3 md:p-4 border border-success-soft">
+                        <p className="text-[10px] md:text-xs text-success mb-1 truncate">
                           ชำระแล้ว
                         </p>
-                        <p className="text-base md:text-2xl font-bold text-emerald-800 truncate">
+                        <p className="text-base md:text-2xl font-bold text-success-ink truncate">
                           ฿
                           {formatPrice(
                             pos
@@ -1026,11 +1026,11 @@ export default function SupplierPage() {
                           )}
                         </p>
                       </div>
-                      <div className="bg-blue-50 rounded-xl p-3 md:p-4 border border-blue-100">
-                        <p className="text-[10px] md:text-xs text-blue-700 mb-1">
+                      <div className="bg-new-soft rounded-xl p-3 md:p-4 border border-line">
+                        <p className="text-[10px] md:text-xs text-new-ink mb-1">
                           PO ทั้งหมด
                         </p>
-                        <p className="text-base md:text-2xl font-bold text-blue-800">
+                        <p className="text-base md:text-2xl font-bold text-new-ink">
                           {pos.length}
                         </p>
                       </div>
@@ -1038,7 +1038,7 @@ export default function SupplierPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="bg-gray-50 text-xs text-gray-500 font-medium">
+                          <tr className="bg-sand text-xs text-muted font-medium">
                             <th className="text-left px-4 py-3 rounded-l-lg">
                               รหัส PO
                             </th>
@@ -1069,26 +1069,26 @@ export default function SupplierPage() {
                               return (
                                 <tr
                                   key={po.id}
-                                  className="border-t border-gray-50 hover:bg-gray-50"
+                                  className="border-t border-line hover:bg-sand"
                                 >
-                                  <td className="px-4 py-3 font-bold text-amber-700 text-sm">
+                                  <td className="px-4 py-3 font-bold text-body text-sm">
                                     {po.poCode}
-                                    <p className="text-[10px] text-gray-400 font-normal sm:hidden">
+                                    <p className="text-[10px] text-muted font-normal sm:hidden">
                                       {po.supplierName}
                                     </p>
                                   </td>
-                                  <td className="px-4 py-3 text-sm text-amber-700 hidden sm:table-cell">
+                                  <td className="px-4 py-3 text-sm text-body hidden sm:table-cell">
                                     {po.supplierName}
                                   </td>
-                                  <td className="px-4 py-3 font-semibold text-amber-600">
+                                  <td className="px-4 py-3 font-semibold text-brick">
                                     ฿{formatPrice(po.total ?? 0)}
                                   </td>
-                                  <td className="px-4 py-3 text-xs text-gray-500 hidden md:table-cell">
+                                  <td className="px-4 py-3 text-xs text-muted hidden md:table-cell">
                                     {sup?.paymentTerms || "-"}
                                   </td>
                                   <td className="px-4 py-3">
                                     <span
-                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${po.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" : po.paymentStatus === "cancelled" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}
+                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${po.paymentStatus === "paid" ? "bg-success-soft text-success" : po.paymentStatus === "cancelled" ? "bg-danger-soft text-danger" : "bg-warn-soft text-body"}`}
                                     >
                                       {po.paymentStatus === "paid"
                                         ? "ชำระแล้ว"
@@ -1109,8 +1109,8 @@ export default function SupplierPage() {
                 {/* REPORT TAB */}
                 {activeTab === "report" && (
                   <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-sm font-medium text-gray-700 mb-3">
+                    <div className="bg-sand rounded-xl p-4">
+                      <p className="text-sm font-medium text-body mb-3">
                         ยอดสั่งซื้อต่อ Supplier
                       </p>
                       {[...suppliers]
@@ -1146,16 +1146,16 @@ export default function SupplierPage() {
                               key={sup.id}
                               className="flex items-center gap-3 mb-2"
                             >
-                              <p className="text-xs text-amber-800 w-24 md:w-32 truncate">
+                              <p className="text-xs text-ink w-24 md:w-32 truncate">
                                 {sup.name}
                               </p>
-                              <div className="flex-1 bg-gray-200 rounded-full h-2">
+                              <div className="flex-1 bg-line rounded-full h-2">
                                 <div
-                                  className="bg-blue-500 h-2 rounded-full"
+                                  className="bg-ink h-2 rounded-full"
                                   style={{ width: `${(total / max) * 100}%` }}
                                 />
                               </div>
-                              <span className="text-xs font-medium text-gray-700 w-12 md:w-14 text-right">
+                              <span className="text-xs font-medium text-body w-12 md:w-14 text-right">
                                 ฿{(total / 1000).toFixed(1)}k
                               </span>
                             </div>
@@ -1170,29 +1170,29 @@ export default function SupplierPage() {
 
           {/* Right Panel — ซ่อนบนมือถือและ iPad แสดง lg+ */}
           {selectedSupplier && (
-            <div className="hidden lg:block w-64 bg-white border-l border-amber-100 p-5 overflow-y-auto flex-shrink-0">
-              <p className="text-sm font-medium text-amber-700 mb-4">
+            <div className="hidden lg:block w-64 bg-white border-l border-line p-5 overflow-y-auto flex-shrink-0">
+              <p className="text-sm font-medium text-body mb-4">
                 รายละเอียด Supplier
               </p>
               <div className="text-center mb-4">
-                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-base font-medium mx-auto mb-2">
+                <div className="w-12 h-12 rounded-full bg-warn-soft text-ink flex items-center justify-center text-base font-medium mx-auto mb-2">
                   {selectedSupplier.name.slice(0, 2)}
                 </div>
-                <p className="text-sm font-medium text-amber-700">
+                <p className="text-sm font-medium text-body">
                   {selectedSupplier.name}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-muted mt-0.5">
                   {selectedSupplier.category}
                 </p>
                 <span
-                  className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${selectedSupplier.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
+                  className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${selectedSupplier.status === "active" ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}
                 >
                   {selectedSupplier.status === "active"
                     ? "ใช้งานอยู่"
                     : "ระงับแล้ว"}
                 </span>
               </div>
-              <hr className="border-gray-100 my-3" />
+              <hr className="border-line my-3" />
               <div className="space-y-3 mb-4">
                 {[
                   { label: "ผู้ติดต่อ", value: selectedSupplier.contactName },
@@ -1208,16 +1208,16 @@ export default function SupplierPage() {
                   },
                 ].map((item) => (
                   <div key={item.label}>
-                    <p className="text-xs text-gray-400">{item.label}</p>
-                    <p className="text-xs font-medium text-amber-700 mt-0.5">
+                    <p className="text-xs text-muted">{item.label}</p>
+                    <p className="text-xs font-medium text-body mt-0.5">
                       {item.value}
                     </p>
                   </div>
                 ))}
               </div>
-              <hr className="border-gray-100 my-3" />
+              <hr className="border-line my-3" />
               <div>
-                <p className="text-xs text-gray-400 mb-2">PO ล่าสุด</p>
+                <p className="text-xs text-muted mb-2">PO ล่าสุด</p>
                 <div className="space-y-2">
                   {pos
                     .filter((p) => p.supplierId === selectedSupplier.id)
@@ -1225,13 +1225,13 @@ export default function SupplierPage() {
                     .map((po) => (
                       <div key={po.id} className="flex items-start gap-2">
                         <div
-                          className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${po.status === "delivered" ? "bg-emerald-500" : po.status === "pending" ? "bg-amber-500" : "bg-blue-500"}`}
+                          className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${po.status === "delivered" ? "bg-ok" : po.status === "pending" ? "bg-brick" : "bg-ink"}`}
                         />
                         <div>
-                          <p className="text-xs font-medium text-gray-700">
+                          <p className="text-xs font-medium text-body">
                             {po.poCode}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted">
                             ฿{formatPrice(po.total ?? 0)} ·{" "}
                             {po.createdAt?.slice(0, 10)}
                           </p>
@@ -1240,18 +1240,18 @@ export default function SupplierPage() {
                     ))}
                   {pos.filter((p) => p.supplierId === selectedSupplier.id)
                     .length === 0 && (
-                    <p className="text-xs text-gray-400">ยังไม่มี PO</p>
+                    <p className="text-xs text-muted">ยังไม่มี PO</p>
                   )}
                 </div>
               </div>
-              <hr className="border-gray-100 my-3" />
+              <hr className="border-line my-3" />
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setPoTarget(selectedSupplier);
                     setShowPOModal(true);
                   }}
-                  className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-medium transition-colors"
+                  className="w-full py-2 bg-brick hover:bg-brick-hover text-white rounded-full text-xs font-medium transition-colors"
                 >
                   + สร้าง PO ใหม่
                 </button>
@@ -1270,13 +1270,13 @@ export default function SupplierPage() {
                     });
                     setShowEditSupplierModal(true);
                   }}
-                  className="w-full py-2 bg-blue-200 text-blue-600 hover:bg-blue-300 rounded-xl text-xs font-medium transition-colors"
+                  className="w-full py-2 bg-new-soft text-new-ink hover:bg-new-soft rounded-xl text-xs font-medium transition-colors"
                 >
                   ✏️ แก้ไขข้อมูล
                 </button>
                 <button
                   onClick={() => handleSuspend(selectedSupplier)}
-                  className={`w-full py-2 rounded-xl text-xs font-medium transition-colors ${selectedSupplier.status === "active" ? "bg-red-200 text-red-600 hover:bg-red-300" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+                  className={`w-full py-2 rounded-xl text-xs font-medium transition-colors ${selectedSupplier.status === "active" ? "bg-danger-line text-error hover:bg-danger-line" : "bg-success-soft text-success hover:bg-success-soft"}`}
                 >
                   {selectedSupplier.status === "active"
                     ? "ระงับ Supplier"
@@ -1284,7 +1284,7 @@ export default function SupplierPage() {
                 </button>
                 <button
                   onClick={() => handleDelete(selectedSupplier)}
-                  className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-medium transition-colors"
+                  className="w-full py-2 bg-error hover:bg-error text-white rounded-xl text-xs font-medium transition-colors"
                 >
                   🗑️ ลบ Supplier ถาวร
                 </button>
@@ -1298,13 +1298,13 @@ export default function SupplierPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 bg-amber-500 rounded-t-2xl">
+            <div className="flex items-center justify-between p-5 bg-brick rounded-t-2xl">
               <h2 className="text-lg font-bold text-white">
                 + เพิ่ม Supplier ใหม่
               </h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-white hover:bg-amber-600 p-1.5 rounded-lg"
+                className="text-white hover:bg-brick-hover p-1.5 rounded-lg"
               >
                 ✕
               </button>
@@ -1312,11 +1312,11 @@ export default function SupplierPage() {
             <div className="p-5 space-y-4">
               {SUPPLIER_TEXT_FIELDS.map((field) => (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     {field.label}
                   </label>
                   <input
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     placeholder={field.placeholder}
                     inputMode={
                       field.key === "phone" || field.key === "taxId"
@@ -1346,11 +1346,11 @@ export default function SupplierPage() {
               ))}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     ประเภทสินค้า
                   </label>
                   <select
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     value={newSupplier.category}
                     onChange={(e) =>
                       setNewSupplier((prev) => ({
@@ -1365,11 +1365,11 @@ export default function SupplierPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     เงื่อนไขชำระ
                   </label>
                   <select
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     value={newSupplier.paymentTerms}
                     onChange={(e) =>
                       setNewSupplier((prev) => ({
@@ -1390,11 +1390,11 @@ export default function SupplierPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   หมายเหตุ
                 </label>
                 <textarea
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                  className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick resize-none"
                   rows={2}
                   placeholder="สินค้าที่จัดจำหน่าย..."
                   value={newSupplier.note}
@@ -1409,13 +1409,13 @@ export default function SupplierPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 text-amber-800 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-2.5 bg-sand text-ink rounded-xl text-sm font-medium hover:bg-line transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
                   onClick={handleAddSupplier}
-                  className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-colors"
+                  className="flex-1 py-2.5 bg-brick text-white rounded-full text-sm font-medium hover:bg-brick-hover transition-colors"
                 >
                   บันทึก
                 </button>
@@ -1429,41 +1429,41 @@ export default function SupplierPage() {
       {showPOModal && poTarget && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 bg-amber-500 rounded-t-2xl">
+            <div className="flex items-center justify-between p-5 bg-brick rounded-t-2xl">
               <h2 className="text-lg font-bold text-white">
                 สร้าง PO — {poTarget.name}
               </h2>
               <button
                 onClick={() => setShowPOModal(false)}
-                className="text-white hover:bg-amber-600 p-1.5 rounded-lg"
+                className="text-white hover:bg-brick-hover p-1.5 rounded-lg"
               >
                 ✕
               </button>
             </div>
             <div className="p-5 space-y-4">
-              <div className="bg-amber-50 rounded-xl p-3 text-sm">
-                <p className="font-medium text-amber-800">{poTarget.name}</p>
-                <p className="text-amber-600 text-xs mt-0.5">
+              <div className="bg-warn-bg rounded-xl p-3 text-sm">
+                <p className="font-medium text-ink">{poTarget.name}</p>
+                <p className="text-brick text-xs mt-0.5">
                   เงื่อนไข: {poTarget.paymentTerms}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label className="text-sm font-medium text-body mb-2 block">
                   รายการสินค้า
                 </label>
                 <div className="grid grid-cols-12 gap-2 mb-1">
-                  <p className="col-span-4 text-xs text-gray-400 px-1">
+                  <p className="col-span-4 text-xs text-muted px-1">
                     ชื่อสินค้า
                   </p>
-                  <p className="col-span-2 text-xs text-gray-400 px-1">จำนวน</p>
-                  <p className="col-span-2 text-xs text-gray-400 px-1">หน่วย</p>
-                  <p className="col-span-4 text-xs text-gray-400 px-1">
+                  <p className="col-span-2 text-xs text-muted px-1">จำนวน</p>
+                  <p className="col-span-2 text-xs text-muted px-1">หน่วย</p>
+                  <p className="col-span-4 text-xs text-muted px-1">
                     ราคา/หน่วย (฿)
                   </p>
                 </div>
                 <div className="grid grid-cols-12 gap-2 items-center">
                   <input
-                    className="col-span-4 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    className="col-span-4 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                     placeholder="เช่น แป้งสาลี"
                     value={newPO.itemName}
                     onChange={(e) =>
@@ -1475,7 +1475,7 @@ export default function SupplierPage() {
                   />
                   <input
                     type="number"
-                    className="col-span-2 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    className="col-span-2 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                     placeholder="0"
                     value={newPO.itemQty}
                     min={1}
@@ -1487,7 +1487,7 @@ export default function SupplierPage() {
                     }
                   />
                   <select
-                    className="col-span-2 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    className="col-span-2 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                     value={newPO.itemUnit}
                     onChange={(e) =>
                       setNewPO((prev) => ({
@@ -1502,7 +1502,7 @@ export default function SupplierPage() {
                   </select>
                   <input
                     type="number"
-                    className="col-span-4 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    className="col-span-4 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                     placeholder="0.00"
                     value={newPO.itemPrice}
                     min={0}
@@ -1515,17 +1515,17 @@ export default function SupplierPage() {
                   />
                 </div>
                 <div className="mt-3 text-right">
-                  <span className="text-sm font-bold text-amber-700">
+                  <span className="text-sm font-bold text-body">
                     ยอดรวม: ฿{formatPrice(newPO.itemQty * newPO.itemPrice)}
                   </span>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   หมายเหตุ
                 </label>
                 <textarea
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                  className="w-full px-3 py-2 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick resize-none"
                   rows={2}
                   placeholder="หมายเหตุเพิ่มเติม..."
                   value={newPO.note}
@@ -1537,13 +1537,13 @@ export default function SupplierPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowPOModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 text-amber-800 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-2.5 bg-sand text-ink rounded-xl text-sm font-medium hover:bg-line transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
                   onClick={handleCreatePO}
-                  className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-colors"
+                  className="flex-1 py-2.5 bg-brick text-white rounded-full text-sm font-medium hover:bg-brick-hover transition-colors"
                 >
                   ส่ง PO
                 </button>
@@ -1557,31 +1557,31 @@ export default function SupplierPage() {
       {showEditPOModal && editPO && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-5 bg-amber-500 rounded-t-2xl">
+            <div className="flex items-center justify-between p-5 bg-brick rounded-t-2xl">
               <h2 className="text-lg font-bold text-white">
                 ✏️ แก้ไข {editPO.poCode}
               </h2>
               <button
                 onClick={() => setShowEditPOModal(false)}
-                className="text-white hover:bg-amber-600 p-1.5 rounded-lg"
+                className="text-white hover:bg-brick-hover p-1.5 rounded-lg"
               >
                 ✕
               </button>
             </div>
             <div className="p-5 space-y-4">
               <div className="grid grid-cols-12 gap-2 mb-1">
-                <p className="col-span-4 text-xs text-gray-400 px-1">
+                <p className="col-span-4 text-xs text-muted px-1">
                   ชื่อสินค้า
                 </p>
-                <p className="col-span-2 text-xs text-gray-400 px-1">จำนวน</p>
-                <p className="col-span-2 text-xs text-gray-400 px-1">หน่วย</p>
-                <p className="col-span-4 text-xs text-gray-400 px-1">
+                <p className="col-span-2 text-xs text-muted px-1">จำนวน</p>
+                <p className="col-span-2 text-xs text-muted px-1">หน่วย</p>
+                <p className="col-span-4 text-xs text-muted px-1">
                   ราคา/หน่วย (฿)
                 </p>
               </div>
               <div className="grid grid-cols-12 gap-2 items-center">
                 <input
-                  className="col-span-4 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="col-span-4 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                   value={editPOForm.itemName}
                   onChange={(e) =>
                     setEditPOForm((prev) => ({
@@ -1592,7 +1592,7 @@ export default function SupplierPage() {
                 />
                 <input
                   type="number"
-                  className="col-span-2 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="col-span-2 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                   value={editPOForm.itemQty}
                   min={1}
                   onChange={(e) =>
@@ -1603,7 +1603,7 @@ export default function SupplierPage() {
                   }
                 />
                 <select
-                  className="col-span-2 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="col-span-2 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                   value={editPOForm.itemUnit}
                   onChange={(e) =>
                     setEditPOForm((prev) => ({
@@ -1618,7 +1618,7 @@ export default function SupplierPage() {
                 </select>
                 <input
                   type="number"
-                  className="col-span-4 px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="col-span-4 px-2 py-2 border border-line rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brick"
                   value={editPOForm.itemPrice}
                   min={0}
                   onChange={(e) =>
@@ -1630,7 +1630,7 @@ export default function SupplierPage() {
                 />
               </div>
               <div className="text-right">
-                <span className="text-sm font-bold text-amber-600">
+                <span className="text-sm font-bold text-brick">
                   ยอดรวม: ฿
                   {formatPrice(editPOForm.itemQty * editPOForm.itemPrice)}
                 </span>
@@ -1638,13 +1638,13 @@ export default function SupplierPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowEditPOModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 text-amber-800 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-2.5 bg-sand text-ink rounded-xl text-sm font-medium hover:bg-line transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
                   onClick={handleUpdatePOItem}
-                  className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-colors"
+                  className="flex-1 py-2.5 bg-brick text-white rounded-full text-sm font-medium hover:bg-brick-hover transition-colors"
                 >
                   บันทึก
                 </button>
@@ -1658,13 +1658,13 @@ export default function SupplierPage() {
       {showEditSupplierModal && selectedSupplier && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 bg-amber-500 rounded-t-2xl">
+            <div className="flex items-center justify-between p-5 bg-brick rounded-t-2xl">
               <h2 className="text-lg font-bold text-white">
                 ✏️ แก้ไข {selectedSupplier.name}
               </h2>
               <button
                 onClick={() => setShowEditSupplierModal(false)}
-                className="text-white hover:bg-amber-600 p-1.5 rounded-lg"
+                className="text-white hover:bg-brick-hover p-1.5 rounded-lg"
               >
                 ✕
               </button>
@@ -1672,11 +1672,11 @@ export default function SupplierPage() {
             <div className="p-5 space-y-4">
               {SUPPLIER_TEXT_FIELDS.map((field) => (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     {field.label}
                   </label>
                   <input
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     placeholder={field.placeholder}
                     inputMode={
                       field.key === "phone" || field.key === "taxId"
@@ -1709,11 +1709,11 @@ export default function SupplierPage() {
               ))}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     ประเภทสินค้า
                   </label>
                   <select
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     value={editSupplierForm.category}
                     onChange={(e) =>
                       setEditSupplierForm((prev) => ({
@@ -1728,11 +1728,11 @@ export default function SupplierPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     เงื่อนไขชำระ
                   </label>
                   <select
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     value={editSupplierForm.paymentTerms}
                     onChange={(e) =>
                       setEditSupplierForm((prev) => ({
@@ -1753,11 +1753,11 @@ export default function SupplierPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   หมายเหตุ
                 </label>
                 <textarea
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                  className="w-full px-3 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick resize-none"
                   rows={2}
                   placeholder="สินค้าที่จัดจำหน่าย..."
                   value={editSupplierForm.note}
@@ -1772,13 +1772,13 @@ export default function SupplierPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowEditSupplierModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 text-amber-800 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-2.5 bg-sand text-ink rounded-xl text-sm font-medium hover:bg-line transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
                   onClick={handleUpdateSupplier}
-                  className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-colors"
+                  className="flex-1 py-2.5 bg-brick text-white rounded-full text-sm font-medium hover:bg-brick-hover transition-colors"
                 >
                   บันทึก
                 </button>

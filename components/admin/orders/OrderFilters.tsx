@@ -12,14 +12,14 @@ const DATE_RANGES: { key: DateRangeKey; label: string }[] = [
 ];
 
 const STATUS_CARDS = [
-  { key: "all", label: "ทั้งหมด", icon: "📋", color: "bg-gray-100" },
-  { key: "pending", label: "รอดำเนินการ", icon: "⏳", color: "bg-yellow-100" },
-  { key: "confirmed", label: "ยืนยันแล้ว", icon: "✅", color: "bg-blue-100" },
-  { key: "preparing", label: "กำลังเตรียม", icon: "👨‍🍳", color: "bg-indigo-100" },
-  { key: "shipping", label: "กำลังจัดส่ง", icon: "🚚", color: "bg-purple-100" },
-  { key: "delivered", label: "สั่งซื้อสำเร็จ", icon: "🎉", color: "bg-green-100" },
-  { key: "cancel_requested", label: "รอยกเลิก", icon: "⏸️", color: "bg-orange-100" },
-  { key: "cancelled", label: "ยกเลิก", icon: "❌", color: "bg-red-100" },
+  { key: "all", label: "ทั้งหมด", icon: "📋", color: "bg-sand" },
+  { key: "pending", label: "รอดำเนินการ", icon: "⏳", color: "bg-warn-soft" },
+  { key: "confirmed", label: "ยืนยันแล้ว", icon: "✅", color: "bg-new-soft" },
+  { key: "preparing", label: "กำลังเตรียม", icon: "👨‍🍳", color: "bg-new-soft" },
+  { key: "shipping", label: "กำลังจัดส่ง", icon: "🚚", color: "bg-new-soft" },
+  { key: "delivered", label: "สั่งซื้อสำเร็จ", icon: "🎉", color: "bg-success-soft" },
+  { key: "cancel_requested", label: "รอยกเลิก", icon: "⏸️", color: "bg-warn-soft" },
+  { key: "cancelled", label: "ยกเลิก", icon: "❌", color: "bg-danger-soft" },
 ];
 
 const CHANNELS: { key: ChannelKey; label: string; icon: string }[] = [
@@ -32,7 +32,7 @@ const CHANNELS: { key: ChannelKey; label: string; icon: string }[] = [
 ];
 
 const DATE_INPUT =
-  "border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400";
+  "border border-line rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brick";
 
 interface Props {
   dateRange: DateRangeKey;
@@ -66,9 +66,9 @@ export default function OrderFilters(props: Props) {
             placeholder="ค้นหา Order ID, อีเมล, ชื่อผู้รับ..."
             value={props.search}
             onChange={(e) => props.onSearch(e.target.value)}
-            className="w-full px-4 py-3 pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-4 py-3 pl-12 bg-warn-bg border border-line rounded-xl text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-brick"
           />
-          <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-400" />
+          <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-apricot" />
         </div>
       </div>
     </>
@@ -79,15 +79,15 @@ function DateRangeBar({ dateRange, onDateRange, customFrom, onCustomFrom, custom
   return (
     <div className="bg-white rounded-2xl p-4 mb-6 shadow-md">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-semibold text-amber-800 flex items-center gap-1 mr-1">📅 ช่วงเวลา:</span>
+        <span className="text-sm font-semibold text-ink flex items-center gap-1 mr-1">📅 ช่วงเวลา:</span>
         {DATE_RANGES.map((range) => (
           <button
             key={range.key}
             onClick={() => onDateRange(range.key)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
               dateRange === range.key
-                ? "bg-amber-500 text-white shadow-md"
-                : "bg-gray-50 text-gray-600 hover:bg-amber-50 hover:text-amber-700"
+                ? "bg-brick text-white shadow-md"
+                : "bg-sand text-subtle hover:bg-warn-bg hover:text-body"
             }`}
           >
             {range.label}
@@ -96,12 +96,12 @@ function DateRangeBar({ dateRange, onDateRange, customFrom, onCustomFrom, custom
       </div>
 
       {dateRange === "custom" && (
-        <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100">
-          <label className="text-sm text-gray-600 flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-line">
+          <label className="text-sm text-subtle flex items-center gap-2">
             จาก
             <input type="date" value={customFrom} onChange={(e) => onCustomFrom(e.target.value)} className={DATE_INPUT} />
           </label>
-          <label className="text-sm text-gray-600 flex items-center gap-2">
+          <label className="text-sm text-subtle flex items-center gap-2">
             ถึง
             <input type="date" value={customTo} onChange={(e) => onCustomTo(e.target.value)} className={DATE_INPUT} />
           </label>
@@ -119,7 +119,7 @@ function StatusCards({ status, onStatus, statusCount }: Props) {
           key={card.key}
           onClick={() => onStatus(card.key)}
           className={`p-2 md:p-3 rounded-xl text-center transition-all ${
-            status === card.key ? "ring-2 ring-amber-500 shadow-md" : "hover:shadow-md"
+            status === card.key ? "ring-2 ring-brick shadow-md" : "hover:shadow-md"
           } ${card.color}`}
         >
           <div className="text-xl md:text-2xl">{card.icon}</div>
@@ -140,17 +140,17 @@ function ChannelTabs({ channel, onChannel, channelCount }: Props) {
           <button
             key={item.key}
             onClick={() => onChannel(item.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
               active
-                ? "bg-amber-500 text-white shadow-md"
-                : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50"
+                ? "bg-brick text-white"
+                : "bg-white text-body border border-line hover:bg-warn-bg"
             }`}
           >
             <span>{item.icon}</span>
             <span>{item.label}</span>
             <span
               className={`px-2 py-0.5 rounded-full text-xs ${
-                active ? "bg-amber-600 text-amber-100" : "bg-amber-100 text-amber-700"
+                active ? "bg-brick text-cream" : "bg-warn-soft text-body"
               }`}
             >
               {channelCount(item.key)}

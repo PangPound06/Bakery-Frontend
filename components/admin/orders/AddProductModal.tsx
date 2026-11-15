@@ -60,9 +60,9 @@ export default function AddProductModal({ onClose, onAdd }: Props) {
           className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[80vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="bg-amber-500 text-white px-5 py-4 rounded-t-2xl flex items-center justify-between">
+          <div className="bg-brick text-white px-5 py-4 rounded-t-2xl flex items-center justify-between">
             <h3 className="font-bold text-lg">➕ เพิ่มสินค้า</h3>
-            <button onClick={onClose} className="hover:bg-amber-600 p-1.5 rounded-lg" aria-label="ปิด">
+            <button onClick={onClose} className="hover:bg-brick-hover p-1.5 rounded-lg" aria-label="ปิด">
               ✕
             </button>
           </div>
@@ -74,7 +74,7 @@ export default function AddProductModal({ onClose, onAdd }: Props) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoFocus
-              className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brick"
             />
           </div>
 
@@ -85,8 +85,8 @@ export default function AddProductModal({ onClose, onAdd }: Props) {
                 onClick={() => setCategory(cat)}
                 className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                   category === cat
-                    ? "bg-amber-500 text-white"
-                    : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                    ? "bg-brick text-white"
+                    : "bg-warn-bg text-body border border-line hover:bg-warn-soft"
                 }`}
               >
                 {cat === "all" ? "ทั้งหมด" : cat}
@@ -98,7 +98,7 @@ export default function AddProductModal({ onClose, onAdd }: Props) {
             {visible.map((product) => (
               <ProductButton key={product.id} product={product} onPick={pick} />
             ))}
-            {visible.length === 0 && <div className="text-center py-8 text-gray-400 text-sm">ไม่พบสินค้า</div>}
+            {visible.length === 0 && <div className="text-center py-8 text-muted text-sm">ไม่พบสินค้า</div>}
           </div>
         </div>
       </div>
@@ -122,16 +122,16 @@ function ProductButton({ product, onPick }: { product: Product; onPick: (product
   return (
     <button
       onClick={() => onPick(product)}
-      className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-amber-100 hover:border-amber-400 hover:bg-amber-50 text-left transition-all"
+      className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-line hover:border-line-strong hover:bg-warn-bg text-left transition-all"
     >
       <img src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-amber-700 text-sm truncate">{product.name}</p>
-        <p className="text-amber-500 text-xs font-bold">฿{formatPrice(product.price)}</p>
+        <p className="font-medium text-body text-sm truncate">{product.name}</p>
+        <p className="text-brick text-xs font-bold">฿{formatPrice(product.price)}</p>
         {options.length > 0 && (
           <div className="flex gap-1 mt-0.5 flex-wrap">
             {options.map((o) => (
-              <span key={o.name} className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full">
+              <span key={o.name} className="text-[9px] px-1.5 py-0.5 bg-new-soft text-new-ink rounded-full">
                 {o.name}
                 {o.extraPrice > 0 ? ` +฿${o.extraPrice}` : ""}
               </span>
@@ -159,9 +159,9 @@ function OptionPicker({
       onClick={onCancel}
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-        <div className="bg-amber-500 text-white px-5 py-4 rounded-t-2xl">
+        <div className="bg-brick text-white px-5 py-4 rounded-t-2xl">
           <h3 className="font-bold">เลือกตัวเลือก</h3>
-          <p className="text-amber-100 text-sm">{product.name}</p>
+          <p className="text-cream text-sm">{product.name}</p>
         </div>
         <div className="p-4 space-y-2">
           {parseOptions(product.options).map((o) => (
@@ -169,11 +169,11 @@ function OptionPicker({
               key={o.name}
               onClick={() => setSelected(o)}
               className={`w-full flex justify-between px-4 py-3 rounded-xl border-2 transition-all ${
-                selected?.name === o.name ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300"
+                selected?.name === o.name ? "border-brick bg-warn-bg" : "border-line hover:border-line-strong"
               }`}
             >
-              <span className="font-medium text-amber-700">{o.name}</span>
-              <span className="text-sm text-green-600">
+              <span className="font-medium text-body">{o.name}</span>
+              <span className="text-sm text-ok">
                 ฿{formatPrice(product.price + o.extraPrice)}
                 {o.extraPrice > 0 ? ` (+฿${o.extraPrice})` : ""}
               </span>
@@ -183,14 +183,14 @@ function OptionPicker({
         <div className="px-4 pb-4 flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+            className="flex-1 py-2.5 bg-sand text-body rounded-xl font-medium hover:bg-line"
           >
             ยกเลิก
           </button>
           <button
             disabled={!selected}
             onClick={() => selected && onConfirm(selected)}
-            className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 disabled:opacity-40"
+            className="flex-1 py-2.5 bg-brick text-white rounded-full font-bold hover:bg-brick-hover disabled:opacity-40"
           >
             ✅ เพิ่ม
           </button>

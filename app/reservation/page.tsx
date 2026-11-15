@@ -23,10 +23,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-  confirmed: "bg-green-100  text-green-700  border border-green-200",
-  cancelled: "bg-red-100    text-red-500    border border-red-200",
-  completed: "bg-gray-100   text-gray-500   border border-gray-200",
+  pending: "bg-warn-soft text-body border border-line",
+  confirmed: "bg-success-soft  text-success  border border-success-soft",
+  cancelled: "bg-danger-soft    text-error    border border-danger-line",
+  completed: "bg-sand   text-muted   border border-line",
 };
 
 export default function ReservationPage() {
@@ -152,7 +152,7 @@ export default function ReservationPage() {
           title: "จองโต๊ะสำเร็จ!",
           html: `รหัสการจอง: <b class="font-mono">${data.reservationCode}</b>`,
           confirmButtonText: "ตกลง",
-          confirmButtonColor: "#8b5e3c",
+          confirmButtonColor: "#a84a0e",
         });
         setTableNo("");
         setDate("");
@@ -189,7 +189,7 @@ export default function ReservationPage() {
       showCancelButton: true,
       confirmButtonText: "ยกเลิกการจอง",
       cancelButtonText: "ย้อนกลับ",
-      confirmButtonColor: "#ef4444",
+      confirmButtonColor: "#b3261e",
     });
     if (!result.isConfirmed) return;
 
@@ -226,27 +226,27 @@ export default function ReservationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 pb-16">
+    <div className="min-h-screen bg-warn-bg pb-16">
       {/* ── Page Header ── */}
-      <div className="bg-white border-b border-gray-200 px-4 py-5">
+      <div className="bg-white border-b border-line px-4 py-5">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
           {/* ✅ ปุ่มย้อนกลับ */}
           <button
             type="button"
             onClick={() => router.back()}
             aria-label="ย้อนกลับ"
-            className="w-10 h-10 flex items-center justify-center rounded-full text-amber-600 hover:bg-amber-50 active:bg-amber-100 transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-brick hover:bg-warn-bg active:bg-warn-soft transition-colors shrink-0"
           >
             <i className="fa-solid fa-chevron-left text-lg" />
           </button>
 
           {/* ── Title ── */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-amber-800">
-              <i className="fa-solid fa-calendar-check mr-2 text-[#8b5e3c]" />
+            <h1 className="text-2xl font-bold text-ink">
+              <i className="fa-solid fa-calendar-check mr-2 text-brick" />
               จองโต๊ะอาหาร
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-muted mt-0.5">
               เลือกโต๊ะ วัน และเวลาที่ต้องการ
             </p>
           </div>
@@ -255,17 +255,17 @@ export default function ReservationPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ─────────────────── ฟอร์มจองโต๊ะ ─────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-amber-800 mb-5">
-            <i className="fa-solid fa-pen-to-square mr-2 text-[#8b5e3c]" />
+        <div className="bg-white rounded-2xl shadow-sm border border-line p-6">
+          <h2 className="text-lg font-semibold text-ink mb-5">
+            <i className="fa-solid fa-pen-to-square mr-2 text-brick" />
             ข้อมูลการจอง
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* โต๊ะ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                เลือกโต๊ะ <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-body mb-2">
+                เลือกโต๊ะ <span className="text-error">*</span>
               </label>
 
               <div className="space-y-4">
@@ -273,21 +273,21 @@ export default function ReservationPage() {
                   {
                     label: "โต๊ะ 2 ที่นั่ง",
                     tables: TABLES.slice(0, 5),
-                    base: "bg-blue-100 text-stone-600 hover:bg-blue-200",
+                    base: "bg-new-soft text-subtle hover:bg-new-soft",
                   },
                   {
                     label: "โต๊ะ 4 ที่นั่ง",
                     tables: TABLES.slice(5, 25),
-                    base: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+                    base: "bg-warn-soft text-body hover:bg-warn-line",
                   },
                   {
                     label: "โต๊ะ 8 ที่นั่ง",
                     tables: TABLES.slice(25, 30),
-                    base: "bg-red-100 text-orange-700 hover:bg-red-200",
+                    base: "bg-danger-soft text-body hover:bg-danger-line",
                   },
                 ].map((group) => (
                   <div key={group.label}>
-                    <p className="text-xs text-gray-400 font-medium mb-2">
+                    <p className="text-xs text-muted font-medium mb-2">
                       🪑 {group.label}
                     </p>
                     <div className="grid grid-cols-5 gap-2">
@@ -298,7 +298,7 @@ export default function ReservationPage() {
                           onClick={() => setTableNo(String(t))}
                           className={`h-11 rounded-xl text-base font-bold transition-all duration-200 ${
                             tableNo === String(t)
-                              ? "bg-[#8b5e3c] text-white shadow-md"
+                              ? "bg-brick text-white shadow-md"
                               : group.base
                           }`}
                         >
@@ -313,8 +313,8 @@ export default function ReservationPage() {
 
             {/* วันที่ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                วันที่ <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-body mb-2">
+                วันที่ <span className="text-error">*</span>
               </label>
               <input
                 type="date"
@@ -322,23 +322,23 @@ export default function ReservationPage() {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8b5e3c] focus:ring-1 focus:ring-[#8b5e3c]/20"
+                className="w-full border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brick focus:ring-1 focus:ring-brick/20"
               />
             </div>
 
             {/* เวลา */}
             {tableNo && date && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  เวลา <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-body mb-2">
+                  เวลา <span className="text-error">*</span>
                   {loadingSlots && (
-                    <span className="ml-2 text-xs text-gray-400 font-normal">
+                    <span className="ml-2 text-xs text-muted font-normal">
                       <i className="fa-solid fa-spinner fa-spin" /> กำลังโหลด...
                     </span>
                   )}
                 </label>
                 {!loadingSlots && slots.length === 0 && (
-                  <p className="text-sm text-red-400">ไม่มีช่วงเวลาในวันนี้</p>
+                  <p className="text-sm text-danger-line">ไม่มีช่วงเวลาในวันนี้</p>
                 )}
                 {!loadingSlots && slots.length > 0 && (
                   <div className="grid grid-cols-4 gap-1.5 max-h-44 overflow-y-auto pr-1">
@@ -352,10 +352,10 @@ export default function ReservationPage() {
                         }
                         className={`py-1.5 rounded-lg text-xs font-medium border transition-all ${
                           !slot.available
-                            ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed line-through"
+                            ? "bg-sand text-faint border-line cursor-not-allowed line-through"
                             : selectedTime === slot.time
-                              ? "bg-[#8b5e3c] text-white border-[#8b5e3c]"
-                              : "bg-white text-gray-600 border-gray-200 hover:border-[#8b5e3c]"
+                              ? "bg-brick text-white border-brick"
+                              : "bg-white text-subtle border-line hover:border-brick"
                         }`}
                       >
                         {slot.time}
@@ -368,35 +368,35 @@ export default function ReservationPage() {
 
             {/* จำนวนคน */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                จำนวนคน <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-body mb-2">
+                จำนวนคน <span className="text-error">*</span>
               </label>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setPartySize((v) => Math.max(1, v - 1))}
-                  className="w-9 h-9 rounded-full border border-gray-200 text-gray-600 font-bold text-lg hover:bg-gray-50 transition-colors"
+                  className="w-9 h-9 rounded-full border border-line text-subtle font-bold text-lg hover:bg-sand transition-colors"
                 >
                   −
                 </button>
-                <span className="w-8 text-center text-lg font-bold text-gray-800">
+                <span className="w-8 text-center text-lg font-bold text-ink">
                   {partySize}
                 </span>
                 <button
                   type="button"
                   onClick={() => setPartySize((v) => Math.min(20, v + 1))}
-                  className="w-9 h-9 rounded-full border border-gray-200 text-gray-600 font-bold text-lg hover:bg-gray-50 transition-colors"
+                  className="w-9 h-9 rounded-full border border-line text-subtle font-bold text-lg hover:bg-sand transition-colors"
                 >
                   +
                 </button>
-                <span className="text-sm text-gray-400">คน (สูงสุด 20)</span>
+                <span className="text-sm text-muted">คน (สูงสุด 20)</span>
               </div>
             </div>
 
             {/* ชื่อ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ชื่อผู้จอง <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-body mb-2">
+                ชื่อผู้จอง <span className="text-error">*</span>
               </label>
               <input
                 type="text"
@@ -404,14 +404,14 @@ export default function ReservationPage() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 required
                 placeholder="ชื่อ-นามสกุล"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8b5e3c] focus:ring-1 focus:ring-[#8b5e3c]/20 placeholder-gray-300"
+                className="w-full border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brick focus:ring-1 focus:ring-brick/20 placeholder-faint"
               />
             </div>
 
             {/* เบอร์โทร */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-body mb-2">
+                เบอร์โทรศัพท์ <span className="text-error">*</span>
               </label>
               <input
                 type="tel"
@@ -424,13 +424,13 @@ export default function ReservationPage() {
                 }}
                 required
                 placeholder="0812345678"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8b5e3c] focus:ring-1 focus:ring-[#8b5e3c]/20 placeholder-gray-300"
+                className="w-full border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brick focus:ring-1 focus:ring-brick/20 placeholder-faint"
               />
             </div>
 
             {/* หมายเหตุ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-body mb-2">
                 หมายเหตุ (ถ้ามี)
               </label>
               <textarea
@@ -438,7 +438,7 @@ export default function ReservationPage() {
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 placeholder="เช่น ขอโต๊ะริมหน้าต่าง, วันเกิด..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8b5e3c] focus:ring-1 focus:ring-[#8b5e3c]/20 placeholder-gray-300 resize-none"
+                className="w-full border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brick focus:ring-1 focus:ring-brick/20 placeholder-faint resize-none"
               />
             </div>
 
@@ -452,7 +452,7 @@ export default function ReservationPage() {
                 !customerName ||
                 !customerPhone
               }
-              className="w-full py-3 bg-[#8b5e3c] text-white font-semibold rounded-xl hover:bg-[#7a5234] active:bg-[#6a4429] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shadow-sm"
+              className="w-full py-3 bg-brick text-white font-semibold rounded-full hover:bg-brick-hover active:bg-brick-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shadow-sm"
             >
               {submitting ? (
                 <>
@@ -470,15 +470,15 @@ export default function ReservationPage() {
         </div>
 
         {/* ─────────────────── การจองคิว ─────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-line p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-amber-800">
-              <i className="fa-solid fa-clock-rotate-left mr-2 text-[#8b5e3c]" />
+            <h2 className="text-lg font-semibold text-ink">
+              <i className="fa-solid fa-clock-rotate-left mr-2 text-brick" />
               การจองคิว
             </h2>
             <button
               onClick={fetchMyReservations}
-              className="text-xs text-gray-400 hover:text-[#8b5e3c] transition-colors"
+              className="text-xs text-muted hover:text-brick transition-colors"
             >
               <i className="fa-solid fa-rotate-right mr-1" />
               รีเฟรช
@@ -486,12 +486,12 @@ export default function ReservationPage() {
           </div>
 
           {loadingMy ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
+            <div className="py-12 text-center text-muted text-sm">
               <i className="fa-solid fa-spinner fa-spin text-xl mb-2 block" />
               กำลังโหลด...
             </div>
           ) : myReservations.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
+            <div className="py-12 text-center text-muted text-sm">
               <i className="fa-solid fa-calendar-xmark text-3xl mb-3 block opacity-30" />
               ยังไม่มีการจอง
             </div>
@@ -500,17 +500,17 @@ export default function ReservationPage() {
               {myReservations.map((r) => (
                 <div
                   key={r.id}
-                  className="border border-gray-100 rounded-xl p-4 bg-gray-50 hover:border-gray-200 transition-colors"
+                  className="border border-line rounded-xl p-4 bg-sand hover:border-line transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-gray-800 text-sm">
-                          <i className="fa-solid fa-chair mr-1 text-[#8b5e3c]" />
+                        <span className="font-bold text-ink text-sm">
+                          <i className="fa-solid fa-chair mr-1 text-brick" />
                           โต๊ะ {r.tableNo}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 space-y-0.5">
+                      <div className="text-xs text-muted space-y-0.5">
                         <div>
                           <i className="fa-solid fa-calendar mr-1.5" />
                           {r.reservationDate}{" "}
@@ -528,12 +528,12 @@ export default function ReservationPage() {
                           {r.customerPhone}
                         </div>
                         {r.note && (
-                          <div className="italic text-gray-400">
+                          <div className="italic text-muted">
                             <i className="fa-solid fa-note-sticky mr-1" />
                             &ldquo;{r.note}&rdquo;
                           </div>
                         )}
-                        <div className="font-mono text-gray-400 pt-0.5">
+                        <div className="font-mono text-muted pt-0.5">
                           {r.reservationCode}
                         </div>
                       </div>
@@ -548,7 +548,7 @@ export default function ReservationPage() {
                   {(r.status === "pending" || r.status === "confirmed") && (
                     <button
                       onClick={() => handleCancel(r.id, r.reservationCode)}
-                      className="mt-3 w-full py-1.5 text-xs border border-red-200 text-red-400 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
+                      className="mt-3 w-full py-1.5 text-xs border border-danger-line text-danger-line rounded-lg hover:bg-danger-soft hover:text-error transition-colors"
                     >
                       <i className="fa-solid fa-xmark mr-1" />
                       ยกเลิกการจอง

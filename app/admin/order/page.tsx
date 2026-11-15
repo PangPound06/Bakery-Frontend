@@ -39,13 +39,13 @@ export default function AdminOrdersPage() {
   const refundTarget = actions.refund.target;
 
   return (
-    <div className="min-h-screen bg-amber-50 py-8 px-4">
+    <div className="min-h-screen bg-warn-bg py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-ink flex items-center gap-3">
             <span className="text-4xl">📦</span>Manage Orders
           </h1>
-          <p className="text-amber-600 mt-1">คำสั่งซื้อทั้งหมด {summary.total} รายการ</p>
+          <p className="text-brick mt-1">คำสั่งซื้อทั้งหมด {summary.total} รายการ</p>
         </div>
 
         <OrderFilters

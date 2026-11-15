@@ -9,10 +9,10 @@ import { formatPrice, orderCodeOf } from "./orderUtils";
 import type { Order, OrderAction, OrderItem, Product, ProductOption } from "./types";
 import type { useOrderDetail } from "./useOrderDetail";
 
-const ORANGE = "#f97316";
-const GREEN = "#22c55e";
-const RED = "#ef4444";
-const GRAY = "#6b7280";
+const ORANGE = "#a84a0e";
+const GREEN = "#2f7d4f";
+const RED = "#b3261e";
+const GRAY = "#6b5e52";
 
 const showError = (title: string, text: string) =>
   Swal.fire({ icon: "error", title, text, confirmButtonColor: ORANGE });

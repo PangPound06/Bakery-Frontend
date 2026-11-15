@@ -147,8 +147,8 @@ export default function AccountPage() {
       text: "คุณต้องการออกจากระบบหรือไม่?",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ออกจากระบบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -169,17 +169,17 @@ export default function AccountPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -187,14 +187,14 @@ export default function AccountPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
+    <div className="min-h-screen bg-warn-bg py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-ink flex items-center gap-3">
             <span className="text-3xl md:text-4xl">⚙️</span>
             My Account
           </h1>
-          <p className="text-amber-600 mt-1 text-sm md:text-base">
+          <p className="text-brick mt-1 text-sm md:text-base">
             จัดการข้อมูลส่วนตัวและการตั้งค่า
           </p>
         </div>
@@ -204,16 +204,16 @@ export default function AccountPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-md p-4">
               <div className="text-center mb-4 md:mb-6">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-200 rounded-full flex items-center justify-center text-2xl md:text-3xl mx-auto mb-3">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-line rounded-full flex items-center justify-center text-2xl md:text-3xl mx-auto mb-3">
                   {profile.fullname?.charAt(0)?.toUpperCase() || "A"}
                 </div>
-                <h3 className="font-bold text-slate-800 text-sm md:text-base">
+                <h3 className="font-bold text-ink text-sm md:text-base">
                   {profile.fullname || "Admin"}
                 </h3>
-                <p className="text-xs md:text-sm text-slate-500 break-all">
+                <p className="text-xs md:text-sm text-muted break-all">
                   {profile.email}
                 </p>
-                <span className="inline-block mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">
+                <span className="inline-block mt-2 px-3 py-1 bg-danger-soft text-danger text-xs rounded-full font-medium">
                   {profile.role || "Admin"}
                 </span>
               </div>
@@ -222,14 +222,14 @@ export default function AccountPage() {
               <nav className="flex md:flex-col gap-2">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl transition-all text-sm ${activeTab === "profile" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
+                  className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl transition-all text-sm ${activeTab === "profile" ? "bg-body text-white" : "hover:bg-sand text-subtle"}`}
                 >
                   <span>👤</span>{" "}
                   <span className="hidden sm:inline">ข้อมูลส่วนตัว</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("settings")}
-                  className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl transition-all text-sm ${activeTab === "settings" ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"}`}
+                  className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl transition-all text-sm ${activeTab === "settings" ? "bg-body text-white" : "hover:bg-sand text-subtle"}`}
                 >
                   <span>⚙️</span>{" "}
                   <span className="hidden sm:inline">การตั้งค่า</span>
@@ -238,7 +238,7 @@ export default function AccountPage() {
                   <hr className="my-2" />
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all text-sm"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-danger-soft transition-all text-sm"
                   >
                     <span>🚪</span> ออกจากระบบ
                   </button>
@@ -251,12 +251,12 @@ export default function AccountPage() {
           <div className="lg:col-span-3">
             <div className="bg-white rounded-2xl shadow-md p-4 md:p-6">
               {success && (
-                <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+                <div className="mb-4 bg-success-soft border border-success-soft text-success px-4 py-3 rounded-lg text-sm">
                   ✅ {success}
                 </div>
               )}
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                <div className="mb-4 bg-danger-soft border border-danger-line text-danger px-4 py-3 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
@@ -264,12 +264,12 @@ export default function AccountPage() {
               {/* Profile Tab */}
               {activeTab === "profile" && (
                 <form onSubmit={handleProfileSubmit}>
-                  <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-bold text-ink mb-4 md:mb-6 flex items-center gap-2">
                     <span>👤</span> ข้อมูลส่วนตัว
                   </h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-body mb-2">
                         ชื่อ-นามสกุล
                       </label>
                       <input
@@ -278,25 +278,25 @@ export default function AccountPage() {
                         onChange={(e) =>
                           setProfile({ ...profile, fullname: e.target.value })
                         }
-                        className="w-full px-4 py-2.5 md:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm md:text-base"
+                        className="w-full px-4 py-2.5 md:py-3 bg-sand border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-ink text-sm md:text-base"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-body mb-2">
                         อีเมล
                       </label>
                       <input
                         type="email"
                         value={profile.email}
                         disabled
-                        className="w-full px-4 py-2.5 md:py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-sm md:text-base"
+                        className="w-full px-4 py-2.5 md:py-3 bg-sand border border-line rounded-xl text-muted text-sm md:text-base"
                       />
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-muted mt-1">
                         ไม่สามารถเปลี่ยนอีเมลได้
                       </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-body mb-2">
                         เบอร์โทรศัพท์
                       </label>
                       <input
@@ -308,14 +308,14 @@ export default function AccountPage() {
                             phone: e.target.value.replace(/[^0-9]/g, ""),
                           })
                         }
-                        className="w-full px-4 py-2.5 md:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm md:text-base"
+                        className="w-full px-4 py-2.5 md:py-3 bg-sand border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-ink text-sm md:text-base"
                         placeholder="0xx-xxx-xxxx"
                         inputMode="numeric"
                         maxLength={10}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-body mb-2">
                         ที่อยู่
                       </label>
                       <textarea
@@ -324,19 +324,19 @@ export default function AccountPage() {
                           setProfile({ ...profile, address: e.target.value })
                         }
                         rows={3}
-                        className="w-full px-4 py-2.5 md:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm md:text-base"
+                        className="w-full px-4 py-2.5 md:py-3 bg-sand border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-ink text-sm md:text-base"
                         placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-body mb-2">
                         วันที่สร้างบัญชี
                       </label>
                       <input
                         type="text"
                         value={profile.createdAt}
                         disabled
-                        className="w-full px-4 py-2.5 md:py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-sm md:text-base"
+                        className="w-full px-4 py-2.5 md:py-3 bg-sand border border-line rounded-xl text-muted text-sm md:text-base"
                       />
                     </div>
                   </div>
@@ -344,7 +344,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="px-5 md:px-6 py-2.5 md:py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2 text-sm md:text-base"
+                      className="px-5 md:px-6 py-2.5 md:py-3 bg-body hover:bg-ink text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2 text-sm md:text-base"
                     >
                       {saving ? (
                         <>
@@ -364,7 +364,7 @@ export default function AccountPage() {
               {/* Settings Tab */}
               {activeTab === "settings" && (
                 <div>
-                  <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-bold text-ink mb-4 md:mb-6 flex items-center gap-2">
                     <span>⚙️</span> การตั้งค่า
                   </h2>
                   <div className="space-y-3 md:space-y-4">
@@ -387,13 +387,13 @@ export default function AccountPage() {
                     ].map((item) => (
                       <div
                         key={item.key}
-                        className="flex items-center justify-between p-3 md:p-4 bg-slate-50 rounded-xl"
+                        className="flex items-center justify-between p-3 md:p-4 bg-sand rounded-xl"
                       >
                         <div>
-                          <h4 className="font-medium text-slate-800 text-sm md:text-base">
+                          <h4 className="font-medium text-ink text-sm md:text-base">
                             {item.title}
                           </h4>
-                          <p className="text-xs md:text-sm text-slate-500">
+                          <p className="text-xs md:text-sm text-muted">
                             {item.desc}
                           </p>
                         </div>
@@ -411,7 +411,7 @@ export default function AccountPage() {
                             }
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-slate-300 peer-focus:ring-2 peer-focus:ring-slate-500 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-700"></div>
+                          <div className="w-11 h-6 bg-line-strong peer-focus:ring-2 peer-focus:ring-ink rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-body"></div>
                         </label>
                       </div>
                     ))}
@@ -421,7 +421,7 @@ export default function AccountPage() {
                   <div className="mt-6 md:hidden">
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-red-600 bg-red-50 hover:bg-red-100 transition-all font-medium"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-error bg-danger-soft hover:bg-danger-soft transition-all font-medium"
                     >
                       <span>🚪</span> ออกจากระบบ
                     </button>

@@ -6,7 +6,7 @@ import { useRef, useMemo } from "react";
 import * as THREE from "three";
 
 // โทนสีเบเกอรี่ (amber/orange/cream)
-const COLORS = ["#f59e0b", "#fbbf24", "#fdba74", "#fcd34d", "#fb923c"];
+const COLORS = ["#a84a0e", "#f3b47a", "#fdba74", "#f3b47a", "#a84a0e"];
 
 /**
  * ตัวเลขสุ่มเทียมแบบกำหนดผลได้ (0 ≤ x < 1) — ค่าเดิมทุกครั้งที่ render
@@ -86,7 +86,7 @@ export default function Background3D() {
     >
       <ambientLight intensity={0.85} />
       <directionalLight position={[5, 5, 5]} intensity={1.2} />
-      <directionalLight position={[-5, -3, 2]} intensity={0.4} color="#fff7ed" />
+      <directionalLight position={[-5, -3, 2]} intensity={0.4} color="#fdf6ec" />
       <Orbs />
     </Canvas>
   );

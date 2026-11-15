@@ -209,8 +209,8 @@ export default function OrdersPage() {
       text: "ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ยืนยันยกเลิก",
       cancelButtonText: "ไม่ยกเลิก",
     });
@@ -230,7 +230,7 @@ export default function OrdersPage() {
           title: "ยกเลิกสำเร็จ!",
           text: "ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว",
           icon: "success",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -241,7 +241,7 @@ export default function OrdersPage() {
           title: "เกิดข้อผิดพลาด",
           text: data.error || data.message || "ไม่สามารถยกเลิกได้",
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
@@ -249,7 +249,7 @@ export default function OrdersPage() {
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถยกเลิกได้",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -283,7 +283,7 @@ export default function OrdersPage() {
         title: "โหลดรายการสินค้าไม่สำเร็จ",
         text: "ลองใหม่อีกครั้ง",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -293,43 +293,43 @@ export default function OrdersPage() {
       case "pending":
         return {
           text: "รอดำเนินการ",
-          bg: "bg-yellow-100 text-yellow-700",
+          bg: "bg-warn-soft text-body",
           icon: "⏳",
         };
       case "confirmed":
         return {
           text: "ยืนยันแล้ว",
-          bg: "bg-blue-100 text-blue-700",
+          bg: "bg-new-soft text-new-ink",
           icon: "✅",
         };
       case "preparing":
         return {
           text: "กำลังเตรียม",
-          bg: "bg-indigo-100 text-indigo-700",
+          bg: "bg-new-soft text-new-ink",
           icon: "👨‍🍳",
         };
       case "shipping":
         return {
           text: "กำลังจัดส่ง",
-          bg: "bg-purple-100 text-purple-700",
+          bg: "bg-new-soft text-new-ink",
           icon: "🚚",
         };
       case "delivered":
         return {
           text: "จัดส่งแล้ว",
-          bg: "bg-green-100 text-green-700",
+          bg: "bg-success-soft text-success",
           icon: "📦",
         };
       case "cancel_requested":
         return {
           text: "รอร้านพิจารณาคำขอยกเลิก",
-          bg: "bg-orange-100 text-orange-700",
+          bg: "bg-warn-soft text-body",
           icon: "⏸️",
         };
       case "cancelled":
-        return { text: "ยกเลิก", bg: "bg-red-100 text-red-700", icon: "❌" };
+        return { text: "ยกเลิก", bg: "bg-danger-soft text-danger", icon: "❌" };
       default:
-        return { text: status, bg: "bg-gray-100 text-gray-700", icon: "📋" };
+        return { text: status, bg: "bg-sand text-body", icon: "📋" };
     }
   };
 
@@ -413,17 +413,17 @@ export default function OrdersPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -431,19 +431,19 @@ export default function OrdersPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div className="min-h-screen bg-cream   py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <Link
             href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+            className="text-brick hover:text-body flex items-center gap-2 mb-4"
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">
+          <h1 className="text-3xl font-bold text-ink">
             📋 รายการสั่งซื้อ
           </h1>
-          <p className="text-amber-600 mt-1">
+          <p className="text-brick mt-1">
             คำสั่งซื้อทั้งหมด {filteredOrders.length} รายการ
           </p>
         </div>
@@ -455,37 +455,37 @@ export default function OrdersPage() {
               <nav className="space-y-2">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-warn-soft text-body font-medium"
                 >
                   <span>📋</span> รายการสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>🔍</span> ค้นหาคำสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📅</span> การจองคิว
                 </Link>
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>❤️</span> รายการโปรด
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>⚙️</span> ตั้งค่า
                 </Link>
@@ -497,7 +497,7 @@ export default function OrdersPage() {
             {/* ✅ ช่วงเวลา */}
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold text-amber-800 flex items-center gap-1 mr-1">
+                <span className="text-sm font-semibold text-ink flex items-center gap-1 mr-1">
                   📅 ช่วงเวลา:
                 </span>
                 {[
@@ -514,8 +514,8 @@ export default function OrdersPage() {
                     onClick={() => setDateRange(r.key as typeof dateRange)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       dateRange === r.key
-                        ? "bg-amber-500 text-white shadow-md"
-                        : "bg-gray-100 text-amber-800 hover:bg-gray-200"
+                        ? "bg-brick text-white shadow-md"
+                        : "bg-sand text-ink hover:bg-line"
                     }`}
                   >
                     {r.label}
@@ -523,23 +523,23 @@ export default function OrdersPage() {
                 ))}
               </div>
               {dateRange === "custom" && (
-                <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100">
-                  <label className="text-sm text-gray-600 flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-line">
+                  <label className="text-sm text-subtle flex items-center gap-2">
                     จาก
                     <input
                       type="date"
                       value={customFrom}
                       onChange={(e) => setCustomFrom(e.target.value)}
-                      className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      className="border border-line rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     />
                   </label>
-                  <label className="text-sm text-gray-600 flex items-center gap-2">
+                  <label className="text-sm text-subtle flex items-center gap-2">
                     ถึง
                     <input
                       type="date"
                       value={customTo}
                       onChange={(e) => setCustomTo(e.target.value)}
-                      className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      className="border border-line rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                     />
                   </label>
                 </div>
@@ -562,7 +562,7 @@ export default function OrdersPage() {
                       setFilterStatus(filter.value);
                       setPage(0);
                     }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === filter.value ? "bg-amber-500 text-white" : "bg-gray-100 text-amber-800 hover:bg-gray-200"}`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filterStatus === filter.value ? "bg-brick text-white" : "bg-sand text-ink hover:bg-line"}`}
                   >
                     {filter.label}
                   </button>
@@ -573,10 +573,10 @@ export default function OrdersPage() {
             {filteredOrders.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-6xl mb-4">📭</div>
-                <p className="text-gray-500 text-lg">ไม่มีคำสั่งซื้อ</p>
+                <p className="text-muted text-lg">ไม่มีคำสั่งซื้อ</p>
                 <Link
                   href="/"
-                  className="inline-block mt-4 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors"
+                  className="inline-block mt-4 px-6 py-3 bg-brick text-white rounded-xl hover:bg-brick-hover transition-colors"
                 >
                   🛒 เลือกซื้อสินค้า
                 </Link>
@@ -590,14 +590,14 @@ export default function OrdersPage() {
                     key={order.id}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                   >
-                    <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+                    <div className="flex items-center justify-between p-4 bg-sand border-b">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{status.icon}</span>
                         <div>
-                          <p className="font-semibold text-amber-700">
+                          <p className="font-semibold text-body">
                             คำสั่งซื้อ #{order.ordCode}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted">
                             {formatDate(order.createdAt)}
                           </p>
                         </div>
@@ -618,15 +618,15 @@ export default function OrdersPage() {
                     <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted">
                             {paymentMethodLabel(order.paymentMethod)}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted">
                             จัดส่งถึง: {order.receiverName}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-amber-600">
+                          <p className="text-2xl font-bold text-brick">
                             ฿{formatPrice(order.total)}
                           </p>
                         </div>
@@ -634,14 +634,14 @@ export default function OrdersPage() {
                       <div className="flex gap-2 mt-4 pt-4 border-t">
                         <button
                           onClick={() => fetchOrderDetail(order.id)}
-                          className="flex-1 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors text-sm font-medium"
+                          className="flex-1 px-4 py-2 bg-warn-soft text-body rounded-lg hover:bg-warn-line transition-colors text-sm font-medium"
                         >
                           🔍 ดูรายละเอียด
                         </button>
                         {canCancel(order) && (
                           <button
                             onClick={() => startCancel(order)}
-                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
+                            className="px-4 py-2 bg-danger-soft text-error rounded-lg hover:bg-danger-line transition-colors text-sm font-medium"
                           >
                             {isPaid(order.paymentStatus) ? "ขอยกเลิก" : "ยกเลิก"}
                           </button>
@@ -676,13 +676,13 @@ export default function OrdersPage() {
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
+            <div className="flex items-center justify-between p-6 bg-brick rounded-t-2xl">
               <h2 className="text-xl font-bold text-white">
                 📋 คำสั่งซื้อ #{selectedOrder.ordCode}
               </h2>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="p-2 hover:bg-amber-600 rounded-lg transition-colors text-white"
+                className="p-2 hover:bg-brick-hover rounded-lg transition-colors text-white"
               >
                 <svg
                   className="w-6 h-6"
@@ -702,13 +702,13 @@ export default function OrdersPage() {
 
             {loadingDetail ? (
               <div className="p-12 text-center">
-                <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-500">กำลังโหลด...</p>
+                <div className="w-10 h-10 border-4 border-brick border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-muted">กำลังโหลด...</p>
               </div>
             ) : (
               <div className="p-6 space-y-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">สถานะ</span>
+                  <span className="text-sm text-muted">สถานะ</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(selectedOrder.orderStatus).bg}`}
                   >
@@ -717,14 +717,14 @@ export default function OrdersPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">วันที่สั่งซื้อ</span>
-                  <span className="text-sm font-medium text-amber-700">
+                  <span className="text-sm text-muted">วันที่สั่งซื้อ</span>
+                  <span className="text-sm font-medium text-body">
                     {formatDate(selectedOrder.createdAt)}
                   </span>
                 </div>
 
                 <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-3">
+                  <p className="text-sm font-semibold text-body mb-3">
                     🛒 รายการสินค้า
                   </p>
                   <div className="space-y-2">
@@ -737,31 +737,31 @@ export default function OrdersPage() {
                         <div
                           key={item.id}
                           className={`flex items-center justify-between p-3 rounded-lg ${
-                            allCancelled ? "bg-gray-100" : "bg-amber-50"
+                            allCancelled ? "bg-sand" : "bg-warn-bg"
                           }`}
                         >
                           <div>
                             <p
                               className={`font-medium ${
                                 allCancelled
-                                  ? "text-gray-400 line-through"
-                                  : "text-amber-700"
+                                  ? "text-muted line-through"
+                                  : "text-body"
                               }`}
                             >
                               {item.productName}
                             </p>
                             {item.selectedOption && (
-                              <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                              <span className="inline-block px-2 py-0.5 bg-new-soft text-new-ink text-xs rounded-full mt-0.5">
                                 {item.selectedOption}
                               </span>
                             )}
                             {cancelled > 0 && (
-                              <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full mt-0.5 ml-1">
+                              <span className="inline-block px-2 py-0.5 bg-danger-soft text-error text-xs rounded-full mt-0.5 ml-1">
                                 ยกเลิกแล้ว {cancelled}{" "}
                                 {isPound ? "ออเดอร์" : "ชิ้น"}
                               </span>
                             )}
-                            <p className="text-xs text-gray-500 mt-0.5">
+                            <p className="text-xs text-muted mt-0.5">
                               {allCancelled ? (
                                 "ยกเลิกทั้งรายการแล้ว"
                               ) : (
@@ -774,7 +774,7 @@ export default function OrdersPage() {
                           </div>
                           <p
                             className={`font-semibold ${
-                              allCancelled ? "text-gray-400" : "text-amber-600"
+                              allCancelled ? "text-muted" : "text-brick"
                             }`}
                           >
                             ฿{formatPrice(displayTotal)}
@@ -786,33 +786,33 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between text-sm text-amber-800">
+                  <div className="flex justify-between text-sm text-ink">
                     <span>ยอดรวมสินค้า</span>
                     <span>฿{formatPrice(selectedOrder.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-amber-800">
+                  <div className="flex justify-between text-sm text-ink">
                     <span>ค่าจัดส่ง</span>
-                    <span className="text-green-600">
+                    <span className="text-ok">
                       {selectedOrder.shipping > 0
                         ? `฿${formatPrice(selectedOrder.shipping)}`
                         : "ฟรี"}
                     </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
-                    <span className="text-amber-800">ยอดรวมทั้งหมด</span>
-                    <span className="text-amber-600">
+                    <span className="text-ink">ยอดรวมทั้งหมด</span>
+                    <span className="text-brick">
                       ฿{formatPrice(selectedOrder.total)}
                     </span>
                   </div>
                   {(selectedOrder.refundedAmount ?? 0) > 0 && (
-                    <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-1">
-                      <div className="flex justify-between text-sm text-red-600 font-medium">
+                    <div className="bg-danger-soft border border-danger-line rounded-lg px-3 py-2 mt-1">
+                      <div className="flex justify-between text-sm text-error font-medium">
                         <span>คืนเงินให้คุณแล้ว</span>
                         <span>
                           ฿{formatPrice(selectedOrder.refundedAmount ?? 0)}
                         </span>
                       </div>
-                      <p className="text-xs text-red-400 mt-0.5">
+                      <p className="text-xs text-danger-line mt-0.5">
                         ยอดรวมด้านบนคือรายการที่เหลือหลังหักรายการที่ยกเลิกออกแล้ว
                       </p>
                     </div>
@@ -820,17 +820,17 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="border-t pt-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                  <p className="text-sm font-semibold text-body mb-2">
                     💰 การชำระเงิน
                   </p>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">วิธีชำระเงิน</span>
+                    <span className="text-muted">วิธีชำระเงิน</span>
                     <span>
                       {paymentMethodLabel(selectedOrder.paymentMethod)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-gray-500">สถานะ</span>
+                    <span className="text-muted">สถานะ</span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${paymentStatusBadge(selectedOrder.paymentStatus).className}`}
                     >
@@ -840,37 +840,37 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="border-t pt-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                  <p className="text-sm font-semibold text-body mb-2">
                     📦 ข้อมูลการจัดส่ง
                   </p>
-                  <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
+                  <div className="bg-sand rounded-lg p-3 space-y-1 text-sm">
                     <p>
-                      <span className="text-gray-500">ชื่อผู้รับ:</span>{" "}
+                      <span className="text-muted">ชื่อผู้รับ:</span>{" "}
                       <span className="font-medium">
                         {getCustomerName(selectedOrder)}
                       </span>
                     </p>
                     <p>
-                      <span className="text-gray-500">เบอร์โทร:</span>{" "}
+                      <span className="text-muted">เบอร์โทร:</span>{" "}
                       <span className="font-medium">
                         {selectedOrder.receiverPhone}
                       </span>
                     </p>
                     {selectedOrder.orderType !== "dine-in" && (
                       <p>
-                        <span className="text-gray-500">รับสินค้า:</span>{" "}
+                        <span className="text-muted">รับสินค้า:</span>{" "}
                         <span className="font-medium">{receiveSummary(selectedOrder)}</span>
                       </p>
                     )}
                     <p>
-                      <span className="text-gray-500">ที่อยู่:</span>{" "}
+                      <span className="text-muted">ที่อยู่:</span>{" "}
                       <span className="font-medium">
                         {selectedOrder.receiverAddress}
                       </span>
                     </p>
                     {selectedOrder.note && (
                       <p>
-                        <span className="text-gray-500">หมายเหตุ:</span>{" "}
+                        <span className="text-muted">หมายเหตุ:</span>{" "}
                         <span className="font-medium">
                           {selectedOrder.note}
                         </span>
@@ -882,7 +882,7 @@ export default function OrdersPage() {
                 {canCancel(selectedOrder) && (
                   <button
                     onClick={() => startCancel(selectedOrder)}
-                    className="w-full py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors font-medium"
+                    className="w-full py-3 bg-danger-soft text-error rounded-xl hover:bg-danger-line transition-colors font-medium"
                   >
                     {isPaid(selectedOrder.paymentStatus)
                       ? "❌ ขอยกเลิกและคืนเงิน"
@@ -890,13 +890,13 @@ export default function OrdersPage() {
                   </button>
                 )}
                 {isAwaitingVerification(selectedOrder.paymentStatus) && (
-                  <p className="text-xs text-center text-orange-600">
+                  <p className="text-xs text-center text-brick">
                     แจ้งโอนแล้ว รอร้านตรวจสอบยอด — หากต้องการยกเลิกกรุณาติดต่อร้าน
                   </p>
                 )}
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="w-full py-3 bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  className="w-full py-3 bg-sand text-ink rounded-xl hover:bg-line transition-colors font-medium"
                 >
                   ปิด
                 </button>
@@ -919,7 +919,7 @@ export default function OrdersPage() {
               title: "ส่งคำขอแล้ว",
               text: message,
               icon: "success",
-              confirmButtonColor: "#f97316",
+              confirmButtonColor: "#a84a0e",
             });
             fetchOrders();
           }}

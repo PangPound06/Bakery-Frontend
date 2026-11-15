@@ -42,8 +42,8 @@ export default function UserMenu({ user }: UserMenuProps) {
       text: "คุณต้องการออกจากระบบหรือไม่?",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#a84a0e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ออกจากระบบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -97,7 +97,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "profile":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -113,7 +113,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "orders":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -129,7 +129,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "search":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -145,7 +145,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "favorites":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -161,7 +161,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "reservations":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -177,7 +177,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "settings":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -199,7 +199,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "dashboard":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -215,7 +215,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       case "users":
         return (
           <svg
-            className="w-5 h-5 text-gray-400 group-hover:text-amber-600"
+            className="w-5 h-5 text-muted group-hover:text-brick"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -238,14 +238,14 @@ export default function UserMenu({ user }: UserMenuProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-          isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-200/70"
+          isAdmin ? "hover:bg-body" : "hover:bg-warn-line/70"
         }`}
       >
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm border-2 overflow-hidden ${
             isAdmin
-              ? "bg-slate-600 border-slate-500"
-              : "bg-amber-500 border-amber-400"
+              ? "bg-body border-muted"
+              : "bg-brick border-line-strong"
           }`}
         >
           {user.profileImage ? (
@@ -258,11 +258,11 @@ export default function UserMenu({ user }: UserMenuProps) {
             getInitials()
           )}
         </div>
-        <span className="text-amber-800 text-sm font-medium hidden md:block max-w-[150px] truncate">
+        <span className="text-ink text-sm font-medium hidden md:block max-w-[150px] truncate">
           {user.email}
         </span>
         <svg
-          className={`w-4 h-4 text-amber-700 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-body transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -277,20 +277,20 @@ export default function UserMenu({ user }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 border border-gray-200 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 border border-line overflow-hidden">
           <div
-            className={`px-4 py-3 border-b border-gray-200 ${
+            className={`px-4 py-3 border-b border-line ${
               isAdmin
-                ? "bg-gradient-to-r from-slate-50 to-gray-50"
-                : "bg-gradient-to-r from-amber-50 to-orange-50"
+                ? "bg-cream  "
+                : "bg-cream  "
             }`}
           >
             <div className="flex items-center gap-3">
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 overflow-hidden ${
                   isAdmin
-                    ? "bg-slate-600 border-slate-500"
-                    : "bg-amber-500 border-amber-400"
+                    ? "bg-body border-muted"
+                    : "bg-brick border-line-strong"
                 }`}
               >
                 {user.profileImage ? (
@@ -304,12 +304,12 @@ export default function UserMenu({ user }: UserMenuProps) {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-amber-700 truncate">
+                <p className="text-sm font-semibold text-body truncate">
                   {user.fullname || "ผู้ใช้งาน"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-xs text-muted truncate">{user.email}</p>
                 {isAdmin && (
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-medium">
+                  <span className="inline-block mt-1 px-2 py-0.5 bg-danger-soft text-error text-xs rounded-full font-medium">
                     Admin
                   </span>
                 )}
@@ -323,8 +323,8 @@ export default function UserMenu({ user }: UserMenuProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors group ${
-                  isAdmin ? "hover:bg-slate-50" : "hover:bg-amber-50"
+                className={`flex items-center gap-3 px-4 py-2.5 text-sm text-body transition-colors group ${
+                  isAdmin ? "hover:bg-sand" : "hover:bg-warn-bg"
                 }`}
               >
                 {getIcon(item.icon)}
@@ -333,10 +333,10 @@ export default function UserMenu({ user }: UserMenuProps) {
             ))}
           </div>
 
-          <div className="border-t border-gray-200 py-1 mt-1">
+          <div className="border-t border-line py-1 mt-1">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full group"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-danger-soft transition-colors w-full group"
             >
               <svg
                 className="w-5 h-5 group-hover:scale-110 transition-transform"

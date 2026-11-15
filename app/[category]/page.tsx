@@ -205,26 +205,26 @@ export default function CategoryPage() {
   // ✅ แสดง loading spinner ขณะ redirect
   if (isReserved) {
     return (
-      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-warn-bg flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brick border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (notFoundState) {
     return (
-      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
+      <div className="min-h-screen bg-warn-bg flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">😔</div>
-          <h2 className="text-2xl font-bold text-amber-700 mb-2">
+          <h2 className="text-2xl font-bold text-body mb-2">
             ไม่พบหมวดหมู่
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted mb-6">
             หมวดหมู่ &quot;{categorySlug}&quot; ไม่มีอยู่ในระบบ
           </p>
           <Link
             href="/"
-            className="px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium"
+            className="px-6 py-3 bg-brick text-white rounded-full hover:bg-brick-hover transition-colors font-medium"
           >
             ← กลับหน้าหลัก
           </Link>
@@ -248,17 +248,17 @@ export default function CategoryPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -267,8 +267,7 @@ export default function CategoryPage() {
 
   return (
     <div
-      className="bg-amber-50 min-h-screen"
-      style={{ fontFamily: "var(--font-prompt), sans-serif" }}
+      className="bg-warn-bg min-h-screen"
     >
       <section
         ref={heroRef}
@@ -283,15 +282,15 @@ export default function CategoryPage() {
             transition: "transform 8000ms ease-out",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-950/25 via-transparent to-[#faf8f5]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-950/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/25 via-transparent to-cream" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/30 to-transparent" />
         <div
           className={`absolute inset-0 flex flex-col justify-end pb-12 sm:pb-20 px-5 sm:px-8 lg:px-16 transition-all duration-1000 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex items-center gap-3 mb-4">
-              <span className="block w-6 h-px bg-amber-200/70" />
-              <span className="text-amber-100/70 text-[11px] tracking-[0.4em] uppercase">
+              <span className="block w-6 h-px bg-warn-line/70" />
+              <span className="text-cream/70 text-[11px] tracking-[0.4em] uppercase">
                 Pound Bakery
               </span>
             </div>
@@ -310,13 +309,13 @@ export default function CategoryPage() {
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-14 sm:py-24">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
               <div className="order-2 lg:order-1">
-                <p className="text-amber-500 sm:text-lg tracking-[0.3em] uppercase mb-4">
+                <p className="text-brick sm:text-lg tracking-[0.3em] uppercase mb-4">
                   {story.tagline}
                 </p>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-700 leading-[1.1] mb-5">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-body leading-[1.1] mb-5">
                   {story.title}
                 </h2>
-                <p className="text-stone-500 text-base sm:text-lg leading-relaxed max-w-xl">
+                <p className="text-muted text-base sm:text-lg leading-relaxed max-w-xl">
                   {story.body}
                 </p>
               </div>
@@ -332,10 +331,10 @@ export default function CategoryPage() {
 
           <section className="px-4 sm:px-6 lg:px-12 pb-14 sm:pb-24">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-amber-900 leading-snug">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extralight text-ink leading-snug">
                 {story.highlight}
               </h2>
-              <p className="mt-3 text-stone-500 text-sm tracking-wide">
+              <p className="mt-3 text-muted text-sm tracking-wide">
                 {story.highlightBody}
               </p>
             </div>
@@ -355,13 +354,13 @@ export default function CategoryPage() {
               <button
                 key={t}
                 onClick={() => setSelectedType(t)}
-                className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${selectedType === t ? "bg-amber-900 text-amber-50" : "bg-white text-stone-500 hover:text-stone-700 border border-stone-200 hover:border-stone-400"}`}
+                className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${selectedType === t ? "bg-ink text-cream" : "bg-white text-muted hover:text-body border border-line hover:border-line-strong"}`}
               >
                 {t}
               </button>
             ))}
           </div>
-          <p className="text-stone-400 text-xs">{filtered.length} รายการ</p>
+          <p className="text-muted text-xs">{filtered.length} รายการ</p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
@@ -378,7 +377,7 @@ export default function CategoryPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-stone-300 text-sm">ไม่พบสินค้าในหมวดหมู่นี้</p>
+            <p className="text-faint text-sm">ไม่พบสินค้าในหมวดหมู่นี้</p>
           </div>
         )}
       </section>

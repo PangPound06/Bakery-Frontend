@@ -15,7 +15,7 @@ export default function StoreClosedBanner() {
   if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <div className="bg-red-50 border-b border-red-200 text-red-800">
+    <div className="bg-danger-soft border-b border-danger-line text-danger">
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2 text-sm text-center">
         <svg
           className="w-4 h-4 flex-shrink-0"

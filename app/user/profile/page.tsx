@@ -149,7 +149,7 @@ export default function ProfilePage() {
           icon: "error",
           title: "อัพโหลดไม่สำเร็จ",
           text: data.message,
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
@@ -157,7 +157,7 @@ export default function ProfilePage() {
         icon: "error",
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถอัพโหลดรูปภาพได้",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     } finally {
       setUploadingImage(false);
@@ -169,8 +169,8 @@ export default function ProfilePage() {
       icon: "warning",
       title: "ลบรูปภาพโปรไฟล์?",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -205,7 +205,7 @@ export default function ProfilePage() {
           icon: "error",
           title: "เกิดข้อผิดพลาด",
           text: data.message,
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
@@ -213,24 +213,24 @@ export default function ProfilePage() {
         icon: "error",
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถลบรูปภาพได้",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -238,16 +238,16 @@ export default function ProfilePage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div className="min-h-screen bg-cream   py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <Link
             href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+            className="text-brick hover:text-body flex items-center gap-2 mb-4"
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">
+          <h1 className="text-3xl font-bold text-ink">
             👤 ข้อมูลส่วนตัว
           </h1>
         </div>
@@ -259,37 +259,37 @@ export default function ProfilePage() {
               <nav className="space-y-2">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-warn-soft text-body font-medium"
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📋</span> รายการสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>🔍</span> ค้นหาคำสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📅</span> การจองคิว
                 </Link>
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>❤️</span> รายการโปรด
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>⚙️</span> ตั้งค่า
                 </Link>
@@ -301,12 +301,12 @@ export default function ProfilePage() {
           <div className="md:col-span-3">
             <div className="bg-white rounded-2xl shadow-lg p-6">
               {success && (
-                <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                <div className="mb-4 bg-success-soft border border-success-soft text-success px-4 py-3 rounded-lg">
                   ✅ {success}
                 </div>
               )}
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <div className="mb-4 bg-danger-soft border border-danger-line text-danger px-4 py-3 rounded-lg">
                   ⚠️ {error}
                 </div>
               )}
@@ -314,7 +314,7 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b">
                 <div className="relative w-20 h-20 flex-shrink-0">
-                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+                  <div className="w-20 h-20 bg-brick   rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
                     {profile?.profileImage ? (
                       <img
                         src={profile.profileImage}
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                       formData.fullname?.charAt(0)?.toUpperCase() || "U"
                     )}
                   </div>
-                  <label className="absolute bottom-0 right-0 w-7 h-7 bg-amber-500 hover:bg-amber-600 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors">
+                  <label className="absolute bottom-0 right-0 w-7 h-7 bg-brick hover:bg-brick-hover rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors">
                     <span className="text-white text-xs">📷</span>
                     <input
                       type="file"
@@ -337,7 +337,7 @@ export default function ProfilePage() {
                   {profile?.profileImage && (
                     <button
                       onClick={handleDeleteImage}
-                      className="absolute top-0 right-0 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-md transition-colors"
+                      className="absolute top-0 right-0 w-5 h-5 bg-error hover:bg-error rounded-full flex items-center justify-center shadow-md transition-colors"
                     >
                       <span className="text-white text-xs">✕</span>
                     </button>
@@ -349,10 +349,10 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-amber-700 break-words">
+                  <h2 className="text-xl font-bold text-body break-words">
                     {formData.fullname || "ผู้ใช้"}
                   </h2>
-                  <p className="text-gray-500 truncate">{profile?.email}</p>
+                  <p className="text-muted truncate">{profile?.email}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -364,7 +364,7 @@ export default function ProfilePage() {
                       });
                     setIsEditing(!isEditing);
                   }}
-                  className="flex-shrink-0 self-start px-3 py-2 text-sm text-amber-600 hover:bg-amber-50 rounded-lg transition-colors whitespace-nowrap"
+                  className="flex-shrink-0 self-start px-3 py-2 text-sm text-brick hover:bg-warn-bg rounded-lg transition-colors whitespace-nowrap"
                 >
                   {isEditing ? "ยกเลิก" : "✏️ แก้ไข"}
                 </button>
@@ -373,7 +373,7 @@ export default function ProfilePage() {
               {/* Form */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     ชื่อ-นามสกุล
                   </label>
                   <input
@@ -383,25 +383,25 @@ export default function ProfilePage() {
                       setFormData({ ...formData, fullname: e.target.value })
                     }
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-line-strong focus:ring-2 focus:ring-brick focus:outline-none" : "border-line bg-sand"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     อีเมล
                   </label>
                   <input
                     type="email"
                     value={profile?.email || ""}
                     disabled
-                    className="w-full px-4 py-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-500"
+                    className="w-full px-4 py-3 border border-line bg-sand rounded-lg text-muted"
                   />
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-muted mt-1">
                     ไม่สามารถเปลี่ยนอีเมลได้
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     เบอร์โทรศัพท์
                   </label>
                   <input
@@ -417,11 +417,11 @@ export default function ProfilePage() {
                     disabled={!isEditing}
                     placeholder="0812345678"
                     maxLength={20}
-                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-line-strong focus:ring-2 focus:ring-brick focus:outline-none" : "border-line bg-sand"}`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-body mb-1">
                     ที่อยู่
                   </label>
                   <textarea
@@ -432,7 +432,7 @@ export default function ProfilePage() {
                     disabled={!isEditing}
                     rows={3}
                     placeholder="บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"
-                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-amber-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" : "border-gray-200 bg-gray-50"}`}
+                    className={`w-full px-4 py-3 border rounded-lg transition-colors ${isEditing ? "border-line-strong focus:ring-2 focus:ring-brick focus:outline-none" : "border-line bg-sand"}`}
                   />
                 </div>
 
@@ -447,14 +447,14 @@ export default function ProfilePage() {
                           address: profile?.address || "",
                         });
                       }}
-                      className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                      className="flex-1 px-4 py-3 border border-line-strong text-body rounded-lg hover:bg-sand"
                     >
                       ยกเลิก
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex-1 px-4 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 font-medium"
+                      className="flex-1 px-4 py-3 bg-brick text-white rounded-full hover:bg-brick-hover disabled:opacity-50 font-medium"
                     >
                       {saving ? "กำลังบันทึก..." : "💾 บันทึกข้อมูล"}
                     </button>

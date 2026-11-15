@@ -104,12 +104,12 @@ export default function Pagination({
   };
 
   const sizeSelect = onPageSizeChange && (
-    <label className="flex items-center gap-2 text-sm text-gray-500">
+    <label className="flex items-center gap-2 text-sm text-muted">
       แสดงหน้าละ
       <select
         value={pageSize}
         onChange={(e) => onPageSizeChange(Number(e.target.value))}
-        className="px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+        className="px-2 py-1 rounded-lg border border-line bg-white text-body focus:outline-none focus:ring-2 focus:ring-brick"
       >
         {PAGE_SIZES.map((s) => (
           <option key={s} value={s}>
@@ -123,8 +123,8 @@ export default function Pagination({
   // ─── หน้าเดียวก็ไม่ต้องมีปุ่มอะไร ───
   if (totalPages <= 1) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-4 py-3 sm:px-5">
-        <p className="text-sm text-gray-500">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 sm:px-5">
+        <p className="text-sm text-muted">
           ทั้งหมด {totalElements.toLocaleString("th-TH")} รายการ
         </p>
         {sizeSelect}
@@ -137,17 +137,17 @@ export default function Pagination({
   const showJump = totalPages > 15;
 
   const edgeBtn =
-    "flex items-center justify-center w-9 h-9 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors";
+    "flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:bg-sand disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors";
   const stepBtn =
-    "flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors";
+    "flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium text-subtle hover:bg-sand disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors";
 
   return (
-    <div className="border-t border-gray-100 px-4 py-3 sm:px-5 space-y-3">
+    <div className="border-t border-line px-4 py-3 sm:px-5 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-4">
         {/* ─── ซ้าย: บอกว่ากำลังดูอะไรอยู่ ─── */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <p className="text-sm text-gray-500">
-            <span className="font-medium text-gray-700">
+          <p className="text-sm text-muted">
+            <span className="font-medium text-body">
               {firstRow.toLocaleString("th-TH")}–{lastRow.toLocaleString("th-TH")}
             </span>{" "}
             จาก {totalElements.toLocaleString("th-TH")} รายการ
@@ -183,7 +183,7 @@ export default function Pagination({
               p === null ? (
                 <span
                   key={`gap-${i}`}
-                  className="w-6 text-center text-gray-300 select-none"
+                  className="w-6 text-center text-faint select-none"
                 >
                   …
                 </span>
@@ -194,8 +194,8 @@ export default function Pagination({
                   aria-current={p === page ? "page" : undefined}
                   className={`min-w-9 h-9 px-2 rounded-lg text-sm transition-colors ${
                     p === page
-                      ? "bg-amber-500 text-white font-semibold shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-brick text-white font-semibold shadow-sm"
+                      : "text-subtle hover:bg-sand"
                   }`}
                 >
                   {(p + 1).toLocaleString("th-TH")}
@@ -229,7 +229,7 @@ export default function Pagination({
 
       {/* ─── ช่องกรอกเลขหน้า มีเฉพาะตอนหน้าเยอะจริง ─── */}
       {showJump && (
-        <div className="flex items-center justify-end gap-2 text-sm text-gray-500">
+        <div className="flex items-center justify-end gap-2 text-sm text-muted">
           <span>ข้ามไปหน้า</span>
           <input
             type="number"
@@ -243,7 +243,7 @@ export default function Pagination({
               if (!Number.isNaN(n)) go(n - 1);
             }}
             placeholder={String(page + 1)}
-            className="w-20 px-2 py-1 rounded-lg border border-gray-200 bg-white text-center text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+            className="w-20 px-2 py-1 rounded-lg border border-line bg-white text-center text-body focus:outline-none focus:ring-2 focus:ring-brick"
           />
           <span>จาก {totalPages.toLocaleString("th-TH")}</span>
         </div>

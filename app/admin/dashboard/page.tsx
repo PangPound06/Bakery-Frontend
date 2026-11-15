@@ -295,12 +295,12 @@ export default function AdminDashboard() {
     key,
     color:
       {
-        pending: "#f59e0b",
+        pending: "#a84a0e",
         confirmed: "#3b82f6",
         preparing: "#6366f1",
         shipping: "#8b5cf6",
-        delivered: "#10b981",
-        cancelled: "#ef4444",
+        delivered: "#2f7d4f",
+        cancelled: "#b3261e",
       }[key] || "#gray",
     label:
       {
@@ -338,13 +338,13 @@ export default function AdminDashboard() {
   };
   const getStatusColor = (s: string) =>
     ({
-      pending: "bg-amber-100 text-amber-700",
-      confirmed: "bg-blue-100 text-blue-700",
-      preparing: "bg-indigo-100 text-indigo-700",
-      shipping: "bg-purple-100 text-purple-700",
-      delivered: "bg-emerald-100 text-emerald-700",
-      cancelled: "bg-red-100 text-red-700",
-    })[s] || "bg-gray-100 text-amber-800";
+      pending: "bg-warn-soft text-body",
+      confirmed: "bg-new-soft text-new-ink",
+      preparing: "bg-new-soft text-new-ink",
+      shipping: "bg-new-soft text-new-ink",
+      delivered: "bg-success-soft text-success",
+      cancelled: "bg-danger-soft text-danger",
+    })[s] || "bg-sand text-ink";
   const getStatusText = (s: string) =>
     ({
       pending: "รอดำเนินการ",
@@ -357,17 +357,17 @@ export default function AdminDashboard() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -377,19 +377,19 @@ export default function AdminDashboard() {
   const fadeClass = `transition-all duration-500 ${animIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`;
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] p-6">
+    <div className="min-h-screen bg-cream p-6">
       {/* Header */}
       <div className={`mb-6 ${fadeClass}`}>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-amber-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
               <span className="text-3xl">📊</span> Dashboard
             </h1>
-            <p className="text-amber-600 text-sm mt-0.5">
+            <p className="text-brick text-sm mt-0.5">
               ภาพรวมของร้าน Pound Bakery
             </p>
           </div>
-          <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-amber-100">
+          <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-line">
             {(
               [
                 ["all", "ทั้งหมด"],
@@ -400,7 +400,7 @@ export default function AdminDashboard() {
               <button
                 key={k}
                 onClick={() => setTimeFilter(k)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${timeFilter === k ? "bg-amber-500 text-white shadow" : "text-amber-700 hover:bg-amber-50"}`}
+                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${timeFilter === k ? "bg-brick text-white shadow" : "text-body hover:bg-warn-bg"}`}
               >
                 {l}
               </button>
@@ -427,14 +427,14 @@ export default function AdminDashboard() {
                 : "",
             subColor:
               revChange > 0
-                ? "text-emerald-600"
+                ? "text-ok"
                 : revChange < 0
-                  ? "text-red-500"
-                  : "text-gray-400",
+                  ? "text-error"
+                  : "text-muted",
             icon: "💰",
-            border: "border-amber-400",
-            bg: "from-amber-50 to-orange-50",
-            chart: <Sparkline data={dailyRevenue} color="#f59e0b" />,
+            border: "border-line-strong",
+            bg: "bg-warn-bg",
+            chart: <Sparkline data={dailyRevenue} color="#a84a0e" />,
             delay: "0ms",
           },
           {
@@ -447,15 +447,15 @@ export default function AdminDashboard() {
                 : "",
             subColor:
               ordChange > 0
-                ? "text-emerald-600"
+                ? "text-ok"
                 : ordChange < 0
-                  ? "text-red-500"
-                  : "text-gray-400",
+                  ? "text-error"
+                  : "text-muted",
             icon: "🛒",
-            border: "border-green-400",
-            bg: "from-green-50 to-emerald-50",
+            border: "border-ok",
+            bg: "bg-success-soft",
             chart: (
-              <MiniBarChart data={dailyOrderCount} color="#10b981" />
+              <MiniBarChart data={dailyOrderCount} color="#2f7d4f" />
             ),
             delay: "60ms",
           },
@@ -464,10 +464,10 @@ export default function AdminDashboard() {
             labelMobile: "สมาชิก",
             value: totalUsers.toString(),
             sub: "",
-            subColor: "text-gray-400",
+            subColor: "text-muted",
             icon: "👥",
-            border: "border-purple-400",
-            bg: "from-purple-50 to-pink-50",
+            border: "border-new-ink",
+            bg: "bg-new-soft",
             chart: null,
             delay: "120ms",
           },
@@ -476,29 +476,29 @@ export default function AdminDashboard() {
             labelMobile: "รอดำเนินการ",
             value: pendingOrders.toString(),
             sub: `${lowStock} รายการใกล้หมด`,
-            subColor: lowStock > 0 ? "text-red-500" : "text-gray-400",
+            subColor: lowStock > 0 ? "text-error" : "text-muted",
             icon: "⏳",
-            border: "border-red-400",
-            bg: "from-red-50 to-rose-50",
+            border: "border-error",
+            bg: "bg-danger-soft",
             chart: null,
             delay: "180ms",
           },
         ].map((card, i) => (
           <div
             key={i}
-            className={`bg-gradient-to-br ${card.bg} rounded-2xl border-l-4 ${card.border} p-3 md:p-5 shadow-sm ${fadeClass}`}
+            className={`${card.bg} rounded-2xl border-l-4 ${card.border} p-3 md:p-5 shadow-sm ${fadeClass}`}
             style={{ transitionDelay: card.delay }}
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0 pr-1">
                 {/* ✅ label สั้นบนมือถือ */}
-                <p className="text-[10px] md:text-xs font-medium text-gray-500 mb-1 lg:hidden truncate">
+                <p className="text-[10px] md:text-xs font-medium text-muted mb-1 lg:hidden truncate">
                   {card.labelMobile}
                 </p>
-                <p className="text-xs text-gray-500 mb-1 truncate">
+                <p className="text-xs text-muted mb-1 truncate">
                   {card.label}
                 </p>
-                <p className="text-lg md:text-2xl font-bold text-amber-700">
+                <p className="text-lg md:text-2xl font-bold text-body">
                   {card.value}
                 </p>
               </div>
@@ -519,19 +519,19 @@ export default function AdminDashboard() {
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div
-          className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-amber-100 p-6 ${fadeClass}`}
+          className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-line p-6 ${fadeClass}`}
           style={{ transitionDelay: "240ms" }}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="font-bold text-amber-700">รายได้รายวัน</h2>
-              <p className="text-xs text-gray-400">7 วันล่าสุด</p>
+              <h2 className="font-bold text-body">รายได้รายวัน</h2>
+              <p className="text-xs text-muted">7 วันล่าสุด</p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold text-amber-600">
+              <p className="text-lg font-bold text-brick">
                 ฿{formatPrice(dailyRevenue.reduce((s, v) => s + v, 0))}
               </p>
-              <p className="text-xs text-gray-400">รวม 7 วัน</p>
+              <p className="text-xs text-muted">รวม 7 วัน</p>
             </div>
           </div>
           <div className="flex items-end gap-2 h-36">
@@ -544,7 +544,7 @@ export default function AdminDashboard() {
                   key={i}
                   className="flex-1 flex flex-col items-center gap-1"
                 >
-                  <p className="text-[10px] text-gray-500 font-medium">
+                  <p className="text-[10px] text-muted font-medium">
                     ฿
                     {val > 0
                       ? val >= 1000
@@ -561,13 +561,13 @@ export default function AdminDashboard() {
                       style={{
                         height: `${Math.max((val / max) * 100, val > 0 ? 5 : 0)}%`,
                         background: isToday
-                          ? "linear-gradient(to top,#f59e0b,#fbbf24)"
-                          : "linear-gradient(to top,#fde68a,#fef3c7)",
+                          ? "linear-gradient(to top,#a84a0e,#f3b47a)"
+                          : "linear-gradient(to top,#fde68a,#fdf0e2)",
                       }}
                     />
                   </div>
                   <p
-                    className={`text-[10px] font-medium ${isToday ? "text-amber-600" : "text-gray-400"}`}
+                    className={`text-[10px] font-medium ${isToday ? "text-brick" : "text-muted"}`}
                   >
                     {d.toLocaleDateString("th-TH", { weekday: "short" })}
                   </p>
@@ -578,11 +578,11 @@ export default function AdminDashboard() {
         </div>
 
         <div
-          className={`bg-white rounded-2xl shadow-sm border border-amber-100 p-6 ${fadeClass}`}
+          className={`bg-white rounded-2xl shadow-sm border border-line p-6 ${fadeClass}`}
           style={{ transitionDelay: "300ms" }}
         >
-          <h2 className="font-bold text-amber-700 mb-1">สถานะออเดอร์</h2>
-          <p className="text-xs text-gray-400 mb-4">
+          <h2 className="font-bold text-body mb-1">สถานะออเดอร์</h2>
+          <p className="text-xs text-muted mb-4">
             ทั้งหมด {totalAllOrders} รายการ
           </p>
           <div className="flex flex-col gap-2">
@@ -592,7 +592,7 @@ export default function AdminDashboard() {
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: s.color }}
                 />
-                <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div className="flex-1 bg-sand rounded-full h-1.5 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -601,35 +601,35 @@ export default function AdminDashboard() {
                     }}
                   />
                 </div>
-                <span className="text-xs text-gray-500 w-16 text-right">
+                <span className="text-xs text-muted w-16 text-right">
                   {s.label}
                 </span>
-                <span className="text-xs font-bold text-gray-700 w-6 text-right">
+                <span className="text-xs font-bold text-body w-6 text-right">
                   {s.count}
                 </span>
               </div>
             ))}
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-xs font-medium text-gray-500 mb-2">
+          <div className="mt-4 pt-4 border-t border-line">
+            <p className="text-xs font-medium text-muted mb-2">
               ช่องทางการขาย
             </p>
             <div className="flex gap-2">
-              <div className="flex-1 bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
-                <p className="text-lg font-bold text-amber-700">{posOrders}</p>
-                <p className="text-[10px] text-amber-600">🏪 หน้าร้าน</p>
+              <div className="flex-1 bg-warn-bg rounded-xl p-3 text-center border border-line">
+                <p className="text-lg font-bold text-body">{posOrders}</p>
+                <p className="text-[10px] text-brick">🏪 หน้าร้าน</p>
               </div>
-              <div className="flex-1 bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
-                <p className="text-lg font-bold text-blue-700">
+              <div className="flex-1 bg-new-soft rounded-xl p-3 text-center border border-line">
+                <p className="text-lg font-bold text-new-ink">
                   {onlineOrders}
                 </p>
-                <p className="text-[10px] text-blue-600">🌐 ออนไลน์</p>
+                <p className="text-[10px] text-new-ink">🌐 ออนไลน์</p>
               </div>
-              <div className="flex-1 bg-green-50 rounded-xl p-3 text-center border border-green-100">
-                <p className="text-lg font-bold text-green-700">
+              <div className="flex-1 bg-success-soft rounded-xl p-3 text-center border border-success-soft">
+                <p className="text-lg font-bold text-success">
                   {dineInOrders}
                 </p>
-                <p className="text-[10px] text-green-600">🪑 ในร้าน</p>
+                <p className="text-[10px] text-ok">🪑 ในร้าน</p>
               </div>
             </div>
           </div>
@@ -639,17 +639,17 @@ export default function AdminDashboard() {
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div
-          className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden ${fadeClass}`}
+          className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-line overflow-hidden ${fadeClass}`}
           style={{ transitionDelay: "360ms" }}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-line">
             <div>
-              <h2 className="font-bold text-amber-700">คำสั่งซื้อล่าสุด</h2>
-              <p className="text-xs text-gray-400">อัปเดตอัตโนมัติ</p>
+              <h2 className="font-bold text-body">คำสั่งซื้อล่าสุด</h2>
+              <p className="text-xs text-muted">อัปเดตอัตโนมัติ</p>
             </div>
             <button
               onClick={() => router.push("/admin/order")}
-              className="text-xs text-amber-600 hover:text-amber-700 font-medium px-3 py-1.5 bg-amber-50 rounded-lg"
+              className="text-xs text-brick hover:text-body font-medium px-3 py-1.5 bg-warn-bg rounded-lg"
             >
               ดูทั้งหมด →
             </button>
@@ -657,7 +657,7 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 text-xs text-gray-400 font-medium">
+                <tr className="bg-sand text-xs text-muted font-medium">
                   <th className="text-left px-6 py-3">รหัส</th>
                   <th className="text-left px-4 py-3">ลูกค้า</th>
                   <th className="text-left px-4 py-3">ยอดรวม</th>
@@ -670,26 +670,26 @@ export default function AdminDashboard() {
                 {recentOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-t border-gray-50 hover:bg-amber-50/30 cursor-pointer transition-colors"
+                    className="border-t border-line hover:bg-warn-bg/30 cursor-pointer transition-colors"
                     onClick={() => router.push("/admin/order")}
                   >
-                    <td className="px-6 py-3 text-xs font-bold text-amber-700">
+                    <td className="px-6 py-3 text-xs font-bold text-body">
                       #{order.ordCode || order.id}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-xs font-medium text-amber-700 truncate max-w-[120px]">
+                      <p className="text-xs font-medium text-body truncate max-w-[120px]">
                         {order.receiverName || "-"}
                       </p>
-                      <p className="text-[10px] text-gray-400 truncate max-w-[120px]">
+                      <p className="text-[10px] text-muted truncate max-w-[120px]">
                         {order.email}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-xs font-bold text-amber-600">
+                    <td className="px-4 py-3 text-xs font-bold text-brick">
                       ฿{formatPrice(order.total)}
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${order.orderType === "pos" ? "bg-amber-100 text-amber-700" : "bg-blue-50 text-blue-600"}`}
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${order.orderType === "pos" ? "bg-warn-soft text-body" : "bg-new-soft text-new-ink"}`}
                       >
                         {order.orderType === "pos"
                           ? "🏪 หน้าร้าน"
@@ -703,7 +703,7 @@ export default function AdminDashboard() {
                         {getStatusText(order.orderStatus)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[10px] text-gray-400">
+                    <td className="px-4 py-3 text-[10px] text-muted">
                       {formatDate(order.createdAt)}
                     </td>
                   </tr>
@@ -713,7 +713,7 @@ export default function AdminDashboard() {
             {recentOrders.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-5xl mb-2">📭</p>
-                <p className="text-sm text-gray-400">ยังไม่มีคำสั่งซื้อ</p>
+                <p className="text-sm text-muted">ยังไม่มีคำสั่งซื้อ</p>
               </div>
             )}
           </div>
@@ -722,10 +722,10 @@ export default function AdminDashboard() {
         <div className="flex flex-col gap-4">
           {/* Quick Actions */}
           <div
-            className={`bg-white rounded-2xl shadow-sm border border-amber-100 p-5 ${fadeClass}`}
+            className={`bg-white rounded-2xl shadow-sm border border-line p-5 ${fadeClass}`}
             style={{ transitionDelay: "420ms" }}
           >
-            <h2 className="font-bold text-amber-700 mb-3 flex items-center gap-2">
+            <h2 className="font-bold text-body mb-3 flex items-center gap-2">
               <span>⚡</span> การดำเนินการด่วน
             </h2>
             <div className="space-y-2">
@@ -734,32 +734,32 @@ export default function AdminDashboard() {
                   icon: "📦",
                   label: "จัดการสินค้า",
                   path: "/admin/crudproduct",
-                  bg: "hover:bg-blue-50 border-blue-100",
+                  bg: "hover:bg-new-soft border-line",
                 },
                 {
                   icon: "🛒",
                   label: "จัดการคำสั่งซื้อ",
                   path: "/admin/order",
-                  bg: "hover:bg-green-50 border-green-100",
+                  bg: "hover:bg-success-soft border-success-soft",
                   badge: pendingOrders > 0 ? pendingOrders : 0,
                 },
                 {
                   icon: "🏪",
                   label: "หน้าร้าน POS",
                   path: "/admin/products",
-                  bg: "hover:bg-amber-50 border-amber-100",
+                  bg: "hover:bg-warn-bg border-line",
                 },
                 {
                   icon: "👥",
                   label: "จัดการผู้ใช้",
                   path: "/admin/users",
-                  bg: "hover:bg-purple-50 border-purple-100",
+                  bg: "hover:bg-new-soft border-line",
                 },
                 {
                   icon: "📋",
                   label: "ดูรายงาน",
                   path: "/admin/reports",
-                  bg: "hover:bg-orange-50 border-orange-100",
+                  bg: "hover:bg-warn-bg border-line",
                 },
               ].map((item, i) => (
                 <button
@@ -768,15 +768,15 @@ export default function AdminDashboard() {
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left ${item.bg}`}
                 >
                   <span className="text-base">{item.icon}</span>
-                  <span className="text-sm font-medium text-gray-700 flex-1">
+                  <span className="text-sm font-medium text-body flex-1">
                     {item.label}
                   </span>
                   {item.badge ? (
-                    <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                    <span className="bg-error text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
                       {item.badge}
                     </span>
                   ) : (
-                    <span className="text-gray-300 text-xs">›</span>
+                    <span className="text-faint text-xs">›</span>
                   )}
                 </button>
               ))}
@@ -785,10 +785,10 @@ export default function AdminDashboard() {
 
           {/* ✅ Top 5 สินค้าขายดี */}
           <div
-            className={`bg-white rounded-2xl shadow-sm border border-amber-100 p-5 ${fadeClass}`}
+            className={`bg-white rounded-2xl shadow-sm border border-line p-5 ${fadeClass}`}
             style={{ transitionDelay: "480ms" }}
           >
-            <h2 className="font-bold text-amber-700 mb-3 flex items-center gap-2">
+            <h2 className="font-bold text-body mb-3 flex items-center gap-2">
               <span>🏆</span> สินค้าขายดี Top 5
             </h2>
             <div className="space-y-3">
@@ -802,28 +802,28 @@ export default function AdminDashboard() {
                         <span className="text-sm flex-shrink-0">
                           {medals[i]}
                         </span>
-                        <span className="text-xs font-medium text-gray-700 truncate">
+                        <span className="text-xs font-medium text-body truncate">
                           {p.productName}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-amber-600 flex-shrink-0 ml-2">
+                      <span className="text-xs font-bold text-brick flex-shrink-0 ml-2">
                         {p.totalQty} ออเดอร์
                       </span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className="w-full bg-sand rounded-full h-1.5">
                       <div
-                        className="h-1.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
+                        className="h-1.5 rounded-full bg-brick   transition-all duration-700"
                         style={{ width: `${(p.totalQty / maxQty) * 100}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
+                    <p className="text-[10px] text-muted mt-0.5">
                       ฿{formatPrice(p.totalRevenue)} รายได้รวม
                     </p>
                   </div>
                 );
               })}
               {topProducts.length === 0 && (
-                <p className="text-xs text-gray-400 text-center py-4">
+                <p className="text-xs text-muted text-center py-4">
                   ยังไม่มีข้อมูล
                 </p>
               )}
@@ -832,13 +832,13 @@ export default function AdminDashboard() {
 
           {/* Stock Alert */}
           <div
-            className={`bg-white rounded-2xl shadow-sm border border-red-100 p-5 ${fadeClass}`}
+            className={`bg-white rounded-2xl shadow-sm border border-danger-line p-5 ${fadeClass}`}
             style={{ transitionDelay: "540ms" }}
           >
-            <h2 className="font-bold text-amber-700 mb-3 flex items-center gap-2">
+            <h2 className="font-bold text-body mb-3 flex items-center gap-2">
               <span>⚠️</span> สินค้าใกล้หมด
               {lowStock > 0 && (
-                <span className="ml-auto bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-bold">
+                <span className="ml-auto bg-danger-soft text-error text-xs px-2 py-0.5 rounded-full font-bold">
                   {lowStock}
                 </span>
               )}
@@ -847,7 +847,7 @@ export default function AdminDashboard() {
               {products.filter(
                 (p) => p.stockQuantity <= 5 && p.stockQuantity !== 9999,
               ).length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">
+                <p className="text-xs text-muted text-center py-4">
                   ✅ สินค้าทุกรายการมีสต็อกเพียงพอ
                 </p>
               ) : (
@@ -861,15 +861,15 @@ export default function AdminDashboard() {
                       className="flex items-center justify-between py-1.5"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-700 truncate">
+                        <p className="text-xs font-medium text-body truncate">
                           {p.name}
                         </p>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-[10px] text-muted">
                           {p.category}
                         </p>
                       </div>
                       <span
-                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.stockQuantity === 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.stockQuantity === 0 ? "bg-danger-soft text-error" : "bg-warn-soft text-brick"}`}
                       >
                         {p.stockQuantity === 0
                           ? "หมด"

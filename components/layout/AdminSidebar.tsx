@@ -322,11 +322,11 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
       className={`fixed left-0 top-0 h-full z-40 flex flex-col transition-all duration-300 ease-in-out ${collapsed ? "w-[72px]" : "w-60"}`}
       style={{
         background:
-          "linear-gradient(180deg, #78350f 0%, #92400e 50%, #78350f 100%)",
+          "linear-gradient(180deg, #1f1a16 0%, #7a3a0c 50%, #1f1a16 100%)",
       }}
     >
       {/* ── Logo ── */}
-      <div className="flex items-center px-4 py-5 border-b border-amber-700/40 min-h-[68px]">
+      <div className="flex items-center px-4 py-5 border-b border-brick/40 min-h-[68px]">
         <Link
           href="/admin/dashboard"
           className="flex items-center gap-3 min-w-0"
@@ -337,7 +337,7 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
               <p className="text-white font-bold text-base leading-tight truncate">
                 Pound Bakery
               </p>
-              <p className="text-amber-300/70 text-[10px] tracking-widest uppercase">
+              <p className="text-apricot/70 text-[10px] tracking-widest uppercase">
                 Admin Panel
               </p>
             </div>
@@ -349,10 +349,10 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
             setCollapsed(next);
             onToggle?.(next);
           }}
-          className="ml-auto flex-shrink-0 w-7 h-7 rounded-lg bg-amber-700/40 hover:bg-amber-600/60 flex items-center justify-center transition-colors"
+          className="ml-auto flex-shrink-0 w-7 h-7 rounded-lg bg-brick-hover/40 hover:bg-brick-hover/60 flex items-center justify-center transition-colors"
         >
           <svg
-            className={`w-3.5 h-3.5 text-amber-200 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
+            className={`w-3.5 h-3.5 text-apricot transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -370,7 +370,7 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
       {/* ── Nav ── */}
       <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
         {!collapsed && (
-          <p className="text-amber-400/50 text-[10px] tracking-[0.3em] uppercase px-3 pb-2 pt-1">
+          <p className="text-apricot/50 text-[10px] tracking-[0.3em] uppercase px-3 pb-2 pt-1">
             เมนูหลัก
           </p>
         )}
@@ -384,15 +384,15 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
               className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative ${
                 active
                   ? "bg-white/15 text-white shadow-sm"
-                  : "text-amber-200/70 hover:bg-white/8 hover:text-white"
+                  : "text-apricot/70 hover:bg-white/8 hover:text-white"
               }`}
             >
               {/* Active indicator */}
               {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-amber-300 rounded-r-full" />
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-apricot rounded-r-full" />
               )}
               <span
-                className={`flex-shrink-0 transition-colors ${active ? "text-white" : "text-amber-300/70 group-hover:text-amber-200"}`}
+                className={`flex-shrink-0 transition-colors ${active ? "text-white" : "text-apricot/70 group-hover:text-apricot"}`}
               >
                 {link.icon}
               </span>
@@ -403,9 +403,9 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
               )}
               {/* Tooltip when collapsed */}
               {collapsed && (
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-amber-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-xl border border-amber-700/50 z-50">
+                <div className="absolute left-full ml-3 px-3 py-1.5 bg-ink text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-xl border border-brick/50 z-50">
                   {link.label}
-                  <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-amber-900" />
+                  <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-ink" />
                 </div>
               )}
             </Link>
@@ -414,10 +414,10 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
       </nav>
 
       {/* ── User Profile ── */}
-      <div className="border-t border-amber-700/40 p-3">
+      <div className="border-t border-brick/40 p-3">
         {collapsed ? (
           <div className="flex justify-center">
-            <div className="w-9 h-9 rounded-full bg-amber-600 border-2 border-amber-400/50 flex items-center justify-center text-white text-sm font-bold overflow-hidden flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-brick border-2 border-line-strong/50 flex items-center justify-center text-white text-sm font-bold overflow-hidden flex-shrink-0">
               {user?.profileImage ? (
                 <img
                   src={user.profileImage}
@@ -431,7 +431,7 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-amber-600 border-2 border-amber-400/50 flex items-center justify-center text-white text-sm font-bold overflow-hidden flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-brick border-2 border-line-strong/50 flex items-center justify-center text-white text-sm font-bold overflow-hidden flex-shrink-0">
               {user?.profileImage ? (
                 <img
                   src={user.profileImage}
@@ -446,7 +446,7 @@ export default function AdminSidebar({ onToggle }: AdminSidebarProps) {
               <p className="text-white text-sm font-medium truncate">
                 {user?.fullname || "Admin"}
               </p>
-              <p className="text-amber-300/60 text-[11px] truncate">
+              <p className="text-apricot/60 text-[11px] truncate">
                 {user?.email}
               </p>
             </div>

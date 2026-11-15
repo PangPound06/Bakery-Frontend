@@ -64,7 +64,7 @@ export default function RegisterPage() {
         icon: "error",
         title: "ไม่สามารถสมัครได้",
         text: "อีเมล @empbakery.com สงวนไว้สำหรับพนักงานเท่านั้น",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       setLoading(false);
       return;
@@ -94,7 +94,7 @@ export default function RegisterPage() {
         title: "สมัครสมาชิกสำเร็จ!",
         text: "ยินดีต้อนรับสู่ Pound Bakery 🎉",
         icon: "success",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
         timer: 2000,
         showConfirmButton: false,
       });
@@ -113,25 +113,25 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-cream   flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-10">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
-              <h1 className="text-4xl font-bold text-amber-600 mb-2">
+              <h1 className="text-4xl font-bold text-brick mb-2">
                 🧁 Pound Bakery
               </h1>
             </Link>
-            <h2 className="text-2xl font-semibold text-amber-700 mb-2">
+            <h2 className="text-2xl font-semibold text-body mb-2">
               สมัครสมาชิก
             </h2>
-            <p className="text-amber-800 text-sm">
+            <p className="text-ink text-sm">
               สร้างบัญชีใหม่เพื่อเริ่มต้นใช้งาน
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+            <div className="mb-6 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-lg text-sm">
               ⚠️ {error}
             </div>
           )}
@@ -140,7 +140,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-body mb-2"
               >
                 Name-Surname
               </label>
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                 required
                 value={formData.fullName}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors"
                 placeholder="สมชาย ใจดี"
               />
             </div>
@@ -159,7 +159,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-body mb-2"
               >
                 Email
               </label>
@@ -171,7 +171,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors"
                 placeholder="example@email.com"
               />
             </div>
@@ -179,7 +179,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-body mb-2"
               >
                 Password
               </label>
@@ -192,18 +192,18 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors pr-12"
+                  className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors pr-12"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-body"
                 >
                   {showPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted">
                 รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร
               </p>
             </div>
@@ -211,7 +211,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-body mb-2"
               >
                 Confirm Password
               </label>
@@ -224,13 +224,13 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors pr-12"
+                  className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors pr-12"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-body"
                 >
                   {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
@@ -244,23 +244,23 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={formData.acceptTerms}
                 onChange={handleChange}
-                className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500 mt-1"
+                className="w-4 h-4 text-brick border-line-strong rounded focus:ring-brick mt-1"
               />
               <label
                 htmlFor="acceptTerms"
-                className="ml-2 text-sm text-amber-800"
+                className="ml-2 text-sm text-ink"
               >
                 ฉันยอมรับ{" "}
                 <Link
                   href="/terms"
-                  className="text-amber-600 hover:text-amber-700 font-medium"
+                  className="text-brick hover:text-body font-medium"
                 >
                   ข้อกำหนดและเงื่อนไข
                 </Link>{" "}
                 และ{" "}
                 <Link
                   href="/privacy"
-                  className="text-amber-600 hover:text-amber-700 font-medium"
+                  className="text-brick hover:text-body font-medium"
                 >
                   นโยบายความเป็นส่วนตัว
                 </Link>
@@ -270,7 +270,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-full bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-4 rounded-full transition-all duration-200 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {loading ? "🔄 กำลังสมัครสมาชิก..." : "✨ สมัครสมาชิก"}
             </button>
@@ -280,7 +280,7 @@ export default function RegisterPage() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-amber-800 hover:text-amber-700 text-sm font-medium"
+            className="text-ink hover:text-body text-sm font-medium"
           >
             ← กลับหน้าหลัก
           </Link>

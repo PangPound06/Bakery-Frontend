@@ -289,7 +289,7 @@ export default function POSPage() {
       Swal.fire({
         title: "ไม่มีสินค้าในออเดอร์",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -298,7 +298,7 @@ export default function POSPage() {
         title: "รับเงินไม่พอ",
         text: `ต้องการ ฿${subtotal.toLocaleString()} แต่รับมา ฿${cashReceived.toLocaleString()}`,
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -312,8 +312,8 @@ export default function POSPage() {
       html: `<div style="text-align:left"><p>รวม: <strong>฿${subtotal.toLocaleString()}</strong></p>${paymentMethod === "cash" ? `<p>เงินทอน: <strong>฿${change.toLocaleString()}</strong></p>` : ""}</div>`,
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#a84a0e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
     });
@@ -368,14 +368,14 @@ export default function POSPage() {
           title: "เกิดข้อผิดพลาด",
           text: data.message,
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     } finally {
       setProcessing(false);
@@ -435,14 +435,14 @@ export default function POSPage() {
           title: "เกิดข้อผิดพลาด",
           text: data.message,
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     } finally {
       setProcessing(false);
@@ -462,14 +462,14 @@ export default function POSPage() {
   };
 
   const CATEGORY_COLORS = [
-    "bg-amber-100 text-amber-700 border-amber-200",
-    "bg-pink-100 text-pink-700 border-pink-200",
-    "bg-blue-100 text-blue-700 border-blue-200",
-    "bg-green-100 text-green-700 border-green-200",
-    "bg-red-100 text-red-700 border-red-200",
-    "bg-purple-100 text-purple-700 border-purple-200",
-    "bg-orange-100 text-orange-700 border-orange-200",
-    "bg-teal-100 text-teal-700 border-teal-200",
+    "bg-warn-soft text-body border-line",
+    "bg-danger-soft text-danger border-danger-line",
+    "bg-new-soft text-new-ink border-line",
+    "bg-success-soft text-success border-success-soft",
+    "bg-danger-soft text-danger border-danger-line",
+    "bg-new-soft text-new-ink border-line",
+    "bg-warn-soft text-body border-line",
+    "bg-success-soft text-success border-success-soft",
   ];
 
   const getCategoryColor = (cat: string) => {
@@ -479,17 +479,17 @@ export default function POSPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -498,24 +498,24 @@ export default function POSPage() {
 
   return (
     <div
-      className="bg-amber-50 flex flex-col"
+      className="bg-warn-bg flex flex-col"
       style={{ height: "100vh", overflow: "hidden" }}
     >
       {/* Mobile Tab Bar */}
-      <div className="xl:hidden flex border-b border-amber-200 bg-white">
+      <div className="xl:hidden flex border-b border-line bg-white">
         <button
           onClick={() => setMobileTab("products")}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${mobileTab === "products" ? "text-amber-600 border-b-2 border-amber-500 bg-amber-50" : "text-gray-500"}`}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${mobileTab === "products" ? "text-brick border-b-2 border-brick bg-warn-bg" : "text-muted"}`}
         >
           🛍️ สินค้า
         </button>
         <button
           onClick={() => setMobileTab("order")}
-          className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === "order" ? "text-amber-600 border-b-2 border-amber-500 bg-amber-50" : "text-gray-500"}`}
+          className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === "order" ? "text-brick border-b-2 border-brick bg-warn-bg" : "text-muted"}`}
         >
           🧾 ออเดอร์
           {orderItems.length > 0 && (
-            <span className="absolute top-2 right-6 w-5 h-5 bg-amber-500 text-white text-xs rounded-full flex items-center justify-center">
+            <span className="absolute top-2 right-6 w-5 h-5 bg-brick text-white text-xs rounded-full flex items-center justify-center">
               {orderItems.reduce(
                 (s, i) => s + i.quantity / getMultiplier(i.selectedOption),
                 0,
@@ -530,17 +530,17 @@ export default function POSPage() {
         <div
           className={`flex-1 flex flex-col overflow-hidden ${mobileTab === "order" ? "hidden xl:flex" : "flex"}`}
         >
-          <div className="bg-white border-b border-amber-100 px-4 py-3 flex flex-col xl:flex-row gap-2">
+          <div className="bg-white border-b border-line px-4 py-3 flex flex-col xl:flex-row gap-2">
             <div className="flex-1 relative">
               <input
                 type="text"
                 placeholder="ค้นหาสินค้า..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full pl-9 pr-4 py-2 bg-warn-bg border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brick"
               />
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-apricot"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -564,7 +564,7 @@ export default function POSPage() {
                 <button
                   key={cat.id}
                   onClick={() => setFilterCategory(cat.id)}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${filterCategory === cat.id ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"}`}
+                  className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${filterCategory === cat.id ? "bg-brick text-white" : "bg-warn-bg text-body border border-line hover:bg-warn-soft"}`}
                 >
                   {cat.label}
                 </button>
@@ -595,10 +595,10 @@ export default function POSPage() {
                     disabled={unavailable}
                     className={`relative group bg-white rounded-xl border-2 overflow-hidden text-left transition-all duration-200 ${
                       unavailable
-                        ? "opacity-50 cursor-not-allowed border-gray-200"
+                        ? "opacity-50 cursor-not-allowed border-line"
                         : inOrder
-                          ? "border-amber-500 shadow-md shadow-amber-100"
-                          : "border-transparent hover:border-amber-300 hover:shadow-md"
+                          ? "border-brick shadow-md "
+                          : "border-transparent hover:border-line-strong hover:shadow-md"
                     }`}
                   >
                     <div className="relative">
@@ -615,7 +615,7 @@ export default function POSPage() {
                         </div>
                       )}
                       {totalInOrder > 0 && (
-                        <div className="absolute top-1.5 right-1.5 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">
+                        <div className="absolute top-1.5 right-1.5 w-6 h-6 bg-brick rounded-full flex items-center justify-center text-white text-xs font-bold shadow">
                           {totalInOrder}
                         </div>
                       )}
@@ -626,18 +626,18 @@ export default function POSPage() {
                       </span>
                     </div>
                     <div className="p-2.5">
-                      <p className="text-xs font-semibold text-amber-700 truncate leading-tight">
+                      <p className="text-xs font-semibold text-body truncate leading-tight">
                         {product.name}
                       </p>
-                      <p className="text-amber-600 font-bold text-sm mt-0.5">
+                      <p className="text-brick font-bold text-sm mt-0.5">
                         ฿{formatPrice(product.price)}
                       </p>
                       {isFresh(product) ? (
-                        <p className="text-teal-500 text-[10px] font-medium">
+                        <p className="text-ok text-[10px] font-medium">
                           🥤 ทำสด
                         </p>
                       ) : (
-                        <p className="text-gray-400 text-[10px]">
+                        <p className="text-muted text-[10px]">
                           คงเหลือ: {product.stockQuantity}
                         </p>
                       )}
@@ -646,7 +646,7 @@ export default function POSPage() {
                           {opts.map((o) => (
                             <span
                               key={o.name}
-                              className="text-[9px] px-1 py-0.5 bg-purple-100 text-purple-600 rounded-full"
+                              className="text-[9px] px-1 py-0.5 bg-new-soft text-new-ink rounded-full"
                             >
                               {o.name}
                               {o.extraPrice > 0 ? ` +฿${o.extraPrice}` : ""}
@@ -660,7 +660,7 @@ export default function POSPage() {
               })}
             </div>
             {filteredProducts.length === 0 && (
-              <div className="text-center py-16 text-gray-400">
+              <div className="text-center py-16 text-muted">
                 <div className="text-5xl mb-3">🔍</div>
                 <p>ไม่พบสินค้า</p>
               </div>
@@ -670,9 +670,9 @@ export default function POSPage() {
 
         {/* ═══ RIGHT: Order Panel ═══ */}
         <div
-          className={`w-full xl:w-96 bg-white border-l border-amber-100 flex flex-col shadow-xl ${mobileTab === "products" ? "hidden xl:flex" : "flex"}`}
+          className={`w-full xl:w-96 bg-white border-l border-line flex flex-col shadow-xl ${mobileTab === "products" ? "hidden xl:flex" : "flex"}`}
         >
-          <div className="bg-amber-800 text-white px-4 py-3 flex items-center justify-between">
+          <div className="bg-ink text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg">🧾</span>
               <span className="font-bold">ออเดอร์ปัจจุบัน</span>
@@ -680,26 +680,26 @@ export default function POSPage() {
             {orderItems.length > 0 && (
               <button
                 onClick={clearOrder}
-                className="text-amber-300 hover:text-white text-xs transition-colors"
+                className="text-apricot hover:text-white text-xs transition-colors"
               >
                 ล้างทั้งหมด
               </button>
             )}
           </div>
 
-          <div className="px-4 py-2.5 border-b border-amber-100 bg-amber-50">
+          <div className="px-4 py-2.5 border-b border-line bg-warn-bg">
             <input
               type="text"
               placeholder="ชื่อลูกค้า (ไม่บังคับ)"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-3 py-2 bg-white border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brick"
             />
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
             {orderItems.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-muted">
                 <div className="text-5xl mb-3">🛒</div>
                 <p className="text-sm">กดสินค้าเพื่อเพิ่มออเดอร์</p>
               </div>
@@ -710,7 +710,7 @@ export default function POSPage() {
                 return (
                   <div
                     key={`${item.product.id}-${item.selectedOption ?? ""}-${idx}`}
-                    className="flex items-center gap-3 bg-amber-50 rounded-xl p-2.5"
+                    className="flex items-center gap-3 bg-warn-bg rounded-xl p-2.5"
                   >
                     <img
                       src={item.product.image}
@@ -718,15 +718,15 @@ export default function POSPage() {
                       className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-amber-700 truncate">
+                      <p className="text-xs font-semibold text-body truncate">
                         {item.product.name}
                       </p>
                       {item.selectedOption && (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full">
+                        <span className="text-[10px] px-1.5 py-0.5 bg-new-soft text-new-ink rounded-full">
                           {item.selectedOption}
                         </span>
                       )}
-                      <p className="text-amber-600 text-xs font-bold">
+                      <p className="text-brick text-xs font-bold">
                         ฿{formatPrice(item.product.price * displayQty)}
                       </p>
                     </div>
@@ -739,11 +739,11 @@ export default function POSPage() {
                             -m,
                           )
                         }
-                        className="w-6 h-6 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-800 text-xs font-bold flex items-center justify-center transition-colors"
+                        className="w-6 h-6 rounded-full bg-warn-line hover:bg-apricot text-ink text-xs font-bold flex items-center justify-center transition-colors"
                       >
                         −
                       </button>
-                      <span className="w-6 text-center text-sm font-bold text-amber-700">
+                      <span className="w-6 text-center text-sm font-bold text-body">
                         {displayQty}
                       </span>
                       <button
@@ -761,7 +761,7 @@ export default function POSPage() {
                             m >
                           maxQty(item.product)
                         }
-                        className="w-6 h-6 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center transition-colors disabled:opacity-40"
+                        className="w-6 h-6 rounded-full bg-brick hover:bg-brick-hover text-white text-xs font-bold flex items-center justify-center transition-colors disabled:opacity-40"
                       >
                         +
                       </button>
@@ -769,7 +769,7 @@ export default function POSPage() {
                         onClick={() =>
                           removeItem(item.product.id, item.selectedOption)
                         }
-                        className="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 text-red-500 text-xs flex items-center justify-center transition-colors ml-0.5"
+                        className="w-6 h-6 rounded-full bg-danger-soft hover:bg-danger-line text-error text-xs flex items-center justify-center transition-colors ml-0.5"
                       >
                         ✕
                       </button>
@@ -780,24 +780,24 @@ export default function POSPage() {
             )}
           </div>
 
-          <div className="border-t border-amber-100 px-4 py-4 space-y-3 bg-white">
+          <div className="border-t border-line px-4 py-4 space-y-3 bg-white">
             <div className="flex gap-2">
               <button
                 onClick={() => setPaymentMethod("cash")}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${paymentMethod === "cash" ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-700 border border-amber-200"}`}
+                className={`flex-1 py-2 rounded-full text-sm font-medium transition-all ${paymentMethod === "cash" ? "bg-brick text-white" : "bg-warn-bg text-body border border-line"}`}
               >
                 💵 เงินสด
               </button>
               <button
                 onClick={() => setPaymentMethod("qr")}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${paymentMethod === "qr" ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-700 border border-amber-200"}`}
+                className={`flex-1 py-2 rounded-full text-sm font-medium transition-all ${paymentMethod === "qr" ? "bg-brick text-white" : "bg-warn-bg text-body border border-line"}`}
               >
                 📱 QR
               </button>
             </div>
             {paymentMethod === "cash" && (
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">
+                <label className="text-xs text-muted mb-1 block">
                   รับเงินมา (บาท)
                 </label>
                 <input
@@ -806,14 +806,14 @@ export default function POSPage() {
                   onChange={(e) => setCashReceived(Number(e.target.value))}
                   min={0}
                   placeholder="0"
-                  className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 text-right font-bold"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brick text-right font-bold"
                 />
                 <div className="flex gap-1.5 mt-2">
                   {[20, 50, 100, 500, 1000].map((amt) => (
                     <button
                       key={amt}
                       onClick={() => setCashReceived(amt)}
-                      className="flex-1 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-[10px] md:text-xs text-amber-700 hover:bg-amber-100 transition-colors font-medium"
+                      className="flex-1 py-1.5 bg-warn-bg border border-line rounded-lg text-[10px] md:text-xs text-body hover:bg-warn-soft transition-colors font-medium"
                     >
                       {amt}
                     </button>
@@ -821,8 +821,8 @@ export default function POSPage() {
                 </div>
               </div>
             )}
-            <div className="bg-amber-50 rounded-xl p-3 space-y-1.5">
-              <div className="flex justify-between text-sm text-amber-800">
+            <div className="bg-warn-bg rounded-xl p-3 space-y-1.5">
+              <div className="flex justify-between text-sm text-ink">
                 <span>จำนวนรายการ</span>
                 <span>
                   {/* ✅ นับเป็น order ไม่ใช่ชิ้น */}
@@ -833,13 +833,13 @@ export default function POSPage() {
                   รายการ
                 </span>
               </div>
-              <div className="flex justify-between text-base font-bold text-amber-800 pt-1 border-t border-amber-200">
+              <div className="flex justify-between text-base font-bold text-ink pt-1 border-t border-line">
                 <span>ยอดรวม</span>
                 <span>฿{formatPrice(subtotal)}</span>
               </div>
               {paymentMethod === "cash" && cashReceived > 0 && (
                 <div
-                  className={`flex justify-between text-sm font-semibold ${change >= 0 ? "text-green-600" : "text-red-500"}`}
+                  className={`flex justify-between text-sm font-semibold ${change >= 0 ? "text-ok" : "text-error"}`}
                 >
                   <span>เงินทอน</span>
                   <span>฿{formatPrice(change)}</span>
@@ -849,7 +849,7 @@ export default function POSPage() {
             <button
               onClick={handleCheckout}
               disabled={processing || orderItems.length === 0}
-              className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200 flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-brick hover:bg-brick-hover text-white rounded-full font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed  flex items-center justify-center gap-2"
             >
               {processing ? (
                 <>
@@ -876,9 +876,9 @@ export default function POSPage() {
             className="bg-white rounded-2xl shadow-2xl w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-amber-500 text-white px-6 py-4 rounded-t-2xl">
+            <div className="bg-brick text-white px-6 py-4 rounded-t-2xl">
               <h3 className="font-bold text-lg">เลือกตัวเลือก</h3>
-              <p className="text-amber-100 text-sm mt-0.5">
+              <p className="text-cream text-sm mt-0.5">
                 {pendingProduct.name}
               </p>
             </div>
@@ -896,18 +896,18 @@ export default function POSPage() {
                     disabled={disabled}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${
                       disabled
-                        ? "opacity-40 cursor-not-allowed border-gray-200"
+                        ? "opacity-40 cursor-not-allowed border-line"
                         : selectedOption?.name === o.name
-                          ? "border-amber-500 bg-amber-50"
-                          : "border-gray-200 hover:border-amber-300"
+                          ? "border-brick bg-warn-bg"
+                          : "border-line hover:border-line-strong"
                     }`}
                   >
                     <div className="text-left">
-                      <span className="font-medium text-amber-700 block">
+                      <span className="font-medium text-body block">
                         {o.name}
                       </span>
                       {m > 1 && (
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-muted">
                           ลด stock {m} ชิ้น • สั่งได้{" "}
                           {Math.floor((maxQty(pendingProduct) - usedStock) / m)}{" "}
                           ออเดอร์
@@ -915,7 +915,7 @@ export default function POSPage() {
                       )}
                     </div>
                     <span
-                      className={`text-sm font-semibold ${o.extraPrice > 0 ? "text-green-600" : "text-gray-500"}`}
+                      className={`text-sm font-semibold ${o.extraPrice > 0 ? "text-ok" : "text-muted"}`}
                     >
                       {o.extraPrice > 0
                         ? `฿${formatPrice(pendingProduct.price + o.extraPrice)} (+฿${o.extraPrice})`
@@ -928,7 +928,7 @@ export default function POSPage() {
             <div className="px-5 pb-5 flex gap-3">
               <button
                 onClick={() => setShowOptionModal(false)}
-                className="flex-1 py-3 bg-gray-100 text-amber-800 rounded-xl font-medium hover:bg-gray-200"
+                className="flex-1 py-3 bg-sand text-ink rounded-xl font-medium hover:bg-line"
               >
                 ยกเลิก
               </button>
@@ -939,7 +939,7 @@ export default function POSPage() {
                   doAddToOrder(pendingProduct, selectedOption);
                 }}
                 disabled={!selectedOption}
-                className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold disabled:opacity-40"
+                className="flex-1 py-3 bg-brick hover:bg-brick-hover text-white rounded-full font-bold disabled:opacity-40"
               >
                 ✅ เพิ่ม
                 {selectedOption
@@ -955,22 +955,22 @@ export default function POSPage() {
       {showQrModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-            <div className="bg-amber-500 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-brick text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
               <h2 className="font-bold text-lg flex items-center gap-2">
                 <span>📱</span> ชำระผ่าน QR PromptPay
               </h2>
               <button
                 onClick={() => setShowQrModal(false)}
-                className="hover:bg-amber-600 p-1.5 rounded-lg transition-colors"
+                className="hover:bg-brick-hover p-1.5 rounded-lg transition-colors"
               >
                 ✕
               </button>
             </div>
             <div className="p-6 text-center space-y-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted">
                 สแกน QR Code เพื่อชำระเงิน
               </p>
-              <div className="bg-white border-2 border-amber-200 rounded-xl p-4 inline-block shadow-md">
+              <div className="bg-white border-2 border-line rounded-xl p-4 inline-block shadow-md">
                 {qrCodeUrl ? (
                   <img
                     src={qrCodeUrl}
@@ -978,33 +978,33 @@ export default function POSPage() {
                     className="w-52 h-52 mx-auto"
                   />
                 ) : (
-                  <div className="w-52 h-52 flex items-center justify-center bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-52 h-52 flex items-center justify-center bg-sand rounded-lg">
+                    <div className="w-8 h-8 border-4 border-brick border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
               </div>
               <div>
-                <p className="text-3xl font-bold text-amber-600">
+                <p className="text-3xl font-bold text-brick">
                   ฿{formatPrice(subtotal)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted mt-1">
                   PromptPay: 0931253748
                 </p>
               </div>
-              <div className="bg-amber-50 rounded-xl p-3 text-sm text-amber-700">
+              <div className="bg-warn-bg rounded-xl p-3 text-sm text-body">
                 หลังลูกค้าสแกนและชำระเงินแล้ว กดปุ่ม &quot;ยืนยันได้รับเงิน&quot;
               </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowQrModal(false)}
-                  className="flex-1 py-3 bg-gray-100 text-amber-800 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-3 bg-sand text-ink rounded-xl font-medium hover:bg-line transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
                   onClick={confirmQrPayment}
                   disabled={processing}
-                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-brick hover:bg-brick-hover text-white rounded-full font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {processing ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -1023,13 +1023,13 @@ export default function POSPage() {
       {showReceipt && lastOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-            <div className="bg-amber-500 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-brick text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
               <h2 className="font-bold text-lg flex items-center gap-2">
                 <span>🧾</span> ใบเสร็จรับเงิน
               </h2>
               <button
                 onClick={() => setShowReceipt(false)}
-                className="hover:bg-amber-600 p-1.5 rounded-lg transition-colors"
+                className="hover:bg-brick-hover p-1.5 rounded-lg transition-colors"
               >
                 ✕
               </button>
@@ -1038,18 +1038,18 @@ export default function POSPage() {
               <div className="center bold text-center text-base mb-1">
                 Pound Bakery
               </div>
-              <div className="text-center text-xs text-gray-500 mb-3">
+              <div className="text-center text-xs text-muted mb-3">
                 ใบเสร็จรับเงิน
               </div>
-              <div className="border-t border-dashed border-gray-300 my-2" />
-              <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <div className="border-t border-dashed border-line-strong my-2" />
+              <div className="flex justify-between text-xs text-muted mb-1">
                 <span>เลขที่: {lastOrder.orderId}</span>
                 <span>{new Date().toLocaleDateString("th-TH")}</span>
               </div>
-              <div className="text-xs text-gray-500 mb-3">
+              <div className="text-xs text-muted mb-3">
                 ลูกค้า: {lastOrder.customerName}
               </div>
-              <div className="border-t border-dashed border-gray-300 my-2" />
+              <div className="border-t border-dashed border-line-strong my-2" />
               {lastOrder.items.map((item, idx) => {
                 const m = getMultiplier(item.selectedOption);
                 const displayQty = item.quantity / m;
@@ -1062,21 +1062,21 @@ export default function POSPage() {
                       {item.product.name}
                       {item.selectedOption ? ` (${item.selectedOption})` : ""}
                     </span>
-                    <span className="ml-2 text-gray-500">x{displayQty}</span>
+                    <span className="ml-2 text-muted">x{displayQty}</span>
                     <span className="ml-3 font-medium">
                       ฿{formatPrice(item.product.price * displayQty)}
                     </span>
                   </div>
                 );
               })}
-              <div className="border-t border-dashed border-gray-300 my-2" />
+              <div className="border-t border-dashed border-line-strong my-2" />
               <div className="flex justify-between font-bold text-base">
                 <span>รวมทั้งหมด</span>
                 <span>฿{formatPrice(lastOrder.total)}</span>
               </div>
               {lastOrder.paymentMethod === "cash" && (
                 <>
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-muted mt-1">
                     <span>รับเงิน</span>
                     <span>
                       ฿
@@ -1085,26 +1085,26 @@ export default function POSPage() {
                         : formatPrice(lastOrder.total)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs text-green-600 font-medium">
+                  <div className="flex justify-between text-xs text-ok font-medium">
                     <span>เงินทอน</span>
                     <span>฿{formatPrice(lastOrder.change)}</span>
                   </div>
                 </>
               )}
-              <div className="text-center text-xs text-gray-400 mt-4 pt-3 border-t border-dashed border-gray-300">
+              <div className="text-center text-xs text-muted mt-4 pt-3 border-t border-dashed border-line-strong">
                 ขอบคุณที่ใช้บริการ 🙏
               </div>
             </div>
             <div className="px-6 pb-5 flex gap-3">
               <button
                 onClick={() => setShowReceipt(false)}
-                className="flex-1 py-2.5 bg-gray-100 text-amber-800 rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm"
+                className="flex-1 py-2.5 bg-sand text-ink rounded-xl font-medium hover:bg-line transition-colors text-sm"
               >
                 ปิด
               </button>
               <button
                 onClick={handlePrint}
-                className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-600 transition-colors text-sm flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-brick text-white rounded-full font-medium hover:bg-brick-hover transition-colors text-sm flex items-center justify-center gap-2"
               >
                 <svg
                   className="w-4 h-4"

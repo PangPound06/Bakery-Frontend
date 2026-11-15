@@ -127,22 +127,22 @@ function Dropdown({
         onClick={() => setOpen((v) => !v)}
         className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border-2 bg-white text-left transition-colors disabled:opacity-50 ${
           open
-            ? "border-amber-500 ring-2 ring-amber-200"
-            : "border-amber-200 hover:border-amber-300"
+            ? "border-brick ring-2 ring-warn-line"
+            : "border-line hover:border-line-strong"
         }`}
       >
         <span className="min-w-0">
-          <span className="block text-sm font-medium text-gray-800 truncate">
+          <span className="block text-sm font-medium text-ink truncate">
             {selected?.label ?? "เลือก"}
           </span>
           {selected?.hint && (
-            <span className="block text-xs text-gray-500 truncate">
+            <span className="block text-xs text-muted truncate">
               {selected.hint}
             </span>
           )}
         </span>
         <svg
-          className={`w-5 h-5 text-amber-600 shrink-0 transition-transform ${
+          className={`w-5 h-5 text-brick shrink-0 transition-transform ${
             open ? "rotate-180" : ""
           }`}
           fill="none"
@@ -159,7 +159,7 @@ function Dropdown({
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-full bg-white border-2 border-amber-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="absolute z-20 mt-2 w-full bg-white border-2 border-line rounded-xl shadow-xl overflow-hidden">
           {options.map((opt) => {
             const active = opt.value === value;
             return (
@@ -171,24 +171,24 @@ function Dropdown({
                   setOpen(false);
                 }}
                 className={`w-full flex items-start gap-2 px-4 py-3 text-left transition-colors ${
-                  active ? "bg-amber-50" : "hover:bg-amber-50/60"
+                  active ? "bg-warn-bg" : "hover:bg-warn-bg/60"
                 }`}
               >
-                <span className="w-5 shrink-0 text-amber-600">
+                <span className="w-5 shrink-0 text-brick">
                   {active ? "✓" : ""}
                 </span>
                 <span className="min-w-0">
                   <span
                     className={`block text-sm truncate ${
                       active
-                        ? "font-semibold text-amber-700"
-                        : "font-medium text-gray-700"
+                        ? "font-semibold text-body"
+                        : "font-medium text-body"
                     }`}
                   >
                     {opt.label}
                   </span>
                   {opt.hint && (
-                    <span className="block text-xs text-gray-500">
+                    <span className="block text-xs text-muted">
                       {opt.hint}
                     </span>
                   )}
@@ -291,15 +291,15 @@ export default function CancelRefundModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* ─── หัวข้อ ─── */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-amber-500 rounded-t-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-brick rounded-t-2xl">
           <div>
             <h2 className="text-xl font-bold text-white">ยกเลิกและคืนเงิน</h2>
-            <p className="text-sm text-amber-100 mt-0.5">#{ordCode}</p>
+            <p className="text-sm text-cream mt-0.5">#{ordCode}</p>
           </div>
           <button
             onClick={onClose}
             disabled={submitting}
-            className="p-2 hover:bg-amber-600 rounded-lg transition-colors text-white disabled:opacity-50"
+            className="p-2 hover:bg-brick-hover rounded-lg transition-colors text-white disabled:opacity-50"
             aria-label="ปิด"
           >
             <svg
@@ -319,18 +319,18 @@ export default function CancelRefundModal({
         </div>
 
         <div className="p-6 space-y-5">
-          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-            <p className="text-sm text-red-600">
+          <div className="bg-danger-soft border-2 border-danger-line rounded-xl p-4">
+            <p className="text-sm text-error">
               คืนเงินผ่าน Stripe ทันทีและย้อนกลับไม่ได้ สต็อกจะถูกคืนให้อัตโนมัติ
             </p>
-            <p className="text-sm font-semibold text-red-700 mt-1">
+            <p className="text-sm font-semibold text-danger mt-1">
               ยอดที่เก็บไป ฿{formatPrice(total)}
             </p>
           </div>
 
           {/* ─── ขอบเขต ─── */}
           <div>
-            <h3 className="font-semibold text-amber-800 mb-2">
+            <h3 className="font-semibold text-ink mb-2">
               🧾 ยกเลิกแค่ไหน
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -340,8 +340,8 @@ export default function CancelRefundModal({
                 disabled={submitting}
                 className={`py-3 rounded-xl border-2 text-sm font-semibold transition-colors ${
                   scope === "full"
-                    ? "border-amber-500 bg-amber-50 text-amber-700"
-                    : "border-amber-200 text-gray-600 hover:border-amber-300"
+                    ? "border-brick bg-warn-bg text-body"
+                    : "border-line text-subtle hover:border-line-strong"
                 }`}
               >
                 ทั้งคำสั่งซื้อ
@@ -352,8 +352,8 @@ export default function CancelRefundModal({
                 disabled={submitting || cancelable.length === 0}
                 className={`py-3 rounded-xl border-2 text-sm font-semibold transition-colors ${
                   scope === "partial"
-                    ? "border-amber-500 bg-amber-50 text-amber-700"
-                    : "border-amber-200 text-gray-600 hover:border-amber-300"
+                    ? "border-brick bg-warn-bg text-body"
+                    : "border-line text-subtle hover:border-line-strong"
                 } ${cancelable.length === 0 ? "opacity-40 cursor-not-allowed" : ""}`}
               >
                 ตัดบางรายการ
@@ -364,7 +364,7 @@ export default function CancelRefundModal({
           {/* ─── เลือกรายการ ─── */}
           {scope === "partial" && (
             <div>
-              <h3 className="font-semibold text-amber-800 mb-2">
+              <h3 className="font-semibold text-ink mb-2">
                 🛒 รายการที่จะตัดออก
               </h3>
               <div className="space-y-2">
@@ -376,8 +376,8 @@ export default function CancelRefundModal({
                       key={it.id}
                       className={`rounded-xl border-2 p-3 transition-colors ${
                         selected
-                          ? "border-amber-400 bg-amber-50"
-                          : "border-amber-200 bg-white hover:border-amber-300"
+                          ? "border-line-strong bg-warn-bg"
+                          : "border-line bg-white hover:border-line-strong"
                       }`}
                     >
                       <label className="flex items-start gap-3 cursor-pointer">
@@ -386,18 +386,18 @@ export default function CancelRefundModal({
                           checked={selected}
                           disabled={submitting}
                           onChange={() => toggleItem(it.id, it.remainingUnits)}
-                          className="mt-1 w-4 h-4 accent-amber-500"
+                          className="mt-1 w-4 h-4 accent-brick"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-amber-700 truncate">
+                          <p className="font-medium text-body truncate">
                             {it.productName}
                           </p>
                           {it.selectedOption && (
-                            <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                            <span className="inline-block px-2 py-0.5 bg-new-soft text-new-ink text-xs rounded-full mt-0.5">
                               {it.selectedOption}
                             </span>
                           )}
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-xs text-muted mt-0.5">
                             ฿{formatPrice(it.price)} × คงเหลือ{" "}
                             {it.remainingUnits}
                           </p>
@@ -406,18 +406,18 @@ export default function CancelRefundModal({
 
                       {selected && it.remainingUnits > 1 && (
                         <div className="flex items-center gap-3 mt-3 pl-7">
-                          <span className="text-xs text-gray-500">จำนวน</span>
-                          <div className="flex items-center border-2 border-amber-300 rounded-lg overflow-hidden bg-white">
+                          <span className="text-xs text-muted">จำนวน</span>
+                          <div className="flex items-center border-2 border-line-strong rounded-lg overflow-hidden bg-white">
                             <button
                               type="button"
                               onClick={() =>
                                 setQty(it.id, qty - 1, it.remainingUnits)
                               }
-                              className="px-3 py-1 text-amber-600 hover:bg-amber-100 font-bold"
+                              className="px-3 py-1 text-brick hover:bg-warn-soft font-bold"
                             >
                               −
                             </button>
-                            <span className="px-3 text-sm font-semibold text-amber-800">
+                            <span className="px-3 text-sm font-semibold text-ink">
                               {qty}
                             </span>
                             <button
@@ -425,7 +425,7 @@ export default function CancelRefundModal({
                               onClick={() =>
                                 setQty(it.id, qty + 1, it.remainingUnits)
                               }
-                              className="px-3 py-1 text-amber-600 hover:bg-amber-100 font-bold"
+                              className="px-3 py-1 text-brick hover:bg-warn-soft font-bold"
                             >
                               +
                             </button>
@@ -438,16 +438,16 @@ export default function CancelRefundModal({
               </div>
 
               {grossSelected > 0 && (
-                <div className="mt-3 flex justify-between items-center bg-amber-50 border-2 border-amber-200 rounded-xl px-4 py-3">
-                  <span className="text-sm text-amber-700">
+                <div className="mt-3 flex justify-between items-center bg-warn-bg border-2 border-line rounded-xl px-4 py-3">
+                  <span className="text-sm text-body">
                     มูลค่าสินค้าที่ตัดออก
                   </span>
-                  <span className="font-bold text-amber-600">
+                  <span className="font-bold text-brick">
                     ฿{formatPrice(grossSelected)}
                   </span>
                 </div>
               )}
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-muted mt-2">
                 ค่าจัดส่งไม่คืน เพราะยังมีสินค้าที่ต้องส่งอยู่
                 ยอดคืนจริงคำนวณตอนกดยืนยัน
               </p>
@@ -455,7 +455,7 @@ export default function CancelRefundModal({
           )}
 
           <div>
-            <h3 className="font-semibold text-amber-800 mb-2">💬 เหตุผล</h3>
+            <h3 className="font-semibold text-ink mb-2">💬 เหตุผล</h3>
             <Dropdown
               options={REASONS}
               value={reasonCode}
@@ -465,7 +465,7 @@ export default function CancelRefundModal({
           </div>
 
           <div>
-            <h3 className="font-semibold text-amber-800 mb-2">💰 วิธีคืนเงิน</h3>
+            <h3 className="font-semibold text-ink mb-2">💰 วิธีคืนเงิน</h3>
             <Dropdown
               options={MODES}
               value={mode}
@@ -475,10 +475,10 @@ export default function CancelRefundModal({
           </div>
 
           <div>
-            <h3 className="font-semibold text-amber-800 mb-2">
+            <h3 className="font-semibold text-ink mb-2">
               📝 บันทึกถึงลูกค้า
               {reasonCode === "other" && (
-                <span className="text-red-500 font-normal"> (จำเป็น)</span>
+                <span className="text-error font-normal"> (จำเป็น)</span>
               )}
             </h3>
             <textarea
@@ -488,30 +488,30 @@ export default function CancelRefundModal({
               maxLength={300}
               disabled={submitting}
               placeholder="เช่น ขออภัย วัตถุดิบหมดกะทันหัน"
-              className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-500 disabled:opacity-50"
+              className="w-full px-4 py-3 border-2 border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brick focus:border-brick disabled:opacity-50"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border-2 border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+            <div className="bg-danger-soft border-2 border-danger-line text-error px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
         </div>
 
         {/* ─── ปุ่ม ─── */}
-        <div className="sticky bottom-0 bg-white border-t border-amber-100 p-6 pt-4 flex gap-3">
+        <div className="sticky bottom-0 bg-white border-t border-line p-6 pt-4 flex gap-3">
           <button
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+            className="flex-1 py-3 bg-sand text-body rounded-xl hover:bg-line transition-colors font-medium disabled:opacity-50"
           >
             ไม่ยกเลิก
           </button>
           <button
             onClick={submit}
             disabled={submitting}
-            className="flex-1 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium disabled:bg-gray-300"
+            className="flex-1 py-3 bg-error text-white rounded-xl hover:bg-error transition-colors font-medium disabled:bg-line-strong"
           >
             {submitting
               ? "กำลังคืนเงิน..."

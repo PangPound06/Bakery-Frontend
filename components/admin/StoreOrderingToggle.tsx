@@ -58,7 +58,7 @@ export default function StoreOrderingToggle() {
         showCancelButton: true,
         confirmButtonText: "ปิดรับ",
         cancelButtonText: "ยกเลิก",
-        confirmButtonColor: "#dc2626",
+        confirmButtonColor: "#b3261e",
       });
       if (!c.isConfirmed) return;
     }
@@ -87,12 +87,12 @@ export default function StoreOrderingToggle() {
   const closed = !status.onlineOrdering;
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-amber-100">
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-line">
       <div className="flex items-center gap-3">
         <span className="text-2xl">🛎️</span>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-amber-900">รับออเดอร์ออนไลน์</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="font-bold text-ink">รับออเดอร์ออนไลน์</h3>
+          <p className="text-sm text-muted">
             {loading
               ? "กำลังโหลด..."
               : closed
@@ -103,8 +103,8 @@ export default function StoreOrderingToggle() {
         <span
           className={`text-xs font-semibold px-3 py-1 rounded-full ${
             closed
-              ? "bg-red-100 text-red-700"
-              : "bg-emerald-100 text-emerald-700"
+              ? "bg-danger-soft text-danger"
+              : "bg-success-soft text-success"
           }`}
         >
           {closed ? "ปิดรับ" : "เปิดรับ"}
@@ -115,7 +115,7 @@ export default function StoreOrderingToggle() {
           disabled={loading || saving}
           aria-label="สลับสถานะรับออเดอร์ออนไลน์"
           className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 ${
-            closed ? "bg-red-500" : "bg-emerald-500"
+            closed ? "bg-error" : "bg-ok"
           }`}
         >
           <span
@@ -129,7 +129,7 @@ export default function StoreOrderingToggle() {
       {closed && (
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">
+            <label className="block text-xs text-muted mb-1">
               ข้อความถึงลูกค้า
             </label>
             <input
@@ -137,11 +137,11 @@ export default function StoreOrderingToggle() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="เช่น คิวเยอะมาก ขออภัยค่ะ"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-brick"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">
+            <label className="block text-xs text-muted mb-1">
               กลับมาเปิดรับเวลา
             </label>
             <input
@@ -149,14 +149,14 @@ export default function StoreOrderingToggle() {
               value={reopenAt}
               onChange={(e) => setReopenAt(e.target.value)}
               placeholder="เช่น 14:00"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-brick"
             />
           </div>
           <button
             type="button"
             onClick={() => apply(false)}
             disabled={saving}
-            className="sm:col-span-2 py-2 rounded-lg text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50"
+            className="sm:col-span-2 py-2 rounded-lg text-sm font-semibold bg-error hover:bg-error text-white transition-colors disabled:opacity-50"
           >
             {saving ? "กำลังบันทึก..." : "อัปเดตข้อความ/เวลา"}
           </button>

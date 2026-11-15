@@ -28,13 +28,13 @@ export interface Badge {
 }
 
 const STATUS_BADGES: Record<string, Badge> = {
-  [PAYMENT_STATUS.PAID]: { text: "ชำระแล้ว", className: "bg-green-100 text-green-700" },
-  [PAYMENT_STATUS.AWAITING]: { text: "รอชำระเงิน", className: "bg-amber-100 text-amber-700" },
-  [PAYMENT_STATUS.VERIFYING]: { text: "รอตรวจสอบยอดโอน", className: "bg-orange-100 text-orange-700" },
-  [PAYMENT_STATUS.FAILED]: { text: "ไม่สำเร็จ", className: "bg-red-100 text-red-700" },
-  [PAYMENT_STATUS.EXPIRED]: { text: "หมดเวลา", className: "bg-gray-100 text-gray-600" },
+  [PAYMENT_STATUS.PAID]: { text: "ชำระแล้ว", className: "bg-success-soft text-success" },
+  [PAYMENT_STATUS.AWAITING]: { text: "รอชำระเงิน", className: "bg-warn-soft text-body" },
+  [PAYMENT_STATUS.VERIFYING]: { text: "รอตรวจสอบยอดโอน", className: "bg-warn-soft text-body" },
+  [PAYMENT_STATUS.FAILED]: { text: "ไม่สำเร็จ", className: "bg-danger-soft text-danger" },
+  [PAYMENT_STATUS.EXPIRED]: { text: "หมดเวลา", className: "bg-sand text-subtle" },
   // order สมัยอัปสลิป (ก่อนใช้ Stripe)
-  pending: { text: "รอตรวจสอบ", className: "bg-yellow-100 text-yellow-700" },
+  pending: { text: "รอตรวจสอบ", className: "bg-warn-soft text-body" },
 };
 
 const METHOD_LABELS: Record<string, string> = {
@@ -47,7 +47,7 @@ const METHOD_LABELS: Record<string, string> = {
 };
 
 export const paymentStatusBadge = (status?: string | null): Badge =>
-  STATUS_BADGES[status ?? ""] ?? { text: status || "-", className: "bg-gray-100 text-gray-700" };
+  STATUS_BADGES[status ?? ""] ?? { text: status || "-", className: "bg-sand text-body" };
 
 /** ค่าที่ไม่รู้จักแสดงตามที่เก็บไว้ — ห้ามเดาว่าเป็นบัตร */
 export const paymentMethodLabel = (method?: string | null): string =>

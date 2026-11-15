@@ -29,7 +29,7 @@ export function useRequireAdmin() {
           icon: "error",
           title: "ไม่มีสิทธิ์เข้าถึง",
           text: "คุณไม่มีสิทธิ์เข้าถึงหน้านี้",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         }).then(() => router.replace("/"));
       }
     } catch {

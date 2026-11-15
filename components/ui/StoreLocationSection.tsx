@@ -9,7 +9,7 @@ import type { Branch } from "./StoreLocationMap";
 const StoreLocationMap = dynamic(() => import("./StoreLocationMap"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-amber-50 text-amber-700 text-sm">
+    <div className="h-full w-full flex items-center justify-center bg-warn-bg text-body text-sm">
       กำลังโหลดแผนที่...
     </div>
   ),
@@ -38,42 +38,42 @@ export default function StoreLocationSection() {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-2 pb-12 bg-amber-50">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-2 pb-12 bg-warn-bg">
       {/* ── Header ── */}
       <div className="mb-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 mb-4"
+          className="inline-flex items-center gap-2 text-brick hover:text-body mb-4"
         >
           ← กลับหน้าหลัก
         </Link>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <span>📍</span>
-          <span className="bg-gradient-to-r from-amber-700 to-orange-500 bg-clip-text text-transparent">
+          <span className="bg-brick   bg-clip-text text-transparent">
             ที่ตั้งร้าน
           </span>
         </h1>
-        <p className="text-amber-600 mt-1">
+        <p className="text-brick mt-1">
           ทั้งหมด {branches.length} สาขา
         </p>
       </div>
 
       {loading ? (
-        <div className="h-[420px] rounded-2xl bg-white/60 flex items-center justify-center text-amber-700">
+        <div className="h-[420px] rounded-2xl bg-white/60 flex items-center justify-center text-body">
           กำลังโหลด...
         </div>
       ) : loadFailed ? (
-        <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-red-500">
+        <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-error">
           โหลดข้อมูลสาขาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง
         </div>
       ) : branches.length === 0 ? (
-        <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-gray-500">
+        <div className="h-[200px] rounded-2xl bg-white/60 flex items-center justify-center text-muted">
           ยังไม่มีข้อมูลสาขา
         </div>
       ) : (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* แผนที่ */}
-          <div className="lg:col-span-2 h-[320px] sm:h-[460px] rounded-2xl overflow-hidden shadow-sm border border-amber-100">
+          <div className="lg:col-span-2 h-[320px] sm:h-[460px] rounded-2xl overflow-hidden shadow-sm border border-line">
             <StoreLocationMap branches={branches} focus={focus} />
           </div>
 
@@ -88,17 +88,17 @@ export default function StoreLocationSection() {
                   onClick={() => setFocus(b)}
                   className={`cursor-pointer bg-white rounded-2xl p-4 shadow-sm border transition-colors ${
                     isFocus
-                      ? "border-amber-400 ring-2 ring-amber-200"
-                      : "border-amber-100 hover:border-amber-300"
+                      ? "border-line-strong ring-2 ring-warn-line"
+                      : "border-line hover:border-line-strong"
                   }`}
                 >
-                  <h3 className="font-bold text-amber-900 flex items-center gap-2">
+                  <h3 className="font-bold text-ink flex items-center gap-2">
                     <span>📍</span> {b.name}
                   </h3>
                   {b.address ? (
-                    <p className="text-sm text-gray-600 mt-1">{b.address}</p>
+                    <p className="text-sm text-subtle mt-1">{b.address}</p>
                   ) : null}
-                  <div className="mt-2 space-y-1 text-sm text-gray-600">
+                  <div className="mt-2 space-y-1 text-sm text-subtle">
                     {b.hours ? <p>🕒 {b.hours}</p> : null}
                     {b.phone ? (
                       <p>
@@ -106,7 +106,7 @@ export default function StoreLocationSection() {
                         <a
                           href={`tel:${b.phone}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="text-amber-600 hover:underline"
+                          className="text-brick hover:underline"
                         >
                           {b.phone}
                         </a>
@@ -118,7 +118,7 @@ export default function StoreLocationSection() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="inline-block mt-3 px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
+                    className="inline-block mt-3 px-4 py-1.5 rounded-lg bg-brick hover:bg-brick-hover text-white text-sm font-semibold transition-colors"
                   >
                     นำทางไปสาขานี้
                   </a>

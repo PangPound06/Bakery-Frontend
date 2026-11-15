@@ -239,7 +239,7 @@ export default function UserManagementPage() {
           title: "สำเร็จ!",
           text: editingAdmin ? "แก้ไขข้อมูลสำเร็จ" : "เพิ่ม Admin สำเร็จ",
           icon: "success",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -261,8 +261,8 @@ export default function UserManagementPage() {
       text: `ต้องการเปลี่ยนสถานะของ "${admin.fullname || admin.email}" หรือไม่?`,
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#a84a0e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
     });
@@ -282,7 +282,7 @@ export default function UserManagementPage() {
           title: "สำเร็จ!",
           text: `เปลี่ยนสถานะเป็น ${data.status} สำเร็จ`,
           icon: "success",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
           timer: 1000,
           showConfirmButton: false,
         });
@@ -302,7 +302,7 @@ export default function UserManagementPage() {
         title: "ไม่สามารถลบได้",
         text: "ไม่สามารถลบบัญชี Owner ได้",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -314,8 +314,8 @@ export default function UserManagementPage() {
         : `ต้องการลบ "${admin.fullname || admin.email}" ใช่หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: isDeletingSelf ? "ลบบัญชีและออกจากระบบ" : "ลบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -349,7 +349,7 @@ export default function UserManagementPage() {
           await Swal.fire({
             title: "ลบสำเร็จ!",
             icon: "success",
-            confirmButtonColor: "#f97316",
+            confirmButtonColor: "#a84a0e",
             timer: 1500,
             showConfirmButton: false,
           });
@@ -363,25 +363,25 @@ export default function UserManagementPage() {
   const getRoleBadge = (role: string) => {
     switch (role?.toLowerCase()) {
       case "owner":
-        return "bg-yellow-100 text-yellow-800 border border-yellow-300";
+        return "bg-warn-soft text-ink border border-line-strong";
       case "admin":
-        return "bg-purple-100 text-purple-800";
+        return "bg-new-soft text-new-ink";
       case "manager":
-        return "bg-indigo-100 text-indigo-800";
+        return "bg-new-soft text-new-ink";
       case "waiter":
-        return "bg-teal-100 text-teal-800";
+        return "bg-success-soft text-success-ink";
       case "bartender":
-        return "bg-cyan-100 text-cyan-800";
+        return "bg-new-soft text-new-ink";
       case "cashier":
-        return "bg-emerald-100 text-emerald-800";
+        return "bg-success-soft text-success-ink";
       case "chef":
-        return "bg-red-100 text-red-800";
+        return "bg-danger-soft text-danger";
       case "commis_chef":
-        return "bg-orange-100 text-orange-800";
+        return "bg-warn-soft text-ink";
       case "steward":
-        return "bg-green-100 text-green-800";
+        return "bg-success-soft text-success-ink";
       default:
-        return "bg-gray-100 text-amber-700";
+        return "bg-sand text-body";
     }
   };
 
@@ -418,17 +418,17 @@ export default function UserManagementPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -436,20 +436,20 @@ export default function UserManagementPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 p-4 md:p-6">
+    <div className="min-h-screen bg-warn-bg p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-ink flex items-center gap-2">
               👥 User Management
             </h1>
-            <p className="text-amber-600 mt-1 text-sm md:text-base">
+            <p className="text-brick mt-1 text-sm md:text-base">
               จัดการผู้ใช้งานระบบ Admin ({totalAll} คน)
             </p>
           </div>
           <button
             onClick={openAddModal}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm md:text-base shrink-0"
+            className="bg-brick hover:bg-brick-hover text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm md:text-base shrink-0"
           >
             <span>+</span> เพิ่ม Admin ใหม่
           </button>
@@ -457,7 +457,7 @@ export default function UserManagementPage() {
 
         <div className="mb-6">
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
               🔍
             </span>
             <input
@@ -465,7 +465,7 @@ export default function UserManagementPage() {
               placeholder="ค้นหาผู้ใช้..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-ink focus:border-new-ink text-sm md:text-base"
             />
           </div>
         </div>
@@ -477,7 +477,7 @@ export default function UserManagementPage() {
               setSelectedRole("all");
               setPage(0);
             }}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedRole === "all" ? "bg-amber-600 text-white" : "bg-white text-amber-700 border border-amber-200 hover:border-amber-400"}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedRole === "all" ? "bg-brick text-white" : "bg-white text-body border border-line hover:border-line-strong"}`}
           >
             ทั้งหมด ({totalAll})
           </button>
@@ -488,7 +488,7 @@ export default function UserManagementPage() {
                 setSelectedRole(r);
                 setPage(0);
               }}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedRole === r ? "bg-amber-600 text-white" : "bg-white text-amber-700 border border-amber-200 hover:border-amber-400"}`}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedRole === r ? "bg-brick text-white" : "bg-white text-body border border-line hover:border-line-strong"}`}
             >
               {getRoleDisplayName(r)} ({roleCounts[r]})
             </button>
@@ -498,7 +498,7 @@ export default function UserManagementPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-amber-600 text-white">
+              <thead className="bg-brick text-white">
                 <tr>
                   <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm">
                     ชื่อ
@@ -522,7 +522,7 @@ export default function UserManagementPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-8 text-center text-gray-500"
+                      className="px-6 py-8 text-center text-muted"
                     >
                       กำลังโหลด...
                     </td>
@@ -531,30 +531,30 @@ export default function UserManagementPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-8 text-center text-gray-500"
+                      className="px-6 py-8 text-center text-muted"
                     >
                       ไม่พบข้อมูล
                     </td>
                   </tr>
                 ) : (
                   filteredAdmins.map((admin) => (
-                    <tr key={admin.id} className="border-b hover:bg-gray-50">
+                    <tr key={admin.id} className="border-b hover:bg-sand">
                       <td className="px-4 md:px-6 py-3 md:py-4">
                         <div className="flex items-center gap-2 md:gap-3">
-                          <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm md:text-base">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-new-soft rounded-full flex items-center justify-center text-new-ink font-semibold text-sm md:text-base">
                             {admin.fullname?.charAt(0)?.toUpperCase() || "A"}
                           </div>
                           <div>
                             <span className="font-medium text-sm md:text-base block">
                               {admin.fullname || "ไม่ระบุชื่อ"}
                             </span>
-                            <span className="text-xs text-gray-500 md:hidden block">
+                            <span className="text-xs text-muted md:hidden block">
                               {admin.email}
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 md:px-6 py-3 md:py-4 text-amber-800 text-sm hidden md:table-cell">
+                      <td className="px-4 md:px-6 py-3 md:py-4 text-ink text-sm hidden md:table-cell">
                         {admin.email}
                       </td>
                       <td className="px-4 md:px-6 py-3 md:py-4 text-center">
@@ -567,7 +567,7 @@ export default function UserManagementPage() {
                       <td className="px-4 md:px-6 py-3 md:py-4 text-center">
                         <button
                           onClick={() => toggleStatus(admin)}
-                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${admin.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                          className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${admin.status === "active" ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}
                         >
                           {admin.status === "active"
                             ? "✓ Active"
@@ -578,7 +578,7 @@ export default function UserManagementPage() {
                         <div className="flex justify-center gap-1 md:gap-2">
                           <button
                             onClick={() => openEditModal(admin)}
-                            className="p-1.5 md:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-1.5 md:p-2 text-new-ink hover:bg-new-soft rounded-lg transition-colors"
                             title="แก้ไข"
                           >
                             ✏️
@@ -587,7 +587,7 @@ export default function UserManagementPage() {
                           {canDelete(admin) ? (
                             <button
                               onClick={() => deleteAdmin(admin)}
-                              className="p-1.5 md:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-1.5 md:p-2 text-error hover:bg-danger-soft rounded-lg transition-colors"
                               title="ลบ"
                             >
                               🗑️
@@ -595,7 +595,7 @@ export default function UserManagementPage() {
                           ) : (
                             <button
                               disabled
-                              className="p-1.5 md:p-2 text-gray-300 rounded-lg cursor-not-allowed"
+                              className="p-1.5 md:p-2 text-faint rounded-lg cursor-not-allowed"
                               title="Owner ไม่สามารถลบตัวเองได้"
                             >
                               🗑️
@@ -614,21 +614,21 @@ export default function UserManagementPage() {
         {/* ✅ แบ่งหน้า (server-side) */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 text-sm">
-            <span className="text-amber-700">
+            <span className="text-body">
               ทั้งหมด {totalElements} รายการ · หน้า {page + 1}/{totalPages}
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(p - 1, 0))}
                 disabled={page <= 0}
-                className="px-3 py-1.5 rounded-lg border border-amber-200 bg-white text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-line bg-white text-body disabled:opacity-40 disabled:cursor-not-allowed hover:border-line-strong transition-colors"
               >
                 ← ก่อนหน้า
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
                 disabled={page >= totalPages - 1}
-                className="px-3 py-1.5 rounded-lg border border-amber-200 bg-white text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-line bg-white text-body disabled:opacity-40 disabled:cursor-not-allowed hover:border-line-strong transition-colors"
               >
                 ถัดไป →
               </button>
@@ -647,26 +647,26 @@ export default function UserManagementPage() {
             className="bg-white rounded-xl w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b bg-amber-500 text-white rounded-t-xl">
+            <div className="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 border-b bg-brick text-white rounded-t-xl">
               <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
                 {editingAdmin ? "✏️ แก้ไข Admin" : "➕ เพิ่ม Admin ใหม่"}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-white hover:text-gray-200 text-xl"
+                className="text-white hover:text-line-strong text-xl"
               >
                 ✕
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                <div className="bg-danger-soft border border-danger-line text-error px-4 py-2 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   ชื่อ-นามสกุล *
                 </label>
                 <input
@@ -675,13 +675,13 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, fullname: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base"
+                  className="w-full px-4 py-2 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:outline-none text-sm md:text-base"
                   placeholder="ชื่อ นามสกุล"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   อีเมล *
                 </label>
                 <input
@@ -690,19 +690,19 @@ export default function UserManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${editingAdmin ? "bg-gray-100 text-gray-500" : ""}`}
+                  className={`w-full px-4 py-2 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:outline-none text-sm md:text-base ${editingAdmin ? "bg-sand text-muted" : ""}`}
                   placeholder="example@empbakery.com"
                   disabled={!!editingAdmin}
                 />
                 {!editingAdmin && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted mt-1">
                     * ต้องลงท้ายด้วย @empbakery.com
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   รหัสผ่าน{" "}
                   {editingAdmin ? "(เว้นว่างถ้าไม่ต้องการเปลี่ยน)" : "*"}
                 </label>
@@ -717,13 +717,13 @@ export default function UserManagementPage() {
                     editingAdmin.email !==
                       JSON.parse(localStorage.getItem("user") || "{}").email
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${!!editingAdmin && editingAdmin.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full px-4 py-2 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:outline-none text-sm md:text-base ${!!editingAdmin && editingAdmin.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-sand cursor-not-allowed" : ""}`}
                   placeholder="อย่างน้อย 6 ตัวอักษร"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   ยืนยันรหัสผ่าน
                 </label>
                 <input
@@ -740,13 +740,13 @@ export default function UserManagementPage() {
                     editingAdmin.email !==
                       JSON.parse(localStorage.getItem("user") || "{}").email
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm md:text-base ${!!editingAdmin && editingAdmin.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full px-4 py-2 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:outline-none text-sm md:text-base ${!!editingAdmin && editingAdmin.email !== JSON.parse(localStorage.getItem("user") || "{}").email ? "bg-sand cursor-not-allowed" : ""}`}
                   placeholder="กรอกรหัสผ่านอีกครั้ง"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-body mb-1">
                   บทบาท *
                 </label>
                 <div className="relative">
@@ -756,7 +756,7 @@ export default function UserManagementPage() {
                       e.stopPropagation();
                       setRoleDropdownOpen(!roleDropdownOpen);
                     }}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-left flex items-center justify-between bg-white hover:border-amber-400 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 border border-line-strong rounded-xl text-sm text-left flex items-center justify-between bg-white hover:border-line-strong transition-colors focus:ring-2 focus:ring-brick focus:outline-none"
                   >
                     <span>{getRoleDisplayName(formData.role)}</span>
                     <span
@@ -766,7 +766,7 @@ export default function UserManagementPage() {
                     </span>
                   </button>
                   {roleDropdownOpen && (
-                    <div className="absolute z-50 w-full bottom-full mb-1 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-y-auto max-h-72">
+                    <div className="absolute z-50 w-full bottom-full mb-1 bg-white border border-line rounded-2xl shadow-xl overflow-y-auto max-h-72">
                       {[
                         {
                           label: "⚙️ ระบบ",
@@ -812,7 +812,7 @@ export default function UserManagementPage() {
                         },
                       ].map((group) => (
                         <div key={group.label}>
-                          <p className="px-4 py-2 text-xs font-semibold text-gray-400 bg-gray-50 border-b border-gray-100">
+                          <p className="px-4 py-2 text-xs font-semibold text-muted bg-sand border-b border-line">
                             {group.label}
                           </p>
                           {group.options.map((opt) => (
@@ -825,8 +825,8 @@ export default function UserManagementPage() {
                               }}
                               className={`w-full px-4 py-2.5 text-sm text-left transition-colors ${
                                 formData.role === opt.value
-                                  ? "bg-amber-100 text-amber-800 font-medium"
-                                  : "text-gray-700 hover:bg-amber-50 hover:text-amber-700"
+                                  ? "bg-warn-soft text-ink font-medium"
+                                  : "text-body hover:bg-warn-bg hover:text-body"
                               }`}
                             >
                               {formData.role === opt.value ? "✓ " : "　"}
@@ -844,14 +844,14 @@ export default function UserManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm md:text-base"
+                  className="flex-1 px-4 py-2 border border-line-strong text-body rounded-lg hover:bg-sand text-sm md:text-base"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 text-sm md:text-base"
+                  className="flex-1 px-4 py-2 bg-brick text-white rounded-lg hover:bg-brick-hover disabled:opacity-50 text-sm md:text-base"
                 >
                   {saving
                     ? "กำลังบันทึก..."

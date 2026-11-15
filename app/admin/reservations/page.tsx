@@ -13,10 +13,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-  confirmed: "bg-green-100 text-green-700 border border-green-200",
-  cancelled: "bg-red-100 text-red-500 border border-red-200",
-  completed: "bg-blue-100 text-blue-700 border border-blue-200",
+  pending: "bg-warn-soft text-body border border-line",
+  confirmed: "bg-success-soft text-success border border-success-soft",
+  cancelled: "bg-danger-soft text-error border border-danger-line",
+  completed: "bg-new-soft text-new-ink border border-line",
 };
 
 type ActionConfig = {
@@ -32,7 +32,7 @@ const NEXT_ACTIONS: Record<string, ActionConfig[]> = {
       label: "ยืนยัน",
       icon: "fa-circle-check",
       value: "confirmed",
-      style: "bg-green-500 hover:bg-green-600 text-white",
+      style: "bg-ok hover:bg-ok text-white",
     },
   ],
   confirmed: [
@@ -40,7 +40,7 @@ const NEXT_ACTIONS: Record<string, ActionConfig[]> = {
       label: "เสร็จสิ้น",
       icon: "fa-flag-checkered",
       value: "completed",
-      style: "bg-blue-500 hover:bg-blue-600 text-white",
+      style: "bg-ink hover:bg-ink text-white",
     },
   ],
   cancelled: [],
@@ -61,11 +61,11 @@ const SUMMARY_CARDS: {
   icon: string;
   color: string;
 }[] = [
-  { key: "", label: "ทั้งหมด", icon: "📋", color: "bg-gray-100" },
-  { key: "pending", label: "รอยืนยัน", icon: "⏳", color: "bg-yellow-100" },
-  { key: "confirmed", label: "ยืนยันแล้ว", icon: "✅", color: "bg-green-100" },
-  { key: "completed", label: "เสร็จสิ้น", icon: "🎉", color: "bg-blue-100" },
-  { key: "cancelled", label: "ยกเลิก", icon: "❌", color: "bg-red-100" },
+  { key: "", label: "ทั้งหมด", icon: "📋", color: "bg-sand" },
+  { key: "pending", label: "รอยืนยัน", icon: "⏳", color: "bg-warn-soft" },
+  { key: "confirmed", label: "ยืนยันแล้ว", icon: "✅", color: "bg-success-soft" },
+  { key: "completed", label: "เสร็จสิ้น", icon: "🎉", color: "bg-new-soft" },
+  { key: "cancelled", label: "ยกเลิก", icon: "❌", color: "bg-danger-soft" },
 ];
 
 type EditForm = {
@@ -175,7 +175,7 @@ export default function AdminReservationsPage() {
       showCancelButton: true,
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#f59e0b",
+      confirmButtonColor: "#a84a0e",
     });
     if (!result.isConfirmed) return;
 
@@ -220,11 +220,11 @@ export default function AdminReservationsPage() {
     const result = await Swal.fire({
       icon: "warning",
       title: "ยืนยันการลบ?",
-      html: `<div>รหัส <b class="font-mono">${code}</b></div><div class="text-sm text-gray-500 mt-2">จะถูกลบถาวร ไม่สามารถกู้คืนได้</div>`,
+      html: `<div>รหัส <b class="font-mono">${code}</b></div><div class="text-sm text-muted mt-2">จะถูกลบถาวร ไม่สามารถกู้คืนได้</div>`,
       showCancelButton: true,
       confirmButtonText: "ลบถาวร",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#ef4444",
+      confirmButtonColor: "#b3261e",
     });
     if (!result.isConfirmed) return;
 
@@ -359,7 +359,7 @@ export default function AdminReservationsPage() {
       ))}
       <button
         onClick={() => openEditModal(r)}
-        className="px-3 py-1.5 text-xs rounded-lg font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all"
+        className="px-3 py-1.5 text-xs rounded-lg font-medium bg-warn-soft text-body hover:bg-warn-line transition-all"
       >
         <i className="fa-solid fa-pen-to-square mr-1" />
         แก้ไข
@@ -368,7 +368,7 @@ export default function AdminReservationsPage() {
         <button
           onClick={() => updateStatus(r.id, "cancelled", "ยกเลิก")}
           disabled={updatingId === r.id}
-          className="px-3 py-1.5 text-xs rounded-lg font-medium bg-orange-500 hover:bg-orange-600 text-white transition-all disabled:opacity-50"
+          className="px-3 py-1.5 text-xs rounded-lg font-medium bg-brick hover:bg-brick-hover text-white transition-all disabled:opacity-50"
         >
           <i className="fa-solid fa-ban mr-1" />
           ยกเลิก
@@ -376,7 +376,7 @@ export default function AdminReservationsPage() {
       )}
       <button
         onClick={() => deleteReservation(r.id, r.reservationCode)}
-        className="px-3 py-1.5 text-xs rounded-lg font-medium bg-red-500 hover:bg-red-600 text-white transition-all"
+        className="px-3 py-1.5 text-xs rounded-lg font-medium bg-error hover:bg-error text-white transition-all"
       >
         <i className="fa-solid fa-trash mr-1" />
         ลบ
@@ -386,17 +386,17 @@ export default function AdminReservationsPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -404,15 +404,15 @@ export default function AdminReservationsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 py-8 px-4">
+    <div className="min-h-screen bg-warn-bg py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-ink flex items-center gap-3">
               <span className="text-4xl">📅</span>Manage Reservations
             </h1>
-            <p className="text-amber-600 mt-1">
+            <p className="text-brick mt-1">
               การจองทั้งหมด {reservations.length} รายการ
             </p>
           </div>
@@ -426,7 +426,7 @@ export default function AdminReservationsPage() {
               onClick={() => setFilterStatus(item.key)}
               className={`p-2 md:p-3 rounded-xl text-center transition-all ${
                 filterStatus === item.key
-                  ? "ring-2 ring-amber-500 shadow-md"
+                  ? "ring-2 ring-brick shadow-md"
                   : "hover:shadow-md"
               } ${item.color}`}
             >
@@ -449,10 +449,10 @@ export default function AdminReservationsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="ค้นหา รหัส, ชื่อ, เบอร์โทร, อีเมล..."
-              className="w-full px-4 py-3 pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-4 py-3 pl-12 bg-warn-bg border border-line rounded-xl text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-brick"
             />
             <svg
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-400"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-apricot"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -468,7 +468,7 @@ export default function AdminReservationsPage() {
           <button
             onClick={fetchReservations}
             disabled={loading}
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-amber-500 text-white text-sm font-medium rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 shrink-0"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-brick text-white text-sm font-medium rounded-full hover:bg-brick-hover transition-colors disabled:opacity-50 shrink-0"
           >
             <i
               className={`fa-solid fa-rotate-right ${loading ? "fa-spin" : ""}`}
@@ -480,20 +480,20 @@ export default function AdminReservationsPage() {
         {/* ===== Table (iPad / Desktop) ===== */}
         <div className="hidden md:block bg-white rounded-2xl overflow-hidden shadow-md">
           {loading ? (
-            <div className="py-20 text-center text-gray-400">
+            <div className="py-20 text-center text-muted">
               <i className="fa-solid fa-spinner fa-spin text-2xl mb-3 block" />
               กำลังโหลด...
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📭</div>
-              <p className="text-gray-500">ไม่พบรายการ</p>
+              <p className="text-muted">ไม่พบรายการ</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-amber-500">
+                  <tr className="bg-brick">
                     <th className="px-4 py-4 text-left text-sm font-semibold text-white">
                       #รหัส
                     </th>
@@ -521,42 +521,42 @@ export default function AdminReservationsPage() {
                   {filtered.map((r, index) => (
                     <tr
                       key={r.id}
-                      className={`border-b border-amber-100 hover:bg-amber-50 ${
-                        index % 2 === 0 ? "bg-white" : "bg-amber-50/50"
+                      className={`border-b border-line hover:bg-warn-bg ${
+                        index % 2 === 0 ? "bg-white" : "bg-warn-bg/50"
                       }`}
                     >
                       <td className="px-4 py-4">
-                        <span className="font-mono font-bold text-amber-800">
+                        <span className="font-mono font-bold text-ink">
                           #{r.reservationCode}
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="font-medium text-amber-700 text-sm">
+                        <p className="font-medium text-body text-sm">
                           {r.customerName}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted">
                           <i className="fa-solid fa-phone mr-1" />
                           {r.customerPhone}
                         </p>
-                        <p className="text-xs text-gray-400">{r.email}</p>
+                        <p className="text-xs text-muted">{r.email}</p>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="inline-flex items-center justify-center min-w-[2.5rem] h-10 bg-amber-100 text-amber-700 font-bold rounded-lg">
+                        <span className="inline-flex items-center justify-center min-w-[2.5rem] h-10 bg-warn-soft text-body font-bold rounded-lg">
                           {r.tableNo}
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="font-medium text-gray-700 text-sm">
+                        <div className="font-medium text-body text-sm">
                           {r.reservationDate}
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-muted">
                           <i className="fa-solid fa-clock mr-1" />
                           {r.reservationTime} น.
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="inline-flex items-center gap-1 text-gray-600">
-                          <i className="fa-solid fa-users text-gray-400" />
+                        <span className="inline-flex items-center gap-1 text-subtle">
+                          <i className="fa-solid fa-users text-muted" />
                           {r.partySize}
                         </span>
                       </td>
@@ -579,23 +579,23 @@ export default function AdminReservationsPage() {
         {/* ===== Cards (Mobile) ===== */}
         <div className="md:hidden space-y-3">
           {loading ? (
-            <div className="bg-white rounded-2xl shadow-md py-16 text-center text-gray-400">
+            <div className="bg-white rounded-2xl shadow-md py-16 text-center text-muted">
               <i className="fa-solid fa-spinner fa-spin text-2xl mb-3 block" />
               กำลังโหลด...
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-md text-center py-12">
               <div className="text-6xl mb-4">📭</div>
-              <p className="text-gray-500">ไม่พบรายการ</p>
+              <p className="text-muted">ไม่พบรายการ</p>
             </div>
           ) : (
             filtered.map((r) => (
               <div
                 key={r.id}
-                className="bg-white rounded-2xl shadow-md p-4 border border-amber-100"
+                className="bg-white rounded-2xl shadow-md p-4 border border-line"
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  <span className="font-mono font-bold text-amber-800">
+                  <span className="font-mono font-bold text-ink">
                     #{r.reservationCode}
                   </span>
                   <span
@@ -606,38 +606,38 @@ export default function AdminReservationsPage() {
                 </div>
 
                 <div className="mb-3">
-                  <p className="font-semibold text-amber-700">
+                  <p className="font-semibold text-body">
                     {r.customerName}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted">
                     <i className="fa-solid fa-phone mr-1" />
                     {r.customerPhone}
                   </p>
-                  <p className="text-xs text-gray-400">{r.email}</p>
+                  <p className="text-xs text-muted">{r.email}</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-                  <div className="bg-amber-50 rounded-xl py-2">
-                    <div className="text-[10px] text-gray-400">โต๊ะ</div>
-                    <div className="font-bold text-amber-700">{r.tableNo}</div>
+                  <div className="bg-warn-bg rounded-xl py-2">
+                    <div className="text-[10px] text-muted">โต๊ะ</div>
+                    <div className="font-bold text-body">{r.tableNo}</div>
                   </div>
-                  <div className="bg-amber-50 rounded-xl py-2">
-                    <div className="text-[10px] text-gray-400">จำนวนคน</div>
-                    <div className="font-bold text-amber-700">
-                      <i className="fa-solid fa-users mr-1 text-gray-400" />
+                  <div className="bg-warn-bg rounded-xl py-2">
+                    <div className="text-[10px] text-muted">จำนวนคน</div>
+                    <div className="font-bold text-body">
+                      <i className="fa-solid fa-users mr-1 text-muted" />
                       {r.partySize}
                     </div>
                   </div>
-                  <div className="bg-amber-50 rounded-xl py-2">
-                    <div className="text-[10px] text-gray-400">เวลา</div>
-                    <div className="font-bold text-amber-700">
+                  <div className="bg-warn-bg rounded-xl py-2">
+                    <div className="text-[10px] text-muted">เวลา</div>
+                    <div className="font-bold text-body">
                       {r.reservationTime}
                     </div>
                   </div>
                 </div>
 
-                <div className="text-xs text-gray-500 mb-3">
-                  <i className="fa-solid fa-calendar-day mr-1 text-gray-400" />
+                <div className="text-xs text-muted mb-3">
+                  <i className="fa-solid fa-calendar-day mr-1 text-muted" />
                   {r.reservationDate}
                 </div>
 
@@ -658,7 +658,7 @@ export default function AdminReservationsPage() {
             className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-amber-500 text-white px-6 py-4 flex items-center justify-between sticky top-0 rounded-t-2xl">
+            <div className="bg-brick text-white px-6 py-4 flex items-center justify-between sticky top-0 rounded-t-2xl">
               <h2 className="text-lg font-bold">
                 <i className="fa-solid fa-pen-to-square mr-2" />
                 แก้ไขการจอง
@@ -666,31 +666,31 @@ export default function AdminReservationsPage() {
               <button
                 onClick={() => !saving && setEditingReservation(null)}
                 disabled={saving}
-                className="w-8 h-8 rounded-full hover:bg-amber-600 transition-colors disabled:opacity-50"
+                className="w-8 h-8 rounded-full hover:bg-brick-hover transition-colors disabled:opacity-50"
               >
                 <i className="fa-solid fa-xmark" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="text-xs text-gray-500 mb-2">
+              <div className="text-xs text-muted mb-2">
                 รหัส:{" "}
-                <span className="font-mono font-semibold text-gray-700">
+                <span className="font-mono font-semibold text-body">
                   {editingReservation.reservationCode}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    โต๊ะ <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-body mb-1.5">
+                    โต๊ะ <span className="text-error">*</span>
                   </label>
                   <select
                     value={editForm.tableNo}
                     onChange={(e) =>
                       setEditForm({ ...editForm, tableNo: e.target.value })
                     }
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                   >
                     {TABLE_OPTIONS.map((t) => (
                       <option key={t} value={t}>
@@ -700,8 +700,8 @@ export default function AdminReservationsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    จำนวนคน <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-body mb-1.5">
+                    จำนวนคน <span className="text-error">*</span>
                   </label>
                   <input
                     type="number"
@@ -717,15 +717,15 @@ export default function AdminReservationsPage() {
                         ),
                       })
                     }
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    วันที่ <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-body mb-1.5">
+                    วันที่ <span className="text-error">*</span>
                   </label>
                   <input
                     type="date"
@@ -736,12 +736,12 @@ export default function AdminReservationsPage() {
                         reservationDate: e.target.value,
                       })
                     }
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    เวลา <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-body mb-1.5">
+                    เวลา <span className="text-error">*</span>
                   </label>
                   <select
                     value={editForm.reservationTime}
@@ -751,7 +751,7 @@ export default function AdminReservationsPage() {
                         reservationTime: e.target.value,
                       })
                     }
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                   >
                     {TIME_SLOTS.map((t) => (
                       <option key={t} value={t}>
@@ -763,8 +763,8 @@ export default function AdminReservationsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  ชื่อผู้จอง <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-body mb-1.5">
+                  ชื่อผู้จอง <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
@@ -772,13 +772,13 @@ export default function AdminReservationsPage() {
                   onChange={(e) =>
                     setEditForm({ ...editForm, customerName: e.target.value })
                   }
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-body mb-1.5">
+                  เบอร์โทรศัพท์ <span className="text-error">*</span>
                 </label>
                 <input
                   type="tel"
@@ -788,12 +788,12 @@ export default function AdminReservationsPage() {
                     const onlyNums = e.target.value.replace(/\D/g, "");
                     setEditForm({ ...editForm, customerPhone: onlyNums });
                   }}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-body mb-1.5">
                   หมายเหตุ
                 </label>
                 <textarea
@@ -803,23 +803,23 @@ export default function AdminReservationsPage() {
                   }
                   rows={2}
                   placeholder="เช่น ขอโต๊ะริมหน้าต่าง..."
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+                  className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brick resize-none"
                 />
               </div>
             </div>
 
-            <div className="border-t border-gray-100 px-6 py-4 flex gap-3 justify-end sticky bottom-0 bg-white">
+            <div className="border-t border-line px-6 py-4 flex gap-3 justify-end sticky bottom-0 bg-white">
               <button
                 onClick={() => setEditingReservation(null)}
                 disabled={saving}
-                className="px-5 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="px-5 py-2 border border-line text-subtle text-sm font-medium rounded-xl hover:bg-sand transition-colors disabled:opacity-50"
               >
                 ยกเลิก
               </button>
               <button
                 onClick={saveEdit}
                 disabled={saving}
-                className="px-5 py-2 bg-amber-500 text-white text-sm font-medium rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50"
+                className="px-5 py-2 bg-brick text-white text-sm font-medium rounded-full hover:bg-brick-hover transition-colors disabled:opacity-50"
               >
                 {saving ? (
                   <>

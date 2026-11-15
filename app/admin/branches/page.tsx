@@ -48,7 +48,7 @@ const BranchLocationPicker = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-full w-full flex items-center justify-center bg-amber-50 text-amber-700 text-sm">
+      <div className="h-full w-full flex items-center justify-center bg-warn-bg text-body text-sm">
         กำลังโหลดแผนที่...
       </div>
     ),
@@ -172,7 +172,7 @@ export default function AdminBranchesPage() {
       showCancelButton: true,
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#dc2626",
+      confirmButtonColor: "#b3261e",
     });
     if (!c.isConfirmed) return;
     try {
@@ -199,21 +199,21 @@ export default function AdminBranchesPage() {
   };
 
   const input =
-    "w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-400";
+    "w-full px-3 py-2 text-sm rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-brick";
 
     if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -221,23 +221,23 @@ export default function AdminBranchesPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 p-6">
+    <div className="min-h-screen bg-warn-bg p-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-ink flex items-center gap-3">
           Manage Branches
         </h1>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-muted mb-6">
           เพิ่ม/แก้ไข/ลบสาขา — สาขาที่ &quot;เปิดใช้งาน&quot; จะแสดงบนหน้าที่ตั้งร้านของลูกค้า
         </p>
 
         {/* ฟอร์มเพิ่ม/แก้ไข */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-amber-100 mb-6">
-          <h2 className="font-bold text-amber-900 mb-4">
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-line mb-6">
+          <h2 className="font-bold text-ink mb-4">
             {form.id ? "แก้ไขสาขา" : "เพิ่มสาขาใหม่"}
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">ชื่อสาขา *</label>
+              <label className="block text-xs text-muted mb-1">ชื่อสาขา *</label>
               <input
                 className={input}
                 value={form.name}
@@ -246,10 +246,10 @@ export default function AdminBranchesPage() {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-muted mb-1">
                 ตำแหน่งบนแผนที่ — คลิก/ลากหมุดเพื่อปักตำแหน่งสาขา *
               </label>
-              <div className="h-[300px] rounded-lg overflow-hidden border border-gray-200">
+              <div className="h-[300px] rounded-lg overflow-hidden border border-line">
                 <BranchLocationPicker
                   key={form.id ?? "new"}
                   lat={form.latitude ? parseFloat(form.latitude) : null}
@@ -259,29 +259,29 @@ export default function AdminBranchesPage() {
               </div>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-muted mb-1">
                 Latitude *
               </label>
               <input
                 readOnly
-                className={`${input} bg-gray-50`}
+                className={`${input} bg-sand`}
                 value={form.latitude}
                 placeholder="คลิกบนแผนที่"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-muted mb-1">
                 Longitude *
               </label>
               <input
                 readOnly
-                className={`${input} bg-gray-50`}
+                className={`${input} bg-sand`}
                 value={form.longitude}
                 placeholder="คลิกบนแผนที่"
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">ที่อยู่</label>
+              <label className="block text-xs text-muted mb-1">ที่อยู่</label>
               <input
                 className={input}
                 value={form.address}
@@ -290,7 +290,7 @@ export default function AdminBranchesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">เบอร์โทร</label>
+              <label className="block text-xs text-muted mb-1">เบอร์โทร</label>
               <input
                 className={input}
                 value={form.phone}
@@ -299,7 +299,7 @@ export default function AdminBranchesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-muted mb-1">
                 เวลาเปิด-ปิด
               </label>
               <input
@@ -310,7 +310,7 @@ export default function AdminBranchesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-muted mb-1">
                 ลำดับการแสดง
               </label>
               <input
@@ -328,15 +328,15 @@ export default function AdminBranchesPage() {
                 type="checkbox"
                 checked={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                className="w-4 h-4 accent-amber-500"
+                className="w-4 h-4 accent-brick"
               />
-              <label htmlFor="active" className="text-sm text-gray-700">
+              <label htmlFor="active" className="text-sm text-body">
                 เปิดใช้งาน (แสดงบนหน้าลูกค้า)
               </label>
             </div>
           </div>
 
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-xs text-muted mt-3">
             คลิกตำแหน่งร้านบนแผนที่ ระบบจะกรอกพิกัดให้อัตโนมัติ (ลากหมุดเพื่อปรับละเอียดได้)
           </p>
 
@@ -344,14 +344,14 @@ export default function AdminBranchesPage() {
             <button
               onClick={save}
               disabled={saving}
-              className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold disabled:opacity-50"
+              className="px-5 py-2 rounded-full bg-brick hover:bg-brick-hover text-white text-sm font-semibold disabled:opacity-50"
             >
               {saving ? "กำลังบันทึก..." : form.id ? "บันทึกการแก้ไข" : "เพิ่มสาขา"}
             </button>
             {form.id && (
               <button
                 onClick={() => setForm(EMPTY)}
-                className="px-5 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50"
+                className="px-5 py-2 rounded-lg border border-line text-subtle text-sm font-semibold hover:bg-sand"
               >
                 ยกเลิก
               </button>
@@ -360,16 +360,16 @@ export default function AdminBranchesPage() {
         </div>
 
         {/* รายการสาขา */}
-        <div className="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-100 font-bold text-amber-900">
+        <div className="bg-white rounded-2xl shadow-sm border border-line overflow-hidden">
+          <div className="px-5 py-3 border-b border-line font-bold text-ink">
             สาขาทั้งหมด ({branches.length})
           </div>
           {loading ? (
-            <div className="p-6 text-center text-gray-400">กำลังโหลด...</div>
+            <div className="p-6 text-center text-muted">กำลังโหลด...</div>
           ) : branches.length === 0 ? (
-            <div className="p-6 text-center text-gray-400">ยังไม่มีสาขา</div>
+            <div className="p-6 text-center text-muted">ยังไม่มีสาขา</div>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-line">
               {branches.map((b) => (
                 <div
                   key={b.id}
@@ -377,32 +377,32 @@ export default function AdminBranchesPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-800">
+                      <span className="font-semibold text-ink">
                         {b.name}
                       </span>
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${
                           b.active
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-gray-100 text-gray-500"
+                            ? "bg-success-soft text-success"
+                            : "bg-sand text-muted"
                         }`}
                       >
                         {b.active ? "เปิดใช้งาน" : "ปิด"}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">
+                    <p className="text-xs text-muted mt-0.5 truncate">
                       {b.address || "—"} · {b.latitude}, {b.longitude}
                     </p>
                   </div>
                   <button
                     onClick={() => editBranch(b)}
-                    className="px-3 py-1.5 rounded-lg text-sm text-amber-700 hover:bg-amber-50 font-medium"
+                    className="px-3 py-1.5 rounded-lg text-sm text-body hover:bg-warn-bg font-medium"
                   >
                     แก้ไข
                   </button>
                   <button
                     onClick={() => remove(b)}
-                    className="px-3 py-1.5 rounded-lg text-sm text-red-600 hover:bg-red-50 font-medium"
+                    className="px-3 py-1.5 rounded-lg text-sm text-error hover:bg-danger-soft font-medium"
                   >
                     ลบ
                   </button>

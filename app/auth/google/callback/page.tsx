@@ -69,36 +69,36 @@ function GoogleCallbackContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+    <div className="min-h-screen bg-cream   flex items-center justify-center">
       <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full text-center">
         {status === "loading" && (
           <>
-            <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-            <h2 className="text-xl font-semibold text-amber-700 mb-2">
+            <div className="w-16 h-16 border-4 border-brick border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <h2 className="text-xl font-semibold text-body mb-2">
               กำลังเข้าสู่ระบบ...
             </h2>
-            <p className="text-gray-500">กรุณารอสักครู่</p>
+            <p className="text-muted">กรุณารอสักครู่</p>
           </>
         )}
         {status === "success" && (
           <>
             <div className="text-6xl mb-6">✅</div>
-            <h2 className="text-xl font-semibold text-green-600 mb-2">
+            <h2 className="text-xl font-semibold text-ok mb-2">
               เข้าสู่ระบบสำเร็จ!
             </h2>
-            <p className="text-gray-500">กำลังพาคุณไปหน้าหลัก...</p>
+            <p className="text-muted">กำลังพาคุณไปหน้าหลัก...</p>
           </>
         )}
         {status === "error" && (
           <>
             <div className="text-6xl mb-6">❌</div>
-            <h2 className="text-xl font-semibold text-red-600 mb-2">
+            <h2 className="text-xl font-semibold text-error mb-2">
               เข้าสู่ระบบไม่สำเร็จ
             </h2>
-            <p className="text-gray-500 mb-6">{errorMessage}</p>
+            <p className="text-muted mb-6">{errorMessage}</p>
             <button
               onClick={() => (window.location.href = "/login")}
-              className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+              className="bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-6 rounded-full transition-all"
             >
               กลับหน้าเข้าสู่ระบบ
             </button>

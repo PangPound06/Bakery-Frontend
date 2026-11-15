@@ -240,13 +240,13 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-cream   flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-10">
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
-              <h1 className="text-4xl font-bold text-amber-600 mb-2">
+              <h1 className="text-4xl font-bold text-brick mb-2">
                 🧁 Pound Bakery
               </h1>
             </Link>
@@ -256,19 +256,19 @@ export default function ForgotPasswordPage() {
           {step === "email" && (
             <>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-warn-soft rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl">🔑</span>
                 </div>
-                <h2 className="text-2xl font-semibold text-amber-700 mb-2">
+                <h2 className="text-2xl font-semibold text-body mb-2">
                   ลืมรหัสผ่าน?
                 </h2>
-                <p className="text-amber-800 text-sm">
+                <p className="text-ink text-sm">
                   กรอกอีเมลของคุณเพื่อรับรหัส OTP
                 </p>
               </div>
 
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                <div className="mb-4 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
@@ -277,7 +277,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-body mb-2"
                   >
                     อีเมล
                   </label>
@@ -286,7 +286,7 @@ export default function ForgotPasswordPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                    className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors"
                     placeholder="example@email.com"
                     required
                   />
@@ -295,7 +295,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
+                  className={`w-full bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-4 rounded-full transition-all ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
@@ -316,21 +316,21 @@ export default function ForgotPasswordPage() {
           {step === "otp" && (
             <>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-new-soft rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl">📱</span>
                 </div>
-                <h2 className="text-2xl font-semibold text-amber-700 mb-2">
+                <h2 className="text-2xl font-semibold text-body mb-2">
                   ยืนยันรหัส OTP
                 </h2>
-                <p className="text-amber-800 text-sm">
+                <p className="text-ink text-sm">
                   เราส่งรหัส 6 หลักไปที่
                   <br />
-                  <span className="font-medium text-amber-600">{email}</span>
+                  <span className="font-medium text-brick">{email}</span>
                 </p>
               </div>
 
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                <div className="mb-4 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
@@ -356,19 +356,19 @@ export default function ForgotPasswordPage() {
                         )
                       }
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                      className="w-12 h-14 text-center text-2xl font-bold border-2 border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors"
                     />
                   ))}
                 </div>
 
-                <p className="text-center text-xs text-gray-500">
+                <p className="text-center text-xs text-muted">
                   💡 สามารถวาง (Ctrl+V) รหัส OTP ได้เลย
                 </p>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
+                  className={`w-full bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-4 rounded-full transition-all ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
@@ -384,11 +384,11 @@ export default function ForgotPasswordPage() {
 
                 {/* Resend OTP */}
                 <div className="text-center">
-                  <p className="text-sm text-amber-800 mb-2">ไม่ได้รับรหัส?</p>
+                  <p className="text-sm text-ink mb-2">ไม่ได้รับรหัส?</p>
                   {countdown > 0 ? (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted">
                       ส่งรหัสใหม่ได้ใน{" "}
-                      <span className="font-bold text-amber-600">
+                      <span className="font-bold text-brick">
                         {countdown}
                       </span>{" "}
                       วินาที
@@ -398,7 +398,7 @@ export default function ForgotPasswordPage() {
                       type="button"
                       onClick={handleResendOTP}
                       disabled={loading}
-                      className="text-amber-600 hover:text-amber-700 font-medium text-sm"
+                      className="text-brick hover:text-body font-medium text-sm"
                     >
                       📧 ส่งรหัสใหม่
                     </button>
@@ -412,7 +412,7 @@ export default function ForgotPasswordPage() {
                     setOtp(["", "", "", "", "", ""]);
                     setError("");
                   }}
-                  className="w-full text-amber-800 hover:text-amber-700 font-medium py-2 transition-colors"
+                  className="w-full text-ink hover:text-body font-medium py-2 transition-colors"
                 >
                   ← เปลี่ยนอีเมล
                 </button>
@@ -424,19 +424,19 @@ export default function ForgotPasswordPage() {
           {step === "newPassword" && (
             <>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl">🔐</span>
                 </div>
-                <h2 className="text-2xl font-semibold text-amber-700 mb-2">
+                <h2 className="text-2xl font-semibold text-body mb-2">
                   ตั้งรหัสผ่านใหม่
                 </h2>
-                <p className="text-amber-800 text-sm">
+                <p className="text-ink text-sm">
                   กรุณากรอกรหัสผ่านใหม่ของคุณ
                 </p>
               </div>
 
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                <div className="mb-4 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-lg text-sm">
                   ⚠️ {error}
                 </div>
               )}
@@ -445,7 +445,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <label
                     htmlFor="newPassword"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-body mb-2"
                   >
                     รหัสผ่านใหม่
                   </label>
@@ -455,14 +455,14 @@ export default function ForgotPasswordPage() {
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors pr-12"
+                      className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors pr-12"
                       placeholder="อย่างน้อย 6 ตัวอักษร"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-body"
                     >
                       {showPassword ? "👁️" : "👁️‍🗨️"}
                     </button>
@@ -472,7 +472,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <label
                     htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-body mb-2"
                   >
                     ยืนยันรหัสผ่านใหม่
                   </label>
@@ -481,7 +481,7 @@ export default function ForgotPasswordPage() {
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                    className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors"
                     placeholder="กรอกรหัสผ่านอีกครั้ง"
                     required
                   />
@@ -493,21 +493,21 @@ export default function ForgotPasswordPage() {
                     <div className="flex gap-1">
                       <div
                         className={`h-1 flex-1 rounded ${
-                          newPassword.length >= 2 ? "bg-red-400" : "bg-gray-200"
+                          newPassword.length >= 2 ? "bg-error" : "bg-line"
                         }`}
                       ></div>
                       <div
                         className={`h-1 flex-1 rounded ${
                           newPassword.length >= 4
-                            ? "bg-yellow-400"
-                            : "bg-gray-200"
+                            ? "bg-apricot"
+                            : "bg-line"
                         }`}
                       ></div>
                       <div
                         className={`h-1 flex-1 rounded ${
                           newPassword.length >= 6
-                            ? "bg-green-400"
-                            : "bg-gray-200"
+                            ? "bg-success-soft"
+                            : "bg-line"
                         }`}
                       ></div>
                       <div
@@ -515,12 +515,12 @@ export default function ForgotPasswordPage() {
                           newPassword.length >= 8 &&
                           /[A-Z]/.test(newPassword) &&
                           /[0-9]/.test(newPassword)
-                            ? "bg-green-500"
-                            : "bg-gray-200"
+                            ? "bg-ok"
+                            : "bg-line"
                         }`}
                       ></div>
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted">
                       {newPassword.length < 6
                         ? "⚠️ รหัสผ่านสั้นเกินไป"
                         : newPassword.length >= 8 &&
@@ -537,8 +537,8 @@ export default function ForgotPasswordPage() {
                   <p
                     className={`text-sm ${
                       newPassword === confirmPassword
-                        ? "text-green-600"
-                        : "text-red-600"
+                        ? "text-ok"
+                        : "text-error"
                     }`}
                   >
                     {newPassword === confirmPassword
@@ -550,7 +550,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
+                  className={`w-full bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-4 rounded-full transition-all ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
@@ -570,19 +570,19 @@ export default function ForgotPasswordPage() {
           {/* Step 4: สำเร็จ */}
           {step === "success" && (
             <div className="text-center py-6">
-              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-24 h-24 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-5xl">✅</span>
               </div>
-              <h2 className="text-2xl font-semibold text-amber-700 mb-2">
+              <h2 className="text-2xl font-semibold text-body mb-2">
                 เปลี่ยนรหัสผ่านสำเร็จ!
               </h2>
-              <p className="text-amber-800 mb-8">
+              <p className="text-ink mb-8">
                 คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้แล้ว
               </p>
 
               <Link
                 href="/login"
-                className="block w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg text-center"
+                className="block w-full bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-4 rounded-full transition-all text-center"
               >
                 🔓 เข้าสู่ระบบ
               </Link>
@@ -594,7 +594,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center">
               <Link
                 href="/login"
-                className="text-amber-800 hover:text-amber-700 text-sm font-medium"
+                className="text-ink hover:text-body text-sm font-medium"
               >
                 ← กลับหน้าเข้าสู่ระบบ
               </Link>
@@ -606,7 +606,7 @@ export default function ForgotPasswordPage() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-amber-800 hover:text-amber-700 text-sm font-medium"
+            className="text-ink hover:text-body text-sm font-medium"
           >
             ← กลับหน้าหลัก
           </Link>

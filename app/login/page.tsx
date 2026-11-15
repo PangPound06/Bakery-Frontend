@@ -114,7 +114,7 @@ function LoginContent() {
             ? "ยินดีต้อนรับ Admin 🎉"
             : "ยินดีต้อนรับกลับมา 🎉",
         icon: "success",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -134,23 +134,23 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-cream   flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-10">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
-              <h1 className="text-4xl font-bold text-amber-600 mb-2">
+              <h1 className="text-4xl font-bold text-brick mb-2">
                 🧁 Pound Bakery
               </h1>
             </Link>
-            <h2 className="text-2xl font-semibold text-amber-700 mb-2">
+            <h2 className="text-2xl font-semibold text-body mb-2">
               เข้าสู่ระบบ
             </h2>
-            <p className="text-amber-800 text-sm">ยินดีต้อนรับกลับมา!</p>
+            <p className="text-ink text-sm">ยินดีต้อนรับกลับมา!</p>
           </div>
 
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+            <div className="mb-6 bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-lg text-sm">
               ⚠️ {error}
             </div>
           )}
@@ -159,7 +159,7 @@ function LoginContent() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-body mb-2"
               >
                 อีเมล
               </label>
@@ -171,7 +171,7 @@ function LoginContent() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors"
                 placeholder="example@email.com"
               />
             </div>
@@ -179,7 +179,7 @@ function LoginContent() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-body mb-2"
               >
                 รหัสผ่าน
               </label>
@@ -192,13 +192,13 @@ function LoginContent() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors pr-12"
+                  className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick focus:border-brick transition-colors pr-12"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-body"
                 >
                   {showPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
@@ -212,13 +212,13 @@ function LoginContent() {
                   name="rememberMe"
                   checked={formData.rememberMe}
                   onChange={handleChange}
-                  className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  className="rounded border-line-strong text-brick focus:ring-brick"
                 />
-                <span className="ml-2 text-sm text-amber-800">จดจำฉันไว้</span>
+                <span className="ml-2 text-sm text-ink">จดจำฉันไว้</span>
               </label>
               {/*<Link
                 href="/forgotpassword"
-                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+                className="text-sm text-brick hover:text-body font-medium"
               >
                 ลืมรหัสผ่าน?
               </Link>*/}
@@ -227,27 +227,27 @@ function LoginContent() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-full bg-brick hover:bg-brick-hover text-white font-semibold py-3 px-4 rounded-full transition-all duration-200 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {loading ? "🔄 กำลังเข้าสู่ระบบ..." : "🔓 เข้าสู่ระบบ"}
             </button>
           </form>
 
           <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-sm text-gray-500">หรือ</span>
-            <div className="flex-1 border-t border-gray-300"></div>
+            <div className="flex-1 border-t border-line-strong"></div>
+            <span className="px-4 text-sm text-muted">หรือ</span>
+            <div className="flex-1 border-t border-line-strong"></div>
           </div>
 
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
-            className={`w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${googleLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`w-full flex items-center justify-center gap-3 bg-white border-2 border-line hover:border-line-strong hover:bg-sand text-body font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${googleLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {googleLoading ? (
               <>
-                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-line-strong border-t-transparent rounded-full animate-spin"></div>
                 กำลังเชื่อมต่อ Google...
               </>
             ) : (
@@ -276,11 +276,11 @@ function LoginContent() {
           </button>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-amber-800">
+            <p className="text-sm text-ink">
               ยังไม่มีบัญชี?{" "}
               <Link
                 href="/register"
-                className="text-amber-600 hover:text-amber-700 font-semibold"
+                className="text-brick hover:text-body font-semibold"
               >
                 สมัครสมาชิก
               </Link>
@@ -291,7 +291,7 @@ function LoginContent() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-amber-800 hover:text-amber-700 text-sm font-medium"
+            className="text-ink hover:text-body text-sm font-medium"
           >
             ← กลับหน้าหลัก
           </Link>

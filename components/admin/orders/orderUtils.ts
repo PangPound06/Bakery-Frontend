@@ -81,32 +81,32 @@ export const slipUrlOf = (slipImage: string) =>
 export const orderStatusBadge = (status: string, orderType?: string): Badge => {
   switch (status) {
     case "pending":
-      return { text: "รอดำเนินการ", className: "bg-yellow-100 text-yellow-700", icon: "⏳" };
+      return { text: "รอดำเนินการ", className: "bg-warn-soft text-body", icon: "⏳" };
     case "confirmed":
-      return { text: "ยืนยันแล้ว", className: "bg-blue-100 text-blue-700", icon: "✅" };
+      return { text: "ยืนยันแล้ว", className: "bg-new-soft text-new-ink", icon: "✅" };
     case "preparing":
-      return { text: "กำลังเตรียม", className: "bg-indigo-100 text-indigo-700", icon: "👨‍🍳" };
+      return { text: "กำลังเตรียม", className: "bg-new-soft text-new-ink", icon: "👨‍🍳" };
     case "shipping":
-      return { text: "กำลังจัดส่ง", className: "bg-purple-100 text-purple-700", icon: "🚚" };
+      return { text: "กำลังจัดส่ง", className: "bg-new-soft text-new-ink", icon: "🚚" };
     case "delivered":
       if (orderType === "pos")
-        return { text: "สั่งซื้อสำเร็จ (หน้าร้าน)", className: "bg-emerald-100 text-emerald-700", icon: "🎉" };
+        return { text: "สั่งซื้อสำเร็จ (หน้าร้าน)", className: "bg-success-soft text-success", icon: "🎉" };
       if (orderType === "dine-in")
-        return { text: "ชำระเงินแล้ว", className: "bg-emerald-100 text-emerald-700", icon: "✅" };
-      return { text: "จัดส่งแล้ว", className: "bg-green-100 text-green-700", icon: "📦" };
+        return { text: "ชำระเงินแล้ว", className: "bg-success-soft text-success", icon: "✅" };
+      return { text: "จัดส่งแล้ว", className: "bg-success-soft text-success", icon: "📦" };
     case "cancel_requested":
-      return { text: "รอพิจารณาคำขอยกเลิก", className: "bg-orange-100 text-orange-700", icon: "⏸️" };
+      return { text: "รอพิจารณาคำขอยกเลิก", className: "bg-warn-soft text-body", icon: "⏸️" };
     case "cancelled":
-      return { text: "ยกเลิก", className: "bg-red-100 text-red-700", icon: "❌" };
+      return { text: "ยกเลิก", className: "bg-danger-soft text-danger", icon: "❌" };
     default:
-      return { text: status, className: "bg-gray-100 text-gray-700", icon: "📋" };
+      return { text: status, className: "bg-sand text-body", icon: "📋" };
   }
 };
 
 export const channelBadge = (orderType?: string): Badge => {
-  if (orderType === "pos") return { text: "🏪 หน้าร้าน", className: "bg-amber-100 text-amber-700" };
-  if (orderType === "dine-in") return { text: "🪑 ในร้าน", className: "bg-green-100 text-green-700" };
-  return { text: "🌐 ออนไลน์", className: "bg-blue-50 text-blue-600" };
+  if (orderType === "pos") return { text: "🏪 หน้าร้าน", className: "bg-warn-soft text-body" };
+  if (orderType === "dine-in") return { text: "🪑 ในร้าน", className: "bg-success-soft text-success" };
+  return { text: "🌐 ออนไลน์", className: "bg-new-soft text-new-ink" };
 };
 
 // ─── สิทธิ์แก้ไขรายการ ───────────────────────────────────────
@@ -132,8 +132,8 @@ export const showsAddItemSection = (order: Order) =>
 
 // ─── ปุ่มดำเนินการ ─────────────────────────────────────────
 
-const RED = "bg-red-100 hover:bg-red-200 text-red-600";
-const GREEN = "bg-green-500 hover:bg-green-600 text-white";
+const RED = "bg-danger-soft hover:bg-danger-line text-error";
+const GREEN = "bg-ok hover:bg-ok text-white";
 
 /** โอนพร้อมเพย์ที่แอดมินยังไม่ได้ตัดสิน (ลูกค้าแจ้งโอนแล้ว หรือโอนแล้วลืมแจ้ง) */
 const isUndecidedTransfer = (order: Order) =>
@@ -187,7 +187,7 @@ export const nextActionsFor = (order: Order): OrderAction[] => {
               kind: "status",
               label: "✅ ยืนยันคำสั่งซื้อ",
               orderStatus: "confirmed",
-              color: "bg-blue-500 hover:bg-blue-600 text-white",
+              color: "bg-ink hover:bg-ink text-white",
             },
             cancel,
           ]
@@ -195,11 +195,11 @@ export const nextActionsFor = (order: Order): OrderAction[] => {
     }
     case "confirmed":
       return [
-        { kind: "status", label: "👨‍🍳 เตรียมสินค้า", orderStatus: "preparing", color: "bg-indigo-500 hover:bg-indigo-600 text-white" },
+        { kind: "status", label: "👨‍🍳 เตรียมสินค้า", orderStatus: "preparing", color: "bg-ink hover:bg-ink text-white" },
       ];
     case "preparing":
       return [
-        { kind: "status", label: "🚚 จัดส่ง", orderStatus: "shipping", color: "bg-purple-500 hover:bg-purple-600 text-white" },
+        { kind: "status", label: "🚚 จัดส่ง", orderStatus: "shipping", color: "bg-ink hover:bg-ink text-white" },
       ];
     case "shipping":
       return [{ kind: "status", label: "📦 จัดส่งสำเร็จ", orderStatus: "delivered", color: GREEN }];

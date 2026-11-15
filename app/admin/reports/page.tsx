@@ -315,13 +315,13 @@ export default function ReportsPage() {
     })[s] || s;
   const getStatusColor = (s: string) =>
     ({
-      delivered: "bg-green-100 text-green-700",
-      pending: "bg-yellow-100 text-yellow-700",
-      confirmed: "bg-blue-100 text-blue-700",
-      preparing: "bg-indigo-100 text-indigo-700",
-      shipping: "bg-purple-100 text-purple-700",
-      cancelled: "bg-red-100 text-red-700",
-    })[s] || "bg-gray-100 text-gray-700";
+      delivered: "bg-success-soft text-success",
+      pending: "bg-warn-soft text-body",
+      confirmed: "bg-new-soft text-new-ink",
+      preparing: "bg-new-soft text-new-ink",
+      shipping: "bg-new-soft text-new-ink",
+      cancelled: "bg-danger-soft text-danger",
+    })[s] || "bg-sand text-body";
   const getPaymentMethodText = (m: string) =>
     ({
       qr_promptpay: "PromptPay",
@@ -740,17 +740,17 @@ export default function ReportsPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -758,22 +758,22 @@ export default function ReportsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
+    <div className="min-h-screen bg-warn-bg py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-ink flex items-center gap-3">
               <span className="text-3xl md:text-4xl">📋</span> Report
             </h1>
-            <p className="text-amber-600 mt-1">ดูสถิติและรายงานการขาย</p>
+            <p className="text-brick mt-1">ดูสถิติและรายงานการขาย</p>
           </div>
           {/* ✅ Export buttons */}
           <div className="flex gap-2">
             <button
               onClick={exportPDF}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-error hover:bg-danger text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
             >
               {exporting && exportType === "pdf" ? (
                 <>
@@ -787,7 +787,7 @@ export default function ReportsPage() {
             <button
               onClick={exportExcel}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-ok hover:bg-success text-white rounded-xl font-medium transition-all disabled:opacity-50 shadow-md text-sm"
             >
               {exporting && exportType === "excel" ? (
                 <>
@@ -804,7 +804,7 @@ export default function ReportsPage() {
         {/* ✅ Date Range Filter */}
         <div className="bg-white rounded-2xl shadow-md p-4 mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <span className="text-sm font-medium text-slate-600 shrink-0">
+            <span className="text-sm font-medium text-subtle shrink-0">
               📅 ช่วงเวลา:
             </span>
             <div className="flex flex-wrap gap-2">
@@ -822,7 +822,7 @@ export default function ReportsPage() {
                 <button
                   key={item.key}
                   onClick={() => onChangeDateRange(item.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${dateRange === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${dateRange === item.key ? "bg-brick text-white" : "bg-sand text-subtle hover:bg-line"}`}
                 >
                   {item.label}
                 </button>
@@ -834,14 +834,14 @@ export default function ReportsPage() {
                   type="date"
                   value={customStart}
                   onChange={(e) => setCustomStart(e.target.value)}
-                  className="w-full sm:w-auto px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full sm:w-auto px-3 py-1.5 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                 />
-                <span className="text-slate-400 text-sm">ถึง</span>
+                <span className="text-muted text-sm">ถึง</span>
                 <input
                   type="date"
                   value={customEnd}
                   onChange={(e) => setCustomEnd(e.target.value)}
-                  className="w-full sm:w-auto px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full sm:w-auto px-3 py-1.5 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brick"
                 />
               </div>
             )}
@@ -850,33 +850,33 @@ export default function ReportsPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-green-500 flex sm:block items-center justify-between gap-4">
-            <p className="text-slate-500 text-xs md:text-sm shrink-0">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-ok flex sm:block items-center justify-between gap-4">
+            <p className="text-muted text-xs md:text-sm shrink-0">
               รายได้รวม
             </p>
-            <p className="text-xl md:text-3xl font-bold text-slate-800">
+            <p className="text-xl md:text-3xl font-bold text-ink">
               ฿{formatPrice(totalRevenue)}
             </p>
-            <p className="text-xs text-slate-400 mt-1 hidden md:block">
+            <p className="text-xs text-muted mt-1 hidden md:block">
               ไม่รวมคำสั่งซื้อที่ยกเลิกและรอดำเนินการ • {getDateRangeLabel()}
             </p>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-blue-500 flex sm:block items-center justify-between gap-4">
-            <p className="text-slate-500 text-xs md:text-sm shrink-0">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-new-ink flex sm:block items-center justify-between gap-4">
+            <p className="text-muted text-xs md:text-sm shrink-0">
               คำสั่งซื้อทั้งหมด
             </p>
-            <p className="text-xl md:text-3xl font-bold text-slate-800">
+            <p className="text-xl md:text-3xl font-bold text-ink">
               {totalOrderCount} รายการ
             </p>
-            <p className="text-xs text-slate-400 mt-1 hidden md:block">
+            <p className="text-xs text-muted mt-1 hidden md:block">
               สำเร็จ {successCount} รายการ
             </p>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-amber-500 flex sm:block items-center justify-between gap-4">
-            <p className="text-slate-500 text-xs md:text-sm shrink-0">
+          <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 border-l-4 border-brick flex sm:block items-center justify-between gap-4">
+            <p className="text-muted text-xs md:text-sm shrink-0">
               ยอดเฉลี่ยต่อออเดอร์
             </p>
-            <p className="text-xl md:text-3xl font-bold text-slate-800">
+            <p className="text-xl md:text-3xl font-bold text-ink">
               ฿{formatPrice(avgOrderValue)}
             </p>
           </div>
@@ -886,13 +886,13 @@ export default function ReportsPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab("orders")}
-            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${activeTab === "orders" ? "bg-amber-500 text-white" : "bg-white text-slate-600 hover:bg-slate-100"}`}
+            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-full font-medium transition-all text-sm md:text-base ${activeTab === "orders" ? "bg-brick text-white" : "bg-white text-subtle hover:bg-sand"}`}
           >
             📦 คำสั่งซื้อ
           </button>
           <button
             onClick={() => setActiveTab("sales")}
-            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${activeTab === "sales" ? "bg-amber-500 text-white" : "bg-white text-slate-600 hover:bg-slate-100"}`}
+            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-full font-medium transition-all text-sm md:text-base ${activeTab === "sales" ? "bg-brick text-white" : "bg-white text-subtle hover:bg-sand"}`}
           >
             📊 ยอดขาย
           </button>
@@ -901,9 +901,9 @@ export default function ReportsPage() {
         {/* Orders Tab */}
         {activeTab === "orders" && (
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="p-3 md:p-4 border-b border-slate-100 overflow-x-auto">
+            <div className="p-3 md:p-4 border-b border-line overflow-x-auto">
               <div className="flex gap-2 items-center min-w-max">
-                <span className="text-slate-600 font-medium text-sm shrink-0">
+                <span className="text-subtle font-medium text-sm shrink-0">
                   กรอง:
                 </span>
                 {[
@@ -918,7 +918,7 @@ export default function ReportsPage() {
                   <button
                     key={item.key}
                     onClick={() => onChangeStatus(item.key)}
-                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap ${filterStatus === item.key ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all whitespace-nowrap ${filterStatus === item.key ? "bg-brick text-white" : "bg-sand text-subtle hover:bg-line"}`}
                   >
                     {item.label}{" "}
                     <span className="ml-1 opacity-70">
@@ -931,26 +931,26 @@ export default function ReportsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-slate-50">
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
+                  <tr className="bg-sand">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle">
                       รหัส
                     </th>
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle">
                       ลูกค้า
                     </th>
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600 hidden lg:table-cell">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle hidden lg:table-cell">
                       รายการ
                     </th>
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle">
                       ยอดรวม
                     </th>
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600 hidden md:table-cell">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle hidden md:table-cell">
                       ชำระเงิน
                     </th>
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle">
                       สถานะ
                     </th>
-                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-slate-600 hidden md:table-cell">
+                    <th className="px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm font-semibold text-subtle hidden md:table-cell">
                       วันที่
                     </th>
                   </tr>
@@ -959,23 +959,23 @@ export default function ReportsPage() {
                   {filteredOrders.map((order) => (
                     <tr
                       key={order.id}
-                      className="border-b border-slate-100 hover:bg-slate-50"
+                      className="border-b border-line hover:bg-sand"
                     >
-                      <td className="px-3 md:px-4 py-3 md:py-4 font-medium text-slate-800 text-sm">
+                      <td className="px-3 md:px-4 py-3 md:py-4 font-medium text-ink text-sm">
                         #
                         {order.ordCode ||
                           `ORD${String((order.id * 104729) % 1000000).padStart(6, "0")}${order.id}`}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
-                        <p className="text-xs md:text-sm font-medium text-slate-800">
+                        <p className="text-xs md:text-sm font-medium text-ink">
                           {order.receiverName || "-"}
                         </p>
-                        <p className="text-xs text-slate-500 hidden lg:block">
+                        <p className="text-xs text-muted hidden lg:block">
                           {order.email}
                         </p>
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4 hidden lg:table-cell">
-                        <div className="text-xs md:text-sm text-slate-600">
+                        <div className="text-xs md:text-sm text-subtle">
                           {order.items.length > 0 ? (
                             order.items.map((item, i) => (
                               <div key={i}>
@@ -983,14 +983,14 @@ export default function ReportsPage() {
                               </div>
                             ))
                           ) : (
-                            <span className="text-slate-400">-</span>
+                            <span className="text-muted">-</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4 font-semibold text-amber-600 text-sm">
+                      <td className="px-3 md:px-4 py-3 md:py-4 font-semibold text-brick text-sm">
                         ฿{formatPrice(order.total)}
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4 text-xs md:text-sm text-slate-600 hidden md:table-cell">
+                      <td className="px-3 md:px-4 py-3 md:py-4 text-xs md:text-sm text-subtle hidden md:table-cell">
                         {getPaymentMethodText(order.paymentMethod)}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
@@ -1000,7 +1000,7 @@ export default function ReportsPage() {
                           {getStatusText(order.orderStatus)}
                         </span>
                       </td>
-                      <td className="px-3 md:px-4 py-3 md:py-4 text-slate-500 text-xs hidden md:table-cell">
+                      <td className="px-3 md:px-4 py-3 md:py-4 text-muted text-xs hidden md:table-cell">
                         {formatDate(order.createdAt)}
                       </td>
                     </tr>
@@ -1011,7 +1011,7 @@ export default function ReportsPage() {
             {filteredOrders.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📭</div>
-                <p className="text-slate-500">ไม่พบคำสั่งซื้อ</p>
+                <p className="text-muted">ไม่พบคำสั่งซื้อ</p>
               </div>
             )}
 
@@ -1034,7 +1034,7 @@ export default function ReportsPage() {
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
             <div className="p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-                <h3 className="text-base md:text-lg font-bold text-slate-800">
+                <h3 className="text-base md:text-lg font-bold text-ink">
                   📊 ยอดขาย
                   {salesView === "daily"
                     ? "รายวัน"
@@ -1044,7 +1044,7 @@ export default function ReportsPage() {
                         ? "รายเดือน"
                         : "รายปี"}
                 </h3>
-                <div className="flex bg-slate-100 rounded-xl p-1">
+                <div className="flex bg-sand rounded-xl p-1">
                   {[
                     { key: "daily" as SalesViewMode, label: "รายวัน" },
                     { key: "weekly" as SalesViewMode, label: "รายสัปดาห์" },
@@ -1054,7 +1054,7 @@ export default function ReportsPage() {
                     <button
                       key={mode.key}
                       onClick={() => setSalesView(mode.key)}
-                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${salesView === mode.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${salesView === mode.key ? "bg-white text-ink shadow-sm" : "text-muted hover:text-body"}`}
                     >
                       {mode.label}
                     </button>
@@ -1065,7 +1065,7 @@ export default function ReportsPage() {
               {salesData.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-5xl mb-3">📭</div>
-                  <p className="text-slate-500">ยังไม่มียอดขาย</p>
+                  <p className="text-muted">ยังไม่มียอดขาย</p>
                 </div>
               ) : (
                 <>
@@ -1075,24 +1075,24 @@ export default function ReportsPage() {
                         key={data.key}
                         className="flex items-center gap-2 md:gap-3"
                       >
-                        <div className="w-28 md:w-36 lg:w-44 text-xs md:text-sm text-slate-600 font-medium shrink-0 text-right">
+                        <div className="w-28 md:w-36 lg:w-44 text-xs md:text-sm text-subtle font-medium shrink-0 text-right">
                           {formatSalesLabel(data.key)}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <div
-                              className="h-6 md:h-7 bg-gradient-to-r from-amber-500 to-amber-400 rounded-lg transition-all duration-500"
+                              className="h-6 md:h-7 bg-brick   rounded-lg transition-all duration-500"
                               style={{
                                 width: `${data.revenue > 0 ? (data.revenue / maxRevenue) * 100 : 0}%`,
                                 minWidth: data.revenue > 0 ? "4px" : "0",
                               }}
                             ></div>
-                            <span className="text-xs md:text-sm font-medium text-slate-700 whitespace-nowrap">
+                            <span className="text-xs md:text-sm font-medium text-body whitespace-nowrap">
                               ฿{formatPrice(data.revenue)}
                             </span>
                           </div>
                         </div>
-                        <div className="w-16 md:w-24 text-right text-xs md:text-sm text-slate-500 shrink-0">
+                        <div className="w-16 md:w-24 text-right text-xs md:text-sm text-muted shrink-0">
                           {data.orders}{" "}
                           <span className="hidden md:inline">ออเดอร์</span>
                         </div>
@@ -1100,29 +1100,29 @@ export default function ReportsPage() {
                     ))}
                   </div>
 
-                  <div className="mt-6 md:mt-8 p-3 md:p-4 bg-amber-50 rounded-xl">
+                  <div className="mt-6 md:mt-8 p-3 md:p-4 bg-warn-bg rounded-xl">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 text-center">
                       <div>
-                        <p className="text-xs md:text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-muted">
                           รายได้รวมทั้งหมด
                         </p>
-                        <p className="text-lg md:text-xl font-bold text-amber-600">
+                        <p className="text-lg md:text-xl font-bold text-brick">
                           ฿{formatPrice(totalSalesRevenue)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs md:text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-muted">
                           ออเดอร์รวม
                         </p>
-                        <p className="text-lg md:text-xl font-bold text-slate-800">
+                        <p className="text-lg md:text-xl font-bold text-ink">
                           {totalSalesOrders}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs md:text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-muted">
                           เฉลี่ย/{getPeriodLabel()}
                         </p>
-                        <p className="text-lg md:text-xl font-bold text-green-600">
+                        <p className="text-lg md:text-xl font-bold text-ok">
                           ฿
                           {formatPrice(
                             Math.round(totalSalesRevenue / totalPeriods),
@@ -1130,10 +1130,10 @@ export default function ReportsPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs md:text-sm text-slate-500">
+                        <p className="text-xs md:text-sm text-muted">
                           จำนวน{getPeriodLabel()}ที่มียอดขาย
                         </p>
-                        <p className="text-lg md:text-xl font-bold text-blue-600">
+                        <p className="text-lg md:text-xl font-bold text-new-ink">
                           {totalPeriods} {getPeriodLabel()}
                         </p>
                       </div>

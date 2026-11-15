@@ -113,44 +113,44 @@ export default function TopProductsPage() {
     : filteredProducts.slice(0, 10);
 
   const rankColor = (i: number) => {
-    if (i === 0) return "from-yellow-400 to-amber-500";
-    if (i === 1) return "from-gray-300 to-gray-400";
-    if (i === 2) return "from-orange-300 to-orange-400";
-    return "from-amber-200 to-amber-300";
+    if (i === 0) return "bg-brick";
+    if (i === 1) return "bg-muted";
+    if (i === 2) return "bg-apricot";
+    return "bg-warn-line";
   };
 
   const getOptionBadge = (opt?: string | null) => {
     if (!opt) return null;
     if (opt.includes("ปอนด์"))
-      return { bg: "bg-pink-100 text-pink-700", label: opt };
+      return { bg: "bg-danger-soft text-danger", label: opt };
     if (opt.includes("ชิ้น") || opt.includes("slice"))
-      return { bg: "bg-amber-100 text-amber-700", label: opt };
+      return { bg: "bg-warn-soft text-body", label: opt };
     if (opt.includes("ร้อน"))
-      return { bg: "bg-red-100 text-red-700", label: "🔥 " + opt };
+      return { bg: "bg-danger-soft text-danger", label: "🔥 " + opt };
     if (opt.includes("เย็น"))
-      return { bg: "bg-blue-100 text-blue-700", label: "🧊 " + opt };
+      return { bg: "bg-new-soft text-new-ink", label: "🧊 " + opt };
     if (opt.includes("ปั่น"))
-      return { bg: "bg-purple-100 text-purple-700", label: "🌀 " + opt };
+      return { bg: "bg-new-soft text-new-ink", label: "🌀 " + opt };
     if (opt.includes("ปกติ"))
-      return { bg: "bg-sky-100 text-sky-700", label: "🥤 " + opt };
+      return { bg: "bg-new-soft text-new-ink", label: "🥤 " + opt };
     if (opt.includes("ใหญ่"))
-      return { bg: "bg-indigo-100 text-indigo-700", label: "🧋 " + opt };
-    return { bg: "bg-gray-100 text-gray-600", label: opt };
+      return { bg: "bg-new-soft text-new-ink", label: "🧋 " + opt };
+    return { bg: "bg-sand text-subtle", label: opt };
   };
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -158,21 +158,21 @@ export default function TopProductsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 p-6">
+    <div className="min-h-screen bg-warn-bg p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-amber-800 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-ink flex items-center gap-3">
                 <span className="text-4xl">🏆</span> Top Products
               </h1>
-              <p className="text-amber-600 mt-1">
+              <p className="text-brick mt-1">
                 รายการสินค้าที่ลูกค้าสั่งซื้อมากที่สุด แยกตามประเภท
               </p>
             </div>
             {/* ✅ ปุ่ม filter */}
-            <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-amber-100">
+            <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-line">
               {(
                 [
                   ["7d", "7 วัน"],
@@ -185,8 +185,8 @@ export default function TopProductsPage() {
                   onClick={() => setTimeFilter(k)}
                   className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     timeFilter === k
-                      ? "bg-amber-500 text-white shadow"
-                      : "text-amber-700 hover:bg-amber-50"
+                      ? "bg-brick text-white shadow"
+                      : "text-body hover:bg-warn-bg"
                   }`}
                 >
                   {l}
@@ -198,37 +198,37 @@ export default function TopProductsPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-2xl shadow p-5 border-l-4 border-amber-400">
-            <p className="text-xs text-gray-500 mb-1">
+          <div className="bg-white rounded-2xl shadow p-5 border-l-4 border-line-strong">
+            <p className="text-xs text-muted mb-1">
               รายการสินค้าที่ติดอันดับ
             </p>
-            <p className="text-3xl font-bold text-amber-700">
+            <p className="text-3xl font-bold text-body">
               {summary.totalProductCount}
             </p>
-            <p className="text-xs text-gray-400 mt-1">รายการ (รวมแยกประเภท)</p>
+            <p className="text-xs text-muted mt-1">รายการ (รวมแยกประเภท)</p>
           </div>
-          <div className="bg-white rounded-2xl shadow p-5 border-l-4 border-green-400">
-            <p className="text-xs text-gray-500 mb-1">จำนวนขายรวม</p>
-            <p className="text-3xl font-bold text-green-700">
+          <div className="bg-white rounded-2xl shadow p-5 border-l-4 border-ok">
+            <p className="text-xs text-muted mb-1">จำนวนขายรวม</p>
+            <p className="text-3xl font-bold text-success">
               {summary.totalAllOrders.toLocaleString()}
             </p>
-            <p className="text-xs text-gray-400 mt-1">ออเดอร์</p>
+            <p className="text-xs text-muted mt-1">ออเดอร์</p>
           </div>
-          <div className="bg-white rounded-2xl shadow p-5 border-l-4 border-blue-400">
-            <p className="text-xs text-gray-500 mb-1">
+          <div className="bg-white rounded-2xl shadow p-5 border-l-4 border-new-ink">
+            <p className="text-xs text-muted mb-1">
               รายได้รวมของสินค้าทั้งหมด (ไม่รวมค่าจัดส่ง)
             </p>
-            <p className="text-3xl font-bold text-blue-700">
+            <p className="text-3xl font-bold text-new-ink">
               ฿{formatPrice(summary.totalAllRevenue)}
             </p>
-            <p className="text-xs text-gray-400 mt-1">บาท</p>
+            <p className="text-xs text-muted mt-1">บาท</p>
           </div>
         </div>
 
         {/* Top 3 Podium */}
         {topProducts.length >= 3 && (
           <div className="bg-white rounded-2xl shadow p-6 mb-6">
-            <h2 className="font-bold text-amber-700 mb-6 text-lg">
+            <h2 className="font-bold text-body mb-6 text-lg">
               🎖️ Top 3 สินค้าขายดี
             </h2>
             <div className="flex items-end justify-center gap-4">
@@ -236,18 +236,18 @@ export default function TopProductsPage() {
               <div className="flex flex-col items-center flex-1">
                 <span className="text-3xl mb-2">🥈</span>
                 <div
-                  className="w-full bg-gradient-to-t from-gray-300 to-gray-200 rounded-t-xl flex flex-col items-center justify-end py-4 px-2"
+                  className="w-full bg-ink   rounded-t-xl flex flex-col items-center justify-end py-4 px-2"
                   style={{ height: 120 }}
                 >
-                  <p className="font-bold text-gray-700 text-sm text-center leading-tight">
+                  <p className="font-bold text-body text-sm text-center leading-tight">
                     {topProducts[1]?.productName}
                   </p>
                   {topProducts[1]?.selectedOption && (
-                    <span className="text-[10px] text-gray-500 mt-0.5 text-center">
+                    <span className="text-[10px] text-muted mt-0.5 text-center">
                       {topProducts[1].selectedOption}
                     </span>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted mt-1">
                     {topProducts[1]?.totalQty} ออเดอร์
                   </p>
                 </div>
@@ -256,18 +256,18 @@ export default function TopProductsPage() {
               <div className="flex flex-col items-center flex-1">
                 <span className="text-4xl mb-2">🥇</span>
                 <div
-                  className="w-full bg-gradient-to-t from-amber-500 to-yellow-400 rounded-t-xl flex flex-col items-center justify-end py-4 px-2"
+                  className="w-full bg-brick   rounded-t-xl flex flex-col items-center justify-end py-4 px-2"
                   style={{ height: 160 }}
                 >
                   <p className="font-bold text-white text-sm text-center leading-tight">
                     {topProducts[0]?.productName}
                   </p>
                   {topProducts[0]?.selectedOption && (
-                    <span className="text-[10px] text-yellow-100 mt-0.5 text-center">
+                    <span className="text-[10px] text-cream mt-0.5 text-center">
                       {topProducts[0].selectedOption}
                     </span>
                   )}
-                  <p className="text-xs text-yellow-100 mt-1">
+                  <p className="text-xs text-cream mt-1">
                     {topProducts[0]?.totalQty} ออเดอร์
                   </p>
                 </div>
@@ -276,18 +276,18 @@ export default function TopProductsPage() {
               <div className="flex flex-col items-center flex-1">
                 <span className="text-3xl mb-2">🥉</span>
                 <div
-                  className="w-full bg-gradient-to-t from-orange-400 to-orange-300 rounded-t-xl flex flex-col items-center justify-end py-4 px-2"
+                  className="w-full bg-brick   rounded-t-xl flex flex-col items-center justify-end py-4 px-2"
                   style={{ height: 90 }}
                 >
                   <p className="font-bold text-white text-sm text-center leading-tight">
                     {topProducts[2]?.productName}
                   </p>
                   {topProducts[2]?.selectedOption && (
-                    <span className="text-[10px] text-orange-100 mt-0.5 text-center">
+                    <span className="text-[10px] text-cream mt-0.5 text-center">
                       {topProducts[2].selectedOption}
                     </span>
                   )}
-                  <p className="text-xs text-orange-100 mt-1">
+                  <p className="text-xs text-cream mt-1">
                     {topProducts[2]?.totalQty} ออเดอร์
                   </p>
                 </div>
@@ -298,21 +298,21 @@ export default function TopProductsPage() {
 
         {/* Full List */}
         <div className="bg-white rounded-2xl shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-bold text-amber-700">📋 รายการทั้งหมด</h2>
+          <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+            <h2 className="font-bold text-body">📋 รายการทั้งหมด</h2>
             {/* ✅ ส่ง timeFilter ปัจจุบันไปด้วย */}
             <button
               onClick={() => fetchTopProducts(timeFilter)}
-              className="text-xs text-amber-600 hover:text-amber-700 px-3 py-1.5 bg-amber-50 rounded-lg font-medium"
+              className="text-xs text-brick hover:text-body px-3 py-1.5 bg-warn-bg rounded-lg font-medium"
             >
               🔄 รีเฟรช
             </button>
           </div>
 
           {/* ✅ ค้นหา + กรองหมวดหมู่ */}
-          <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+          <div className="px-6 py-4 border-b border-line flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-apricot">
                 🔍
               </span>
               <input
@@ -320,13 +320,13 @@ export default function TopProductsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="ค้นหาสินค้า..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-amber-50/60 border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder-amber-400/70"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-warn-bg/60 border border-line text-sm focus:outline-none focus:ring-2 focus:ring-brick placeholder-faint/70"
               />
             </div>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2.5 rounded-xl bg-amber-50/60 border border-amber-200 text-sm text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 sm:w-44"
+              className="px-4 py-2.5 rounded-xl bg-warn-bg/60 border border-line text-sm text-body focus:outline-none focus:ring-2 focus:ring-brick sm:w-44"
             >
               <option value="all">ทุกหมวดหมู่</option>
               {categories.map((c) => (
@@ -340,28 +340,28 @@ export default function TopProductsPage() {
           {topProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📭</div>
-              <p className="text-gray-500">ยังไม่มีข้อมูลการขาย</p>
+              <p className="text-muted">ยังไม่มีข้อมูลการขาย</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🔍</div>
-              <p className="text-gray-500">ไม่พบสินค้าที่ตรงกับการค้นหา</p>
+              <p className="text-muted">ไม่พบสินค้าที่ตรงกับการค้นหา</p>
             </div>
           ) : (
             <>
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-line">
                 {visibleProducts.map(({ p, originalIndex: i }) => {
                   const badge = getOptionBadge(p.selectedOption);
                   return (
                     <div
                       key={`${p.productName}-${p.selectedOption}-${i}`}
-                      className={`flex items-center gap-4 px-6 py-4 hover:bg-amber-50/50 transition-colors ${i < 3 ? "bg-amber-50/30" : ""}`}
+                      className={`flex items-center gap-4 px-6 py-4 hover:bg-warn-bg/50 transition-colors ${i < 3 ? "bg-warn-bg/30" : ""}`}
                     >
                       <div className="w-10 flex-shrink-0 text-center">
                         {i < 3 ? (
                           <span className="text-2xl">{medals[i]}</span>
                         ) : (
-                          <span className="text-lg font-bold text-gray-400">
+                          <span className="text-lg font-bold text-muted">
                             {i + 1}
                           </span>
                         )}
@@ -369,11 +369,11 @@ export default function TopProductsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1 gap-2">
                           <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                            <p className="font-semibold text-gray-800 truncate">
+                            <p className="font-semibold text-ink truncate">
                               {p.productName}
                             </p>
                             {p.category && (
-                              <span className="inline-block px-2 py-0.5 text-[10px] rounded-full font-medium bg-amber-100 text-amber-700 flex-shrink-0">
+                              <span className="inline-block px-2 py-0.5 text-[10px] rounded-full font-medium bg-warn-soft text-body flex-shrink-0">
                                 {getCategoryDisplay(p.category)}
                               </span>
                             )}
@@ -385,26 +385,26 @@ export default function TopProductsPage() {
                               </span>
                             )}
                           </div>
-                          <span className="text-sm font-bold text-amber-600 flex-shrink-0">
+                          <span className="text-sm font-bold text-brick flex-shrink-0">
                             {p.totalQty} ออเดอร์
                           </span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div className="w-full bg-sand rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full bg-gradient-to-r ${rankColor(i)} transition-all duration-700`}
+                            className={`h-2 rounded-full ${rankColor(i)} transition-all duration-700`}
                             style={{ width: `${(p.totalQty / maxQty) * 100}%` }}
                           />
                         </div>
                         <div className="flex items-center gap-4 mt-1">
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted">
                             รายได้รวม:{" "}
-                            <span className="text-green-600 font-medium">
+                            <span className="text-ok font-medium">
                               ฿{formatPrice(p.totalRevenue)}
                             </span>
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted">
                             จำนวนออเดอร์:{" "}
-                            <span className="text-blue-600 font-medium">
+                            <span className="text-new-ink font-medium">
                               {p.orderCount} ครั้ง
                             </span>
                           </p>
@@ -415,7 +415,7 @@ export default function TopProductsPage() {
                 })}
               </div>
               {!isSearching && filteredProducts.length > 10 && (
-                <p className="text-center text-xs text-gray-400 py-4 border-t border-gray-50">
+                <p className="text-center text-xs text-muted py-4 border-t border-line">
                   แสดง 10 อันดับแรก · พิมพ์ค้นหาเพื่อดูอันดับอื่น (ทั้งหมด{" "}
                   {filteredProducts.length} รายการ)
                 </p>

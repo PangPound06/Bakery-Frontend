@@ -194,14 +194,14 @@ export default function CrudProductPage() {
         Swal.fire({
           title: data.message || "เกิดข้อผิดพลาด",
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -235,7 +235,7 @@ export default function CrudProductPage() {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -246,8 +246,8 @@ export default function CrudProductPage() {
       text: "สินค้าในหมวดหมู่นี้จะไม่มีหมวดหมู่",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -274,14 +274,14 @@ export default function CrudProductPage() {
         Swal.fire({
           title: data.message,
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -396,7 +396,7 @@ export default function CrudProductPage() {
       Swal.fire({
         title: "Option นี้มีอยู่แล้ว",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -444,7 +444,7 @@ export default function CrudProductPage() {
         title: "ไฟล์ไม่ถูกต้อง",
         text: "กรุณาเลือกไฟล์รูปภาพ",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -453,7 +453,7 @@ export default function CrudProductPage() {
         title: "ไฟล์ใหญ่เกินไป",
         text: "ขนาดไฟล์ต้องไม่เกิน 5MB",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
       return;
     }
@@ -500,7 +500,7 @@ export default function CrudProductPage() {
       Swal.fire({
         title: "ประเภทนี้มีอยู่แล้ว",
         icon: "warning",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -515,8 +515,8 @@ export default function CrudProductPage() {
       title: `ลบ "${type}"?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -543,7 +543,7 @@ export default function CrudProductPage() {
           await Swal.fire({
             title: "อัพโหลดไม่สำเร็จ",
             icon: "error",
-            confirmButtonColor: "#f97316",
+            confirmButtonColor: "#a84a0e",
           });
           setSaving(false);
           return;
@@ -553,7 +553,7 @@ export default function CrudProductPage() {
         await Swal.fire({
           title: "กรุณาเลือกรูปภาพ",
           icon: "warning",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
         setSaving(false);
         return;
@@ -596,7 +596,7 @@ export default function CrudProductPage() {
               ? "เพิ่มสินค้าสำเร็จ!"
               : "แก้ไขสินค้าสำเร็จ!",
           icon: "success",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -606,14 +606,14 @@ export default function CrudProductPage() {
           title: "เกิดข้อผิดพลาด",
           text: d.message || "กรุณาลองใหม่",
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     } finally {
       setSaving(false);
@@ -626,8 +626,8 @@ export default function CrudProductPage() {
       text: "ต้องการลบสินค้านี้หรือไม่?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -645,7 +645,7 @@ export default function CrudProductPage() {
       await Swal.fire({
         title: "ลบสำเร็จ!",
         icon: "success",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -653,7 +653,7 @@ export default function CrudProductPage() {
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
@@ -679,14 +679,14 @@ export default function CrudProductPage() {
   );
 
   const CATEGORY_COLORS = [
-    "bg-amber-100 text-amber-700",
-    "bg-pink-100 text-pink-700",
-    "bg-blue-100 text-blue-700",
-    "bg-green-100 text-green-700",
-    "bg-red-100 text-red-700",
-    "bg-purple-100 text-purple-700",
-    "bg-orange-100 text-orange-700",
-    "bg-teal-100 text-teal-700",
+    "bg-warn-soft text-body",
+    "bg-danger-soft text-danger",
+    "bg-new-soft text-new-ink",
+    "bg-success-soft text-success",
+    "bg-danger-soft text-danger",
+    "bg-new-soft text-new-ink",
+    "bg-warn-soft text-body",
+    "bg-success-soft text-success",
   ];
 
   const getCategoryBadge = (c: string) => {
@@ -701,33 +701,33 @@ export default function CrudProductPage() {
 
   const getStockDisplay = (p: Product) => {
     if (isFreshProduct(p))
-      return { text: "🥤 ทำสด", className: "text-teal-600 bg-teal-50" };
+      return { text: "🥤 ทำสด", className: "text-ok bg-success-soft" };
     if (p.stockQuantity === 0)
-      return { text: "0", className: "text-red-600 bg-red-50" };
+      return { text: "0", className: "text-error bg-danger-soft" };
     if (p.stockQuantity <= 5)
       return {
         text: String(p.stockQuantity),
-        className: "text-orange-600 bg-orange-50",
+        className: "text-brick bg-warn-bg",
       };
     if (p.stockQuantity <= 10)
       return {
         text: String(p.stockQuantity),
-        className: "text-yellow-600 bg-yellow-50",
+        className: "text-brick bg-warn-bg",
       };
     return {
       text: String(p.stockQuantity),
-      className: "text-green-600 bg-green-50",
+      className: "text-ok bg-success-soft",
     };
   };
 
   const getAvailabilityStatus = (p: Product) => {
     if (isFreshProduct(p))
-      return { text: "✓ ทำสด", className: "bg-teal-100 text-teal-700" };
+      return { text: "✓ ทำสด", className: "bg-success-soft text-success" };
     if (p.stockQuantity === 0)
-      return { text: "✗ หมด", className: "bg-red-100 text-red-700" };
+      return { text: "✗ หมด", className: "bg-danger-soft text-danger" };
     if (p.isAvailable)
-      return { text: "✓ พร้อมขาย", className: "bg-green-100 text-green-700" };
-    return { text: "⏸ ปิดขาย", className: "bg-gray-100 text-gray-700" };
+      return { text: "✓ พร้อมขาย", className: "bg-success-soft text-success" };
+    return { text: "⏸ ปิดขาย", className: "bg-sand text-body" };
   };
 
   const currentMultiplierOptions = getMultiplierOptions(formData.category);
@@ -735,17 +735,17 @@ export default function CrudProductPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -753,21 +753,21 @@ export default function CrudProductPage() {
     );
 
   return (
-    <div className="min-h-screen bg-amber-50 py-6 md:py-8 px-4 md:px-6">
+    <div className="min-h-screen bg-warn-bg py-6 md:py-8 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-amber-800 flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-ink flex items-center gap-3">
               <span className="text-3xl md:text-4xl">📦</span> Manage Products
             </h1>
-            <p className="text-amber-600 mt-1 text-sm md:text-base">
+            <p className="text-brick mt-1 text-sm md:text-base">
               สินค้าทั้งหมด {products.length} รายการ
             </p>
           </div>
           <button
             onClick={() => openModal("create")}
-            className="px-4 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm md:text-base shrink-0"
+            className="px-4 md:px-6 py-2.5 md:py-3 bg-brick hover:bg-brick-hover text-white rounded-full font-medium transition-all flex items-center gap-2 text-sm md:text-base shrink-0"
           >
             <svg
               className="w-5 h-5"
@@ -790,31 +790,31 @@ export default function CrudProductPage() {
         <div className="bg-white rounded-2xl shadow-md mb-6 overflow-hidden">
           <button
             onClick={() => setShowCategoryManager((v) => !v)}
-            className="w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 hover:bg-amber-50 transition-colors"
+            className="w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 hover:bg-warn-bg transition-colors"
           >
             <div className="flex items-center gap-2">
               <span className="text-lg">🏷️</span>
-              <span className="font-medium text-amber-800 text-sm md:text-base">
+              <span className="font-medium text-ink text-sm md:text-base">
                 จัดการหมวดหมู่
               </span>
-              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-warn-soft text-body px-2 py-0.5 rounded-full">
                 {categories.length}
               </span>
             </div>
-            <span className="text-amber-500 text-sm">
+            <span className="text-brick text-sm">
               {showCategoryManager ? "▲ ซ่อน" : "▼ แสดง"}
             </span>
           </button>
 
           {showCategoryManager && (
-            <div className="px-4 md:px-6 pb-4 md:pb-5 border-t border-amber-100">
+            <div className="px-4 md:px-6 pb-4 md:pb-5 border-t border-line">
               <div className="flex gap-2 mt-4 mb-4">
                 <input
                   type="text"
                   value={newCategoryIcon}
                   onChange={(e) => setNewCategoryIcon(e.target.value)}
                   placeholder="icon"
-                  className="w-16 px-2 py-2 text-center text-lg border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-16 px-2 py-2 text-center text-lg border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-brick"
                 />
                 <input
                   type="text"
@@ -825,11 +825,11 @@ export default function CrudProductPage() {
                     (e.preventDefault(), handleAddCategory())
                   }
                   placeholder="ชื่อหมวดหมู่ใหม่ (เช่น Snack)"
-                  className="flex-1 px-3 py-2 text-sm border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="flex-1 px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-brick"
                 />
                 <button
                   onClick={handleAddCategory}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-brick hover:bg-brick-hover text-white rounded-full text-sm font-medium transition-colors"
                 >
                   + เพิ่ม
                 </button>
@@ -838,7 +838,7 @@ export default function CrudProductPage() {
                 {categories.map((cat) => (
                   <div
                     key={cat.id}
-                    className="flex items-center gap-3 bg-amber-50 rounded-xl px-4 py-3"
+                    className="flex items-center gap-3 bg-warn-bg rounded-xl px-4 py-3"
                   >
                     {editingCategory === cat.id ? (
                       <>
@@ -846,23 +846,23 @@ export default function CrudProductPage() {
                           type="text"
                           value={editCategoryIcon}
                           onChange={(e) => setEditCategoryIcon(e.target.value)}
-                          className="w-12 px-1 py-1 text-center text-lg border border-amber-300 rounded-lg"
+                          className="w-12 px-1 py-1 text-center text-lg border border-line-strong rounded-lg"
                         />
                         <input
                           type="text"
                           value={editCategoryName}
                           onChange={(e) => setEditCategoryName(e.target.value)}
-                          className="flex-1 px-3 py-1.5 text-sm border border-amber-300 rounded-lg"
+                          className="flex-1 px-3 py-1.5 text-sm border border-line-strong rounded-lg"
                         />
                         <button
                           onClick={() => handleUpdateCategory(cat.id)}
-                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-medium"
+                          className="px-3 py-1.5 bg-ok text-white rounded-lg text-xs font-medium"
                         >
                           ✓ บันทึก
                         </button>
                         <button
                           onClick={() => setEditingCategory(null)}
-                          className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-xs font-medium"
+                          className="px-3 py-1.5 bg-line text-body rounded-lg text-xs font-medium"
                         >
                           ยกเลิก
                         </button>
@@ -873,14 +873,14 @@ export default function CrudProductPage() {
                           {cat.icon}
                         </span>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-amber-800">
+                          <p className="text-sm font-medium text-ink">
                             {cat.name}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted">
                             slug: {cat.slug} · ลำดับ: {cat.displayOrder}
                           </p>
                         </div>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted">
                           {
                             products.filter((p) => p.category === cat.slug)
                               .length
@@ -893,13 +893,13 @@ export default function CrudProductPage() {
                             setEditCategoryName(cat.name);
                             setEditCategoryIcon(cat.icon || "");
                           }}
-                          className="p-1.5 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-colors"
+                          className="p-1.5 bg-warn-soft text-brick rounded-lg hover:bg-warn-line transition-colors"
                         >
                           ✏️
                         </button>
                         <button
                           onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                          className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                          className="p-1.5 bg-danger-soft text-error rounded-lg hover:bg-danger-line transition-colors"
                         >
                           🗑️
                         </button>
@@ -923,10 +923,10 @@ export default function CrudProductPage() {
                 setSearchTerm(e.target.value);
                 setPage(0);
               }}
-              className="w-full px-4 py-2.5 md:py-3 pl-10 md:pl-12 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base"
+              className="w-full px-4 py-2.5 md:py-3 pl-10 md:pl-12 bg-warn-bg border border-line rounded-xl text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-brick text-sm md:text-base"
             />
             <svg
-              className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-amber-400"
+              className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-apricot"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -946,7 +946,7 @@ export default function CrudProductPage() {
               setFilterCategory(e.target.value);
               setPage(0);
             }}
-            className="px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm md:text-base"
+            className="px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-brick text-sm md:text-base"
           >
             <option value="all">ทุกหมวดหมู่</option>
             {categories.map((cat) => (
@@ -962,7 +962,7 @@ export default function CrudProductPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-amber-500">
+                <tr className="bg-brick">
                   {[
                     "รูปภาพ",
                     "ชื่อสินค้า",
@@ -989,7 +989,7 @@ export default function CrudProductPage() {
                   return (
                     <tr
                       key={product.id}
-                      className={`border-b border-amber-100 hover:bg-amber-50 ${index % 2 === 0 ? "bg-white" : "bg-amber-50/50"}`}
+                      className={`border-b border-line hover:bg-warn-bg ${index % 2 === 0 ? "bg-white" : "bg-warn-bg/50"}`}
                     >
                       <td className="px-3 md:px-6 py-3 md:py-4">
                         <img
@@ -999,27 +999,27 @@ export default function CrudProductPage() {
                         />
                       </td>
                       <td className="px-3 md:px-6 py-3 md:py-4">
-                        <p className="font-medium text-amber-800 text-sm md:text-base">
+                        <p className="font-medium text-ink text-sm md:text-base">
                           {product.name}
                         </p>
-                        <p className="text-xs text-gray-500">{product.type}</p>
+                        <p className="text-xs text-muted">{product.type}</p>
                         {opts.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5 max-w-[280px]">
                             {opts.slice(0, 3).map((o) => (
                               <span
                                 key={o.name}
-                                className="text-[10px] px-1.5 py-0.5 bg-purple-50 text-purple-600 border border-purple-200 rounded-full"
+                                className="text-[10px] px-1.5 py-0.5 bg-new-soft text-new-ink border border-line rounded-full"
                               >
                                 {o.name}
                                 {o.extraPrice > 0 && (
-                                  <span className="text-green-600 ml-0.5">
+                                  <span className="text-ok ml-0.5">
                                     +฿{o.extraPrice}
                                   </span>
                                 )}
                               </span>
                             ))}
                             {opts.length > 3 && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+                              <span className="text-[10px] px-1.5 py-0.5 bg-sand text-muted rounded-full">
                                 +{opts.length - 3} อื่นๆ
                               </span>
                             )}
@@ -1038,7 +1038,7 @@ export default function CrudProductPage() {
                           {getCategoryDisplay(product)}
                         </span>
                       </td>
-                      <td className="px-3 md:px-6 py-3 md:py-4 font-semibold text-amber-600 text-sm">
+                      <td className="px-3 md:px-6 py-3 md:py-4 font-semibold text-brick text-sm">
                         ฿{formatPrice(product.price)}
                       </td>
                       <td className="px-3 md:px-6 py-3 md:py-4">
@@ -1059,7 +1059,7 @@ export default function CrudProductPage() {
                         <div className="flex items-center justify-center gap-1 md:gap-2">
                           <button
                             onClick={() => openModal("view", product)}
-                            className="p-1.5 md:p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                            className="p-1.5 md:p-2 bg-new-soft text-new-ink rounded-lg hover:bg-new-soft transition-colors"
                           >
                             <svg
                               className="w-3.5 h-3.5 md:w-4 md:h-4"
@@ -1083,7 +1083,7 @@ export default function CrudProductPage() {
                           </button>
                           <button
                             onClick={() => openModal("edit", product)}
-                            className="p-1.5 md:p-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-colors"
+                            className="p-1.5 md:p-2 bg-warn-soft text-brick rounded-lg hover:bg-warn-line transition-colors"
                           >
                             <svg
                               className="w-3.5 h-3.5 md:w-4 md:h-4"
@@ -1101,7 +1101,7 @@ export default function CrudProductPage() {
                           </button>
                           <button
                             onClick={() => handleDelete(product.id)}
-                            className="p-1.5 md:p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                            className="p-1.5 md:p-2 bg-danger-soft text-error rounded-lg hover:bg-danger-line transition-colors"
                           >
                             <svg
                               className="w-3.5 h-3.5 md:w-4 md:h-4"
@@ -1128,7 +1128,7 @@ export default function CrudProductPage() {
           {filteredProducts.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📦</div>
-              <p className="text-gray-500">ไม่พบสินค้า</p>
+              <p className="text-muted">ไม่พบสินค้า</p>
             </div>
           )}
 
@@ -1152,7 +1152,7 @@ export default function CrudProductPage() {
       {modalMode && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 md:p-6 border-b bg-amber-500 rounded-t-2xl">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b bg-brick rounded-t-2xl">
               <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                 {modalMode === "create" && (
                   <>
@@ -1172,7 +1172,7 @@ export default function CrudProductPage() {
               </h2>
               <button
                 onClick={closeModal}
-                className="p-2 hover:bg-amber-600 rounded-lg transition-colors text-white"
+                className="p-2 hover:bg-brick-hover rounded-lg transition-colors text-white"
               >
                 <svg
                   className="w-6 h-6"
@@ -1196,23 +1196,23 @@ export default function CrudProductPage() {
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-xl border-2 border-amber-200"
+                    className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-xl border-2 border-line"
                   />
                 ) : (
-                  <div className="w-28 h-28 md:w-32 md:h-32 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300 flex items-center justify-center">
+                  <div className="w-28 h-28 md:w-32 md:h-32 bg-warn-bg rounded-xl border-2 border-dashed border-line-strong flex items-center justify-center">
                     <span className="text-4xl">📷</span>
                   </div>
                 )}
               </div>
               {pendingFile && (
-                <div className="flex items-center justify-center gap-2 text-sm text-amber-600 bg-amber-50 py-2 rounded-lg">
+                <div className="flex items-center justify-center gap-2 text-sm text-brick bg-warn-bg py-2 rounded-lg">
                   <span>📎</span>
                   <span>{pendingFile.name}</span>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-body mb-2">
                   ชื่อสินค้า *
                 </label>
                 <input
@@ -1223,13 +1223,13 @@ export default function CrudProductPage() {
                   }
                   disabled={modalMode === "view"}
                   required
-                  className="w-full px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
+                  className="w-full px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 text-sm md:text-base"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-body mb-2">
                     หมวดหมู่ *
                   </label>
                   {/* ✅ Dynamic categories from API */}
@@ -1237,7 +1237,7 @@ export default function CrudProductPage() {
                     value={formData.category}
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     disabled={modalMode === "view"}
-                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 text-sm md:text-base"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.slug}>
@@ -1248,14 +1248,14 @@ export default function CrudProductPage() {
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-body">
                       ประเภท *
                     </label>
                     {modalMode !== "view" && (
                       <button
                         type="button"
                         onClick={() => setShowTypeManager((v) => !v)}
-                        className="text-xs text-amber-600 hover:text-amber-700 font-medium underline"
+                        className="text-xs text-brick hover:text-body font-medium underline"
                       >
                         {showTypeManager ? "ซ่อน" : "⚙️ จัดการ"}
                       </button>
@@ -1267,7 +1267,7 @@ export default function CrudProductPage() {
                       setFormData({ ...formData, type: e.target.value })
                     }
                     disabled={modalMode === "view"}
-                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 text-sm md:text-base"
                   >
                     <option value="">-- เลือก --</option>
                     {[
@@ -1287,8 +1287,8 @@ export default function CrudProductPage() {
               </div>
 
               {showTypeManager && modalMode !== "view" && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-                  <p className="text-sm font-medium text-amber-800">
+                <div className="bg-warn-bg border border-line rounded-xl p-4 space-y-3">
+                  <p className="text-sm font-medium text-ink">
                     จัดการประเภท — {formData.category}
                   </p>
                   <div className="flex gap-2">
@@ -1301,12 +1301,12 @@ export default function CrudProductPage() {
                         (e.preventDefault(), handleAddType())
                       }
                       placeholder="ชื่อประเภทใหม่"
-                      className="flex-1 px-3 py-2 text-sm border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      className="flex-1 px-3 py-2 text-sm border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brick"
                     />
                     <button
                       type="button"
                       onClick={handleAddType}
-                      className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors"
+                      className="px-3 py-2 bg-brick hover:bg-brick-hover text-white rounded-full text-sm font-medium transition-colors"
                     >
                       + เพิ่ม
                     </button>
@@ -1322,13 +1322,13 @@ export default function CrudProductPage() {
                       .map((t) => (
                         <div
                           key={t}
-                          className="flex items-center gap-1 bg-white border border-amber-200 rounded-full px-3 py-1"
+                          className="flex items-center gap-1 bg-white border border-line rounded-full px-3 py-1"
                         >
-                          <span className="text-xs text-gray-700">{t}</span>
+                          <span className="text-xs text-body">{t}</span>
                           <button
                             type="button"
                             onClick={() => handleDeleteType(t)}
-                            className="text-red-400 hover:text-red-600 ml-1 text-xs font-bold"
+                            className="text-danger-line hover:text-error ml-1 text-xs font-bold"
                           >
                             ✕
                           </button>
@@ -1340,7 +1340,7 @@ export default function CrudProductPage() {
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-body mb-2">
                     ราคา (บาท) *
                   </label>
                   <input
@@ -1355,16 +1355,16 @@ export default function CrudProductPage() {
                     disabled={modalMode === "view"}
                     required
                     min="0"
-                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 text-sm md:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-body mb-2">
                     ประเภทสต็อก
                   </label>
                   {modalMode === "view" ? (
                     <div
-                      className={`px-3 py-2.5 rounded-xl text-sm font-medium text-center ${formData.stockType === "fresh" ? "bg-teal-100 text-teal-700" : "bg-blue-100 text-blue-700"}`}
+                      className={`px-3 py-2.5 rounded-xl text-sm font-medium text-center ${formData.stockType === "fresh" ? "bg-success-soft text-success" : "bg-new-soft text-new-ink"}`}
                     >
                       {formData.stockType === "fresh"
                         ? "🥤 ทำสด"
@@ -1375,14 +1375,14 @@ export default function CrudProductPage() {
                       <button
                         type="button"
                         onClick={() => handleStockTypeChange("stock")}
-                        className={`flex-1 rounded-xl text-xs font-medium transition-all ${formData.stockType === "stock" ? "bg-blue-500 text-white" : "bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100"}`}
+                        className={`flex-1 rounded-xl text-xs font-medium transition-all ${formData.stockType === "stock" ? "bg-ink text-white" : "bg-new-soft text-new-ink border border-line hover:bg-new-soft"}`}
                       >
                         📦 สต็อก
                       </button>
                       <button
                         type="button"
                         onClick={() => handleStockTypeChange("fresh")}
-                        className={`flex-1 rounded-xl text-xs font-medium transition-all ${formData.stockType === "fresh" ? "bg-teal-500 text-white" : "bg-teal-50 text-teal-600 border border-teal-200 hover:bg-teal-100"}`}
+                        className={`flex-1 rounded-xl text-xs font-medium transition-all ${formData.stockType === "fresh" ? "bg-ok text-white" : "bg-success-soft text-ok border border-success-soft hover:bg-success-soft"}`}
                       >
                         🥤 ทำสด
                       </button>
@@ -1393,7 +1393,7 @@ export default function CrudProductPage() {
 
               {formData.stockType === "stock" && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-body mb-2">
                     จำนวน Stock *
                   </label>
                   <input
@@ -1403,34 +1403,34 @@ export default function CrudProductPage() {
                     disabled={modalMode === "view"}
                     required
                     min="0"
-                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 text-sm md:text-base"
                   />
                   {formData.stockQuantity === 0 && (
-                    <p className="text-xs text-red-500 mt-1">
+                    <p className="text-xs text-error mt-1">
                       ⚠️ สถานะจะเปลี่ยนเป็น &quot;สินค้าหมด&quot; อัตโนมัติ
                     </p>
                   )}
                 </div>
               )}
               {formData.stockType === "fresh" && modalMode !== "view" && (
-                <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 flex items-center gap-2">
-                  <span className="text-teal-500 text-lg">🥤</span>
-                  <p className="text-sm text-teal-700">
+                <div className="bg-success-soft border border-success-soft rounded-xl px-4 py-3 flex items-center gap-2">
+                  <span className="text-ok text-lg">🥤</span>
+                  <p className="text-sm text-success">
                     สินค้าทำสด — พร้อมขายตลอดเวลา ไม่มีการนับ Stock
                   </p>
                 </div>
               )}
 
               {/* Options Manager */}
-              <div className="border border-purple-200 rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 bg-purple-50">
+              <div className="border border-line rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-new-soft">
                   <div className="flex items-center gap-2">
-                    <span className="text-purple-600">🎛️</span>
-                    <label className="text-sm font-medium text-purple-800">
+                    <span className="text-new-ink">🎛️</span>
+                    <label className="text-sm font-medium text-new-ink">
                       ตัวเลือกสินค้า (Options)
                     </label>
                     {productOptions.length > 0 && (
-                      <span className="text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-new-soft text-new-ink px-2 py-0.5 rounded-full">
                         {productOptions.length} ตัวเลือก
                       </span>
                     )}
@@ -1439,29 +1439,29 @@ export default function CrudProductPage() {
                     <button
                       type="button"
                       onClick={() => setShowOptionsManager((v) => !v)}
-                      className="text-xs text-purple-600 hover:text-purple-700 font-medium underline"
+                      className="text-xs text-new-ink hover:text-new-ink font-medium underline"
                     >
                       {showOptionsManager ? "ซ่อน" : "⚙️ จัดการ"}
                     </button>
                   )}
                 </div>
                 {productOptions.length > 0 && (
-                  <div className="px-4 py-3 flex flex-wrap gap-2 bg-white border-t border-purple-100">
+                  <div className="px-4 py-3 flex flex-wrap gap-2 bg-white border-t border-line">
                     {productOptions.map((o) => (
                       <div
                         key={o.name}
-                        className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 rounded-full px-3 py-1"
+                        className="flex items-center gap-1.5 bg-new-soft border border-line rounded-full px-3 py-1"
                       >
-                        <span className="text-xs text-purple-700 font-medium">
+                        <span className="text-xs text-new-ink font-medium">
                           {o.name}
                         </span>
                         {o.extraPrice > 0 && (
-                          <span className="text-xs text-green-600">
+                          <span className="text-xs text-ok">
                             +฿{o.extraPrice}
                           </span>
                         )}
                         {(o.stockMultiplier ?? 1) > 1 && (
-                          <span className="text-xs text-blue-500 font-medium">
+                          <span className="text-xs text-new-ink font-medium">
                             ลด {o.stockMultiplier} ชิ้น
                           </span>
                         )}
@@ -1469,7 +1469,7 @@ export default function CrudProductPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteOption(o.name)}
-                            className="text-red-400 hover:text-red-600 text-xs font-bold ml-0.5"
+                            className="text-danger-line hover:text-error text-xs font-bold ml-0.5"
                           >
                             ✕
                           </button>
@@ -1479,9 +1479,9 @@ export default function CrudProductPage() {
                   </div>
                 )}
                 {showOptionsManager && modalMode !== "view" && (
-                  <div className="px-4 pb-4 pt-3 space-y-4 border-t border-purple-100 bg-white">
+                  <div className="px-4 pb-4 pt-3 space-y-4 border-t border-line bg-white">
                     <div className="space-y-2">
-                      <p className="text-xs font-medium text-purple-700">
+                      <p className="text-xs font-medium text-new-ink">
                         ➕ เพิ่มตัวเลือกใหม่
                       </p>
                       <input
@@ -1501,15 +1501,15 @@ export default function CrudProductPage() {
                                 ? "เช่น ต้ม, ผัด, นึ่ง, ทอด, พื้นบ้าน"
                                 : "ชื่อตัวเลือก"
                         }
-                        className="w-full px-3 py-2 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        className="w-full px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
                       />
                       <div className="flex gap-2">
                         <div className="flex-1">
-                          <label className="text-xs text-gray-500 mb-1 block">
+                          <label className="text-xs text-muted mb-1 block">
                             ราคาเพิ่มเติม
                           </label>
                           <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted">
                               ฿
                             </span>
                             <input
@@ -1520,12 +1520,12 @@ export default function CrudProductPage() {
                               }
                               min={0}
                               placeholder="0"
-                              className="w-full pl-7 pr-3 py-2 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                              className="w-full pl-7 pr-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
                             />
                           </div>
                         </div>
                         <div className="flex-1">
-                          <label className="text-xs text-gray-500 mb-1 block">
+                          <label className="text-xs text-muted mb-1 block">
                             ลด stock ต่อออเดอร์
                           </label>
                           {isCakeCategory ? (
@@ -1534,7 +1534,7 @@ export default function CrudProductPage() {
                               onChange={(e) =>
                                 setNewOptionMultiplier(Number(e.target.value))
                               }
-                              className="w-full px-3 py-2 text-sm border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              className="w-full px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
                             >
                               {currentMultiplierOptions.map((opt) => (
                                 <option key={opt.value} value={opt.value}>
@@ -1543,8 +1543,8 @@ export default function CrudProductPage() {
                               ))}
                             </select>
                           ) : (
-                            <div className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-500 flex items-center gap-1.5">
-                              <span className="text-blue-400 text-base">✓</span>
+                            <div className="px-3 py-2 text-sm bg-sand border border-line rounded-lg text-muted flex items-center gap-1.5">
+                              <span className="text-apricot text-base">✓</span>
                               <span>{currentMultiplierOptions[0]?.label}</span>
                             </div>
                           )}
@@ -1553,7 +1553,7 @@ export default function CrudProductPage() {
                           <button
                             type="button"
                             onClick={handleAddOption}
-                            className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                            className="px-4 py-2 bg-ink hover:bg-ink text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
                           >
                             + เพิ่ม
                           </button>
@@ -1562,22 +1562,22 @@ export default function CrudProductPage() {
                     </div>
                     {productOptions.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-amber-800">
+                        <p className="text-xs font-medium text-ink">
                           ✏️ แก้ไขตัวเลือก
                         </p>
                         {productOptions.map((o) => (
                           <div
                             key={o.name}
-                            className="bg-gray-50 rounded-xl p-3 space-y-2"
+                            className="bg-sand rounded-xl p-3 space-y-2"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-semibold text-purple-700">
+                              <span className="text-sm font-semibold text-new-ink">
                                 {o.name}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteOption(o.name)}
-                                className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-1 text-danger-line hover:text-error hover:bg-danger-soft rounded-lg transition-colors"
                               >
                                 <svg
                                   className="w-4 h-4"
@@ -1596,11 +1596,11 @@ export default function CrudProductPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                               <div>
-                                <label className="text-xs text-gray-500 mb-1 block">
+                                <label className="text-xs text-muted mb-1 block">
                                   ราคาเพิ่มเติม
                                 </label>
                                 <div className="relative">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted">
                                     ฿
                                   </span>
                                   <input
@@ -1613,12 +1613,12 @@ export default function CrudProductPage() {
                                       )
                                     }
                                     min={0}
-                                    className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-400"
+                                    className="w-full pl-7 pr-3 py-1.5 text-sm border border-line rounded-lg focus:outline-none focus:ring-1 focus:ring-ink"
                                   />
                                 </div>
                               </div>
                               <div>
-                                <label className="text-xs text-gray-500 mb-1 block">
+                                <label className="text-xs text-muted mb-1 block">
                                   ลด stock ต่อออเดอร์
                                 </label>
                                 {isCakeCategory ? (
@@ -1630,7 +1630,7 @@ export default function CrudProductPage() {
                                         Number(e.target.value),
                                       )
                                     }
-                                    className="w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    className="w-full px-3 py-1.5 text-sm border border-line rounded-lg focus:outline-none focus:ring-1 focus:ring-ink"
                                   >
                                     {currentMultiplierOptions.map((opt) => (
                                       <option key={opt.value} value={opt.value}>
@@ -1639,8 +1639,8 @@ export default function CrudProductPage() {
                                     ))}
                                   </select>
                                 ) : (
-                                  <div className="px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-500 flex items-center gap-1.5">
-                                    <span className="text-blue-400 text-base">
+                                  <div className="px-3 py-1.5 text-sm bg-sand border border-line rounded-lg text-muted flex items-center gap-1.5">
+                                    <span className="text-apricot text-base">
                                       ✓
                                     </span>
                                     <span>
@@ -1655,15 +1655,15 @@ export default function CrudProductPage() {
                       </div>
                     )}
                     {productOptions.length === 0 && (
-                      <p className="text-xs text-gray-400 text-center py-2">
+                      <p className="text-xs text-muted text-center py-2">
                         ยังไม่มี option — กด &quot;+ เพิ่ม&quot; เพื่อเริ่มต้น
                       </p>
                     )}
                   </div>
                 )}
                 {productOptions.length === 0 && !showOptionsManager && (
-                  <div className="px-4 py-3 bg-white border-t border-purple-100">
-                    <p className="text-xs text-gray-400">
+                  <div className="px-4 py-3 bg-white border-t border-line">
+                    <p className="text-xs text-muted">
                       {modalMode === "view"
                         ? "ไม่มีตัวเลือก"
                         : "ไม่มีตัวเลือก — กด ⚙️ จัดการ เพื่อเพิ่ม"}
@@ -1674,7 +1674,7 @@ export default function CrudProductPage() {
 
               {/* Image */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-body mb-2">
                   รูปภาพ *
                 </label>
                 {modalMode !== "view" && (
@@ -1682,14 +1682,14 @@ export default function CrudProductPage() {
                     <button
                       type="button"
                       onClick={() => setImageInputType("url")}
-                      className={`flex-1 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${imageInputType === "url" ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
+                      className={`flex-1 px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium transition-all ${imageInputType === "url" ? "bg-brick text-white" : "bg-warn-soft text-body hover:bg-warn-line"}`}
                     >
                       🔗 URL
                     </button>
                     <button
                       type="button"
                       onClick={() => setImageInputType("file")}
-                      className={`flex-1 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${imageInputType === "file" ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
+                      className={`flex-1 px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium transition-all ${imageInputType === "file" ? "bg-brick text-white" : "bg-warn-soft text-body hover:bg-warn-line"}`}
                     >
                       📁 อัพโหลด
                     </button>
@@ -1702,7 +1702,7 @@ export default function CrudProductPage() {
                     onChange={(e) => handleUrlChange(e.target.value)}
                     disabled={modalMode === "view"}
                     placeholder="https://example.com/image.jpg"
-                    className="w-full px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 text-sm md:text-base"
+                    className="w-full px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 text-sm md:text-base"
                   />
                 )}
                 {imageInputType === "file" && modalMode !== "view" && (
@@ -1717,10 +1717,10 @@ export default function CrudProductPage() {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="w-full flex flex-col items-center justify-center px-4 py-5 bg-amber-50 border-2 border-dashed border-amber-300 rounded-xl cursor-pointer hover:bg-amber-100 hover:border-amber-400 transition-all"
+                      className="w-full flex flex-col items-center justify-center px-4 py-5 bg-warn-bg border-2 border-dashed border-line-strong rounded-xl cursor-pointer hover:bg-warn-soft hover:border-line-strong transition-all"
                     >
                       <svg
-                        className="w-8 md:w-10 h-8 md:h-10 text-amber-400 mb-2"
+                        className="w-8 md:w-10 h-8 md:h-10 text-apricot mb-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1732,24 +1732,24 @@ export default function CrudProductPage() {
                           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                         />
                       </svg>
-                      <span className="text-amber-600 font-medium text-sm">
+                      <span className="text-brick font-medium text-sm">
                         คลิกเพื่อเลือกไฟล์
                       </span>
-                      <span className="text-xs text-gray-500 mt-1">
+                      <span className="text-xs text-muted mt-1">
                         JPG, PNG, GIF, WEBP
                       </span>
                     </label>
                   </div>
                 )}
                 {modalMode === "view" && (
-                  <div className="px-4 py-3 bg-gray-100 rounded-xl text-amber-800 text-sm break-all">
+                  <div className="px-4 py-3 bg-sand rounded-xl text-ink text-sm break-all">
                     {formData.image}
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-body mb-2">
                   รายละเอียด
                 </label>
                 <textarea
@@ -1759,7 +1759,7 @@ export default function CrudProductPage() {
                   }
                   disabled={modalMode === "view"}
                   rows={3}
-                  className="w-full px-4 py-2.5 md:py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 resize-none text-sm md:text-base"
+                  className="w-full px-4 py-2.5 md:py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick disabled:opacity-60 resize-none text-sm md:text-base"
                 />
               </div>
 
@@ -1768,14 +1768,14 @@ export default function CrudProductPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-gray-100 text-amber-800 rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm md:text-base"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-sand text-ink rounded-xl font-medium hover:bg-line transition-colors text-sm md:text-base"
                   >
                     ยกเลิก
                   </button>
                   <button
                     type="submit"
                     disabled={saving || (!formData.image && !pendingFile)}
-                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm md:text-base"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-brick hover:bg-brick-hover text-white rounded-full font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm md:text-base"
                   >
                     {saving ? (
                       <>
@@ -1798,14 +1798,14 @@ export default function CrudProductPage() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-gray-100 text-amber-800 rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm md:text-base"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-sand text-ink rounded-xl font-medium hover:bg-line transition-colors text-sm md:text-base"
                   >
                     ปิด
                   </button>
                   <button
                     type="button"
                     onClick={() => openModal("edit", selectedProduct!)}
-                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm md:text-base"
+                    className="flex-1 px-4 md:px-6 py-2.5 md:py-3 bg-brick hover:bg-brick-hover text-white rounded-full font-medium transition-all flex items-center justify-center gap-2 text-sm md:text-base"
                   >
                     <span>✏️</span> แก้ไข
                   </button>

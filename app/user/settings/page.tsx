@@ -90,7 +90,7 @@ export default function SettingsPage() {
         await Swal.fire({
           title: "เปลี่ยนรหัสผ่านสำเร็จ!",
           icon: "success",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -110,8 +110,8 @@ export default function SettingsPage() {
       text: "ต้องการออกจากระบบใช่หรือไม่?",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#a84a0e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ออกจากระบบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -125,7 +125,7 @@ export default function SettingsPage() {
     await Swal.fire({
       title: "ออกจากระบบสำเร็จ!",
       icon: "success",
-      confirmButtonColor: "#f97316",
+      confirmButtonColor: "#a84a0e",
       timer: 1500,
       showConfirmButton: false,
     });
@@ -139,8 +139,8 @@ export default function SettingsPage() {
       text: "คุณแน่ใจหรือไม่ที่จะลบบัญชี? การดำเนินการนี้ไม่สามารถยกเลิกได้!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ใช่ ลบบัญชี",
       cancelButtonText: "ยกเลิก",
     });
@@ -152,8 +152,8 @@ export default function SettingsPage() {
       text: "ลบบัญชีถาวร? ข้อมูลทั้งหมดจะหายไป",
       icon: "error",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ยืนยัน ลบถาวร",
       cancelButtonText: "ยกเลิก",
     });
@@ -176,7 +176,7 @@ export default function SettingsPage() {
         await Swal.fire({
           title: "ลบบัญชีสำเร็จ",
           icon: "success",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -186,7 +186,7 @@ export default function SettingsPage() {
           title: "เกิดข้อผิดพลาด",
           text: data.message || "ไม่สามารถลบบัญชีได้",
           icon: "error",
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
@@ -194,32 +194,32 @@ export default function SettingsPage() {
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถเชื่อมต่อ Server ได้",
         icon: "error",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   };
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-warn-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-brick border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -227,16 +227,16 @@ export default function SettingsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div className="min-h-screen bg-cream   py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <Link
             href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+            className="text-brick hover:text-body flex items-center gap-2 mb-4"
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">⚙️ ตั้งค่า</h1>
+          <h1 className="text-3xl font-bold text-ink">⚙️ ตั้งค่า</h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -246,37 +246,37 @@ export default function SettingsPage() {
               <nav className="space-y-2">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📋</span> รายการสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>🔍</span> ค้นหาคำสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📅</span> การจองคิว
                 </Link>
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>❤️</span> รายการโปรด
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-warn-soft text-body font-medium"
                 >
                   <span>⚙️</span> ตั้งค่า
                 </Link>
@@ -287,14 +287,14 @@ export default function SettingsPage() {
           {/* Main */}
           <div className="md:col-span-3 space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+              <div className="bg-danger-soft border border-danger-line text-error px-4 py-3 rounded-lg">
                 ⚠️ {error}
               </div>
             )}
 
             {/* Change Password */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-body mb-4 flex items-center gap-2">
                 🔐 เปลี่ยนรหัสผ่าน
               </h2>
               <div className="space-y-4">
@@ -319,7 +319,7 @@ export default function SettingsPage() {
                   },
                 ].map(({ label, key, showKey, placeholder }) => (
                   <div key={key}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-body mb-1">
                       {label}
                     </label>
                     <div className="relative">
@@ -336,7 +336,7 @@ export default function SettingsPage() {
                             [key]: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 pr-12"
+                        className="w-full px-4 py-3 border border-line-strong rounded-lg focus:ring-2 focus:ring-brick pr-12"
                         placeholder={placeholder}
                       />
                       <button
@@ -350,7 +350,7 @@ export default function SettingsPage() {
                               ],
                           })
                         }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
                       >
                         {showPasswords[showKey as keyof typeof showPasswords]
                           ? "👁️"
@@ -362,7 +362,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleChangePassword}
                   disabled={loading}
-                  className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50"
+                  className="px-6 py-3 bg-brick text-white rounded-lg hover:bg-brick-hover disabled:opacity-50"
                 >
                   {loading ? "กำลังบันทึก..." : "💾 เปลี่ยนรหัสผ่าน"}
                 </button>
@@ -371,19 +371,19 @@ export default function SettingsPage() {
 
             {/* Account Actions */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-amber-700 mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-body mb-4 flex items-center gap-2">
                 👤 บัญชี
               </h2>
               <div className="space-y-3">
                 <button
                   onClick={handleLogout}
-                  className="w-full px-6 py-3 border-2 border-amber-500 text-amber-600 rounded-lg hover:bg-amber-50 font-medium"
+                  className="w-full px-6 py-3 border-2 border-brick text-brick rounded-lg hover:bg-warn-bg font-medium"
                 >
                   🚪 ออกจากระบบ
                 </button>
                 <button
                   onClick={handleDeleteAccount}
-                  className="w-full px-6 py-3 border-2 border-red-300 text-red-500 rounded-lg hover:bg-red-50 font-medium"
+                  className="w-full px-6 py-3 border-2 border-danger-line text-error rounded-lg hover:bg-danger-soft font-medium"
                 >
                   🗑️ ลบบัญชี
                 </button>

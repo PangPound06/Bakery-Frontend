@@ -11,8 +11,8 @@ export default function SlipModal({ url, onClose }: Props) {
     >
       <div className="bg-white rounded-2xl p-4 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-amber-700">🧾 สลิปการโอนเงิน</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg" aria-label="ปิด">
+          <h3 className="text-lg font-bold text-body">🧾 สลิปการโอนเงิน</h3>
+          <button onClick={onClose} className="p-2 hover:bg-sand rounded-lg" aria-label="ปิด">
             ✕
           </button>
         </div>

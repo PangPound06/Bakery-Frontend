@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anuphan, Geist, Geist_Mono, Noto_Serif_Thai, Prompt } from "next/font/google";
+import { Anuphan, Geist, Geist_Mono, Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 
 import Chrome from "@/components/layout/Chrome";
@@ -14,16 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// ฟอนต์หลักของร้าน — โหลดผ่าน next/font เพื่อให้ใช้ได้ทุกหน้าและไม่ต้องรอ CSS ภายนอก
-const prompt = Prompt({
-  variable: "--font-prompt",
-  weight: ["300", "400", "500", "600", "700"],
-  subsets: ["latin", "thai"],
-  display: "swap",
-});
-
-// ฟอนต์ของดีไซน์ใหม่ — ใช้ผ่าน font-body / font-display (ดู app/globals.css)
-// หน้าที่ยังไม่ได้เปลี่ยนดีไซน์ยังใช้ Prompt ตามเดิม
+// ฟอนต์ของร้าน — เนื้อความ Anuphan (ทั้งเว็บ) หัวข้อ Noto Serif Thai (font-display / h1) ดู app/globals.css
 //
 // โหลดแบบ variable (ไม่ระบุ weight) — ไฟล์เดียวครอบทุกน้ำหนัก
 // ถ้าระบุ weight ทีละค่า Google บางครั้งตอบเป็น URL แบบ /l/font?kit=…&skey=… ที่ Turbopack อ่านไม่ได้ ทำให้ build พัง
@@ -61,7 +52,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${prompt.variable} ${anuphan.variable} ${notoSerifThai.variable} ${prompt.className} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${anuphan.variable} ${notoSerifThai.variable} ${anuphan.className} antialiased`}
       >
         <Chrome>{children}</Chrome>
       </body>

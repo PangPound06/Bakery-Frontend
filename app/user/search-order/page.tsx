@@ -78,37 +78,37 @@ export default function SearchOrderPage() {
       case "pending":
         return {
           text: "รอดำเนินการ",
-          bg: "bg-yellow-100 text-yellow-700",
+          bg: "bg-warn-soft text-body",
           icon: "⏳",
         };
       case "confirmed":
         return {
           text: "ยืนยันแล้ว",
-          bg: "bg-blue-100 text-blue-700",
+          bg: "bg-new-soft text-new-ink",
           icon: "✅",
         };
       case "preparing":
         return {
           text: "กำลังเตรียม",
-          bg: "bg-indigo-100 text-indigo-700",
+          bg: "bg-new-soft text-new-ink",
           icon: "👨‍🍳",
         };
       case "shipping":
         return {
           text: "กำลังจัดส่ง",
-          bg: "bg-purple-100 text-purple-700",
+          bg: "bg-new-soft text-new-ink",
           icon: "🚚",
         };
       case "delivered":
         return {
           text: "จัดส่งแล้ว",
-          bg: "bg-green-100 text-green-700",
+          bg: "bg-success-soft text-success",
           icon: "📦",
         };
       case "cancelled":
-        return { text: "ยกเลิก", bg: "bg-red-100 text-red-700", icon: "❌" };
+        return { text: "ยกเลิก", bg: "bg-danger-soft text-danger", icon: "❌" };
       default:
-        return { text: status, bg: "bg-gray-100 text-gray-700", icon: "📋" };
+        return { text: status, bg: "bg-sand text-body", icon: "📋" };
     }
   };
 
@@ -141,17 +141,17 @@ export default function SearchOrderPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -159,16 +159,16 @@ export default function SearchOrderPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div className="min-h-screen bg-cream   py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <Link
             href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+            className="text-brick hover:text-body flex items-center gap-2 mb-4"
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">
+          <h1 className="text-3xl font-bold text-ink">
             🔍 ค้นหาคำสั่งซื้อ
           </h1>
         </div>
@@ -180,37 +180,37 @@ export default function SearchOrderPage() {
               <nav className="space-y-2">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📋</span> รายการสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-warn-soft text-body font-medium"
                 >
                   <span>🔍</span> ค้นหาคำสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📅</span> การจองคิว
                 </Link>
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>❤️</span> รายการโปรด
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>⚙️</span> ตั้งค่า
                 </Link>
@@ -220,7 +220,7 @@ export default function SearchOrderPage() {
 
           <div className="md:col-span-3 space-y-4">
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <label className="block text-sm font-medium text-amber-700 mb-2">
+              <label className="block text-sm font-medium text-body mb-2">
                 กรอกหมายเลขคำสั่งซื้อ
               </label>
               <div className="flex gap-3">
@@ -230,22 +230,22 @@ export default function SearchOrderPage() {
                   onChange={(e) => setSearchInput(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="เช่น ORD123456789"
-                  className="flex-1 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-amber-800 placeholder-amber-300"
+                  className="flex-1 px-4 py-3 bg-warn-bg border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brick text-ink placeholder-faint"
                 />
                 <button
                   onClick={handleSearch}
                   disabled={loading}
-                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all disabled:opacity-50"
+                  className="px-6 py-3 bg-brick hover:bg-brick-hover text-white rounded-full font-medium transition-all disabled:opacity-50"
                 >
                   {loading ? "⏳" : "ค้นหา"}
                 </button>
               </div>
-              {error && <p className="text-red-500 text-sm mt-2">⚠️ {error}</p>}
+              {error && <p className="text-error text-sm mt-2">⚠️ {error}</p>}
             </div>
 
             {order && (
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="flex items-center justify-between p-5 bg-amber-500">
+                <div className="flex items-center justify-between p-5 bg-brick">
                   <h2 className="text-lg font-bold text-white">
                     📋 คำสั่งซื้อ #{ordCode}
                   </h2>
@@ -259,14 +259,14 @@ export default function SearchOrderPage() {
 
                 <div className="p-6 space-y-5">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">วันที่สั่งซื้อ</span>
-                    <span className="font-medium text-amber-700">
+                    <span className="text-muted">วันที่สั่งซื้อ</span>
+                    <span className="font-medium text-body">
                       {formatDate(order.createdAt)}
                     </span>
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-3">
+                    <p className="text-sm font-semibold text-body mb-3">
                       🛒 รายการสินค้า
                     </p>
                     <div className="space-y-2">
@@ -277,23 +277,23 @@ export default function SearchOrderPage() {
                         return (
                           <div
                             key={i}
-                            className="flex items-center justify-between p-3 bg-amber-50 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-warn-bg rounded-lg"
                           >
                             <div>
-                              <p className="font-medium text-amber-700">
+                              <p className="font-medium text-body">
                                 {item.productName}
                               </p>
                               {item.selectedOption && (
-                                <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+                                <span className="inline-block px-2 py-0.5 bg-new-soft text-new-ink text-xs rounded-full mt-0.5">
                                   {item.selectedOption}
                                 </span>
                               )}
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <p className="text-xs text-muted mt-0.5">
                                 ฿{formatPrice(item.price)} × {item.quantity}{" "}
                                 {isPound ? "ออเดอร์" : "ชิ้น"}
                               </p>
                             </div>
-                            <p className="font-semibold text-amber-600">
+                            <p className="font-semibold text-brick">
                               ฿{formatPrice(displayTotal)}
                             </p>
                           </div>
@@ -303,15 +303,15 @@ export default function SearchOrderPage() {
                   </div>
 
                   <div className="border-t pt-4 space-y-2">
-                    <div className="flex justify-between text-sm text-amber-800">
+                    <div className="flex justify-between text-sm text-ink">
                       <span>ยอดรวมสินค้า</span>
                       <span>฿{formatPrice(order.subtotal ?? order.total)}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-amber-800">
+                    <div className="flex justify-between text-sm text-ink">
                       <span>ค่าจัดส่ง</span>
                       <span
                         className={
-                          order.shipping > 0 ? "text-red-500" : "text-green-600"
+                          order.shipping > 0 ? "text-error" : "text-ok"
                         }
                       >
                         {order.shipping > 0
@@ -320,23 +320,23 @@ export default function SearchOrderPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-lg font-bold border-t pt-2">
-                      <span className="text-amber-800">ยอดรวมทั้งหมด</span>
-                      <span className="text-amber-600">
+                      <span className="text-ink">ยอดรวมทั้งหมด</span>
+                      <span className="text-brick">
                         ฿{formatPrice(order.total)}
                       </span>
                     </div>
                   </div>
 
                   <div className="border-t pt-4">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                    <p className="text-sm font-semibold text-body mb-2">
                       💰 การชำระเงิน
                     </p>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">วิธีชำระเงิน</span>
+                      <span className="text-muted">วิธีชำระเงิน</span>
                       <span>{paymentMethodLabel(order.paymentMethod)}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm mt-1">
-                      <span className="text-gray-500">สถานะ</span>
+                      <span className="text-muted">สถานะ</span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${paymentStatusBadge(order.paymentStatus).className}`}
                       >
@@ -346,31 +346,31 @@ export default function SearchOrderPage() {
                   </div>
 
                   <div className="border-t pt-4">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                    <p className="text-sm font-semibold text-body mb-2">
                       📦 ข้อมูลการจัดส่ง
                     </p>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
+                    <div className="bg-sand rounded-lg p-3 space-y-1 text-sm">
                       <p>
-                        <span className="text-gray-500">ชื่อผู้รับ:</span>{" "}
+                        <span className="text-muted">ชื่อผู้รับ:</span>{" "}
                         <span className="font-medium">
                           {order.receiverName}
                         </span>
                       </p>
                       <p>
-                        <span className="text-gray-500">เบอร์โทร:</span>{" "}
+                        <span className="text-muted">เบอร์โทร:</span>{" "}
                         <span className="font-medium">
                           {order.receiverPhone}
                         </span>
                       </p>
                       <p>
-                        <span className="text-gray-500">ที่อยู่:</span>{" "}
+                        <span className="text-muted">ที่อยู่:</span>{" "}
                         <span className="font-medium">
                           {order.receiverAddress ?? "แสดงเฉพาะเจ้าของคำสั่งซื้อที่เข้าสู่ระบบ"}
                         </span>
                       </p>
                       {order.note && (
                         <p>
-                          <span className="text-gray-500">หมายเหตุ:</span>{" "}
+                          <span className="text-muted">หมายเหตุ:</span>{" "}
                           <span className="font-medium">{order.note}</span>
                         </p>
                       )}

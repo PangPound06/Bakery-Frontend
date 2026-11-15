@@ -110,6 +110,17 @@
   --font-body: var(--font-anuphan), system-ui, sans-serif;
 }
 
+/* ค่าเริ่มต้นทั้งเว็บ — พื้นครีม ตัวอักษรเข้ม หัวเรื่องหลัก (h1) เป็น serif ไทย */
+@layer base {
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+  }
+  h1 {
+    font-family: var(--font-noto-serif-thai), serif;
+  }
+}
+
 html,
 body {
   width: 100%;

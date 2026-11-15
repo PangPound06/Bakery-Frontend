@@ -46,8 +46,8 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-warn-bg flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brick border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

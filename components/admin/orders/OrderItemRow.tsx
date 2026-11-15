@@ -40,26 +40,26 @@ export default function OrderItemRow({ item, editable, refundable, onSaveQuantit
 
   return (
     <div
-      className={`flex items-center justify-between p-3 rounded-lg gap-2 ${allCancelled ? "bg-gray-100" : "bg-amber-50"}`}
+      className={`flex items-center justify-between p-3 rounded-lg gap-2 ${allCancelled ? "bg-sand" : "bg-warn-bg"}`}
     >
       <div className="flex-1 min-w-0">
-        <p className={`font-medium truncate ${allCancelled ? "text-gray-400 line-through" : "text-amber-700"}`}>
+        <p className={`font-medium truncate ${allCancelled ? "text-muted line-through" : "text-body"}`}>
           {item.productName}
         </p>
         {item.selectedOption && (
-          <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full mt-0.5">
+          <span className="inline-block px-2 py-0.5 bg-new-soft text-new-ink text-xs rounded-full mt-0.5">
             {item.selectedOption}
           </span>
         )}
         {cancelled > 0 && (
-          <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full mt-0.5 ml-1">
+          <span className="inline-block px-2 py-0.5 bg-danger-soft text-error text-xs rounded-full mt-0.5 ml-1">
             คืนเงินแล้ว {cancelled}
           </span>
         )}
         {editing ? (
           <QuantityStepper value={quantity} unitPrice={item.price} onChange={setQuantity} />
         ) : (
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {allCancelled ? "ยกเลิกทั้งรายการแล้ว" : `฿${formatPrice(item.price)} x ${active}`}
           </p>
         )}
@@ -70,34 +70,34 @@ export default function OrderItemRow({ item, editable, refundable, onSaveQuantit
           <>
             <button
               onClick={save}
-              className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold"
+              className="px-3 py-1.5 bg-ok hover:bg-ok text-white rounded-lg text-xs font-bold"
             >
               ✓ บันทึก
             </button>
             <button
               onClick={() => setEditing(false)}
-              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-medium"
+              className="px-3 py-1.5 bg-sand hover:bg-line text-subtle rounded-lg text-xs font-medium"
             >
               ยกเลิก
             </button>
           </>
         ) : (
           <>
-            <p className={`font-semibold ${allCancelled ? "text-gray-400" : "text-amber-600"}`}>
+            <p className={`font-semibold ${allCancelled ? "text-muted" : "text-brick"}`}>
               ฿{formatPrice(item.price * active)}
             </p>
             {canEdit && (
               <>
                 <button
                   onClick={startEditing}
-                  className={`${ICON_BUTTON} bg-amber-100 text-amber-600 hover:bg-amber-200`}
+                  className={`${ICON_BUTTON} bg-warn-soft text-brick hover:bg-warn-line`}
                   title="แก้ไขจำนวน"
                 >
                   <PencilIcon />
                 </button>
                 <button
                   onClick={() => onRemove(item)}
-                  className={`${ICON_BUTTON} bg-red-100 text-red-500 hover:bg-red-200`}
+                  className={`${ICON_BUTTON} bg-danger-soft text-error hover:bg-danger-line`}
                   title="ลบสินค้านี้"
                 >
                   <TrashIcon />
@@ -107,7 +107,7 @@ export default function OrderItemRow({ item, editable, refundable, onSaveQuantit
             {refundable && !allCancelled && (
               <button
                 onClick={() => onRefund(item)}
-                className={`${ICON_BUTTON} bg-red-100 text-red-500 hover:bg-red-200`}
+                className={`${ICON_BUTTON} bg-danger-soft text-error hover:bg-danger-line`}
                 title="ตัดรายการนี้ออกและคืนเงิน"
               >
                 <TrashIcon />
@@ -133,7 +133,7 @@ function QuantityStepper({
     <div className="flex items-center gap-2 mt-1.5">
       <button
         onClick={() => onChange(Math.max(1, value - 1))}
-        className="w-7 h-7 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-bold flex items-center justify-center"
+        className="w-7 h-7 rounded-full bg-warn-line hover:bg-apricot text-ink font-bold flex items-center justify-center"
       >
         −
       </button>
@@ -142,15 +142,15 @@ function QuantityStepper({
         min={1}
         value={value}
         onChange={(e) => onChange(Math.max(1, Number(e.target.value) || 1))}
-        className="w-14 text-center border border-amber-300 rounded-lg py-0.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+        className="w-14 text-center border border-line-strong rounded-lg py-0.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brick"
       />
       <button
         onClick={() => onChange(value + 1)}
-        className="w-7 h-7 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold flex items-center justify-center"
+        className="w-7 h-7 rounded-full bg-brick hover:bg-brick-hover text-white font-bold flex items-center justify-center"
       >
         +
       </button>
-      <span className="text-xs text-amber-600 font-semibold ml-1">= ฿{formatPrice(unitPrice * value)}</span>
+      <span className="text-xs text-brick font-semibold ml-1">= ฿{formatPrice(unitPrice * value)}</span>
     </div>
   );
 }

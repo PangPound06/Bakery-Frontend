@@ -351,8 +351,8 @@ export default function Header() {
       text: "คุณต้องการออกจากระบบหรือไม่?",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#a84a0e",
+      cancelButtonColor: "#6b5e52",
       confirmButtonText: "ออกจากระบบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -386,17 +386,17 @@ export default function Header() {
   const hasAnyResults = searchResults.length > 0 || pageResults.length > 0;
 
   const mounted = useIsClient();
-  if (!mounted) return <nav className="sticky top-0 z-50 h-14 bg-amber-100/70 backdrop-blur-xl" />;
+  if (!mounted) return <nav className="sticky top-0 z-50 h-[72px] border-b border-line bg-cream/80 backdrop-blur-xl" />;
   if (pathname?.startsWith("/admin")) return null;
 
   const renderSearchDropdown = () => {
     if (!showResults || searchQuery.trim() === "") return null;
     return (
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl border border-line overflow-hidden">
         {pageResults.length > 0 && (
           <div>
-            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+            <div className="px-3 py-2 bg-sand border-b border-line">
+              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
                 หน้า
               </p>
             </div>
@@ -404,16 +404,16 @@ export default function Header() {
               <button
                 key={page.href}
                 onClick={() => handlePageSelect(page)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-amber-50 transition-colors text-left"
+                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-warn-bg transition-colors text-left"
               >
-                <span className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-base flex-shrink-0">
+                <span className="w-8 h-8 rounded-lg bg-warn-soft flex items-center justify-center text-base flex-shrink-0">
                   {page.icon}
                 </span>
-                <span className="text-sm font-medium text-amber-700">
+                <span className="text-sm font-medium text-body">
                   {page.label}
                 </span>
                 <svg
-                  className="w-4 h-4 text-gray-300 ml-auto flex-shrink-0"
+                  className="w-4 h-4 text-faint ml-auto flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -431,8 +431,8 @@ export default function Header() {
         )}
         {searchResults.length > 0 && (
           <div>
-            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+            <div className="px-3 py-2 bg-sand border-b border-line">
+              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
                 สินค้า ({searchResults.length} รายการ)
               </p>
             </div>
@@ -441,7 +441,7 @@ export default function Header() {
                 <button
                   key={product.id}
                   onClick={() => handleSearchSelect(product)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-amber-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-warn-bg transition-colors text-left"
                 >
                   <img
                     src={product.image}
@@ -449,12 +449,12 @@ export default function Header() {
                     className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-amber-700 truncate">
+                    <p className="text-sm font-medium text-body truncate">
                       {product.name}
                     </p>
-                    <p className="text-xs text-gray-500">{product.category}</p>
+                    <p className="text-xs text-muted">{product.category}</p>
                   </div>
-                  <span className="text-sm font-semibold text-amber-600 flex-shrink-0">
+                  <span className="text-sm font-semibold text-brick flex-shrink-0">
                     ฿{product.price}
                   </span>
                 </button>
@@ -464,7 +464,7 @@ export default function Header() {
         )}
         {!hasAnyResults && (
           <div className="p-6 text-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted text-sm">
               ไม่พบผลลัพธ์สำหรับ &quot;{searchQuery}&quot;
             </p>
           </div>
@@ -475,12 +475,12 @@ export default function Header() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-amber-100/70 backdrop-blur-xl backdrop-saturate-150 border-b border-amber-900/10 text-amber-800 shadow-lg">
+      <nav className="sticky top-0 z-50 bg-cream/80 backdrop-blur-xl backdrop-saturate-150 border-b border-line text-ink font-body">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <Link
               href={isAdmin ? "/admin/dashboard" : "/"}
-              className="text-xl sm:text-2xl font-bold text-amber-900 hover:text-amber-600 transition-colors flex items-center gap-2"
+              className="font-display text-xl sm:text-[22px] font-bold tracking-tight text-ink hover:text-brick transition-colors flex items-center gap-2"
             >
               {isAdmin ? (
                 <>
@@ -488,18 +488,18 @@ export default function Header() {
                   <span>Pound Bakery</span>
                 </>
               ) : (
-                <>🧁 Pound Bakery</>
+                <>Pound Bakery</>
               )}
             </Link>
 
-            <ul className="hidden xl:flex gap-1 xl:gap-4 text-sm xl:text-base font-medium flex-1 justify-center">
+            <ul className="hidden xl:flex mx-auto gap-1 rounded-full border border-line bg-white p-1.5 text-[15px] font-medium">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${isActive(link.href) ? (isAdmin ? "bg-slate-600 text-white" : "bg-amber-500 text-white") : isAdmin ? "hover:bg-slate-700 hover:text-white" : "hover:bg-amber-200/70 hover:text-amber-900"}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors whitespace-nowrap ${isActive(link.href) ? "bg-ink text-cream" : "hover:bg-sand"}`}
                   >
-                    <span className="text-sm xl:text-base">{link.icon}</span>
+                    <span className="hidden" aria-hidden="true">{link.icon}</span>
                     <span className="hidden xl:inline">{link.label}</span>
                     <span className="xl:hidden">
                       {link.label.split(" ")[0]}
@@ -522,10 +522,10 @@ export default function Header() {
                           searchQuery.trim() && setShowResults(true)
                         }
                         placeholder="ค้นหา"
-                        className="w-44 lg:w-56 px-4 py-2 pl-9 rounded-lg bg-white/70 border border-amber-300 text-amber-900 placeholder-amber-700/50 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition-all"
+                        className="w-44 lg:w-56 px-4 py-2 pl-9 rounded-full bg-white border border-line text-ink placeholder-faint/50 text-sm focus:outline-none focus:ring-2 focus:ring-brick focus:bg-white transition-all"
                       />
                       <svg
-                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-700/70"
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-body/70"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -541,7 +541,7 @@ export default function Header() {
                   </div>
                   <button
                     onClick={() => setShowSearch(!showSearch)}
-                    className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-lg hover:bg-amber-200/70 transition-colors`}
+                    className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-full hover:bg-sand transition-colors`}
                     aria-label="ค้นหา"
                   >
                     <svg
@@ -569,7 +569,7 @@ export default function Header() {
               {/* ที่ตั้งร้าน — เดสก์ท็อป (แถบเดียวกับ UserMenu) */}
               <Link
                 href="/location"
-                className={`hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-amber-200/70 hover:text-amber-900 ${isActive("/location") ? "bg-amber-500 text-white" : ""}`}
+                className={`hidden xl:flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors hover:bg-sand hover:text-ink ${isActive("/location") ? "bg-ink text-cream" : ""}`}
               >
                 <svg
                   className="w-5 h-5"
@@ -597,7 +597,7 @@ export default function Header() {
               {user ? (
                 <>
                   {isAdmin && (
-                    <span className="hidden xl:inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                    <span className="hidden xl:inline-block bg-error text-white text-xs px-2 py-1 rounded-full font-semibold">
                       Admin
                     </span>
                   )}
@@ -608,7 +608,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="hidden xl:block bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="hidden xl:block bg-brick hover:bg-brick-hover text-white px-5 py-2.5 rounded-full font-semibold transition-colors"
                 >
                   🔐 Login
                 </Link>
@@ -619,7 +619,7 @@ export default function Header() {
                 <Link
                   href={cartHref}
                   aria-label="ตะกร้าสินค้า"
-                  className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-lg transition-colors hover:bg-amber-200/70 hover:text-amber-900 ${isActive(cartHref) ? "bg-amber-500 text-white" : ""}`}
+                  className={`${minimalHeader ? "hidden" : "xl:hidden"} p-2 rounded-full transition-colors hover:bg-sand hover:text-ink ${isActive(cartHref) ? "bg-ink text-cream" : ""}`}
                 >
                   <svg
                     className="w-6 h-6"
@@ -640,7 +640,7 @@ export default function Header() {
               {/* ✅ Hamburger → เปิดเมนูบัญชีผู้ใช้ */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`xl:hidden p-2 rounded-lg transition-colors ${isAdmin ? "hover:bg-slate-700" : "hover:bg-amber-200/70"}`}
+                className={`xl:hidden p-2 rounded-full transition-colors ${isAdmin ? "hover:bg-body" : "hover:bg-sand"}`}
                 aria-label="เมนูผู้ใช้"
               >
                 {isMenuOpen ? (
@@ -686,10 +686,10 @@ export default function Header() {
                   onFocus={() => searchQuery.trim() && setShowResults(true)}
                   placeholder="ค้นหาสินค้า, หน้า..."
                   autoFocus
-                  className="w-full px-4 py-2.5 pl-9 rounded-lg bg-white/70 border border-amber-300 text-amber-900 placeholder-amber-700/50 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-4 py-2.5 pl-9 rounded-full bg-white border border-line text-ink placeholder-faint/50 text-base focus:outline-none focus:ring-2 focus:ring-brick"
                 />
                 <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-700/70"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-body/70"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -712,13 +712,13 @@ export default function Header() {
 
           {/* ✅ เมนู hamburger (มือถือ) → ข้อมูล/เมนูบัญชีผู้ใช้ */}
           {isMenuOpen && (
-            <div className="xl:hidden pb-4 border-t border-amber-900/10">
+            <div className="xl:hidden pb-4 border-t border-line">
               {!isAdmin ? (
                 user ? (
                   <div className="mt-4 bg-white rounded-xl shadow-2xl overflow-hidden">
                     {/* หัวการ์ด: โปรไฟล์ */}
-                    <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-orange-50 flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 overflow-hidden bg-amber-500 border-amber-400">
+                    <div className="px-4 py-3 border-b border-line bg-cream   flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 overflow-hidden bg-brick border-line-strong">
                         {user.profileImage ? (
                           <img
                             src={user.profileImage}
@@ -730,10 +730,10 @@ export default function Header() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-amber-700 truncate">
+                        <p className="text-sm font-semibold text-body truncate">
                           {user.fullname || "ผู้ใช้งาน"}
                         </p>
-                        <p className="text-xs text-amber-600 truncate">
+                        <p className="text-xs text-brick truncate">
                           {user.email}
                         </p>
                       </div>
@@ -746,7 +746,7 @@ export default function Header() {
                           key={item.href}
                           href={item.href}
                           onClick={() => setIsMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-body hover:bg-warn-bg transition-colors"
                         >
                           <span className="w-6 text-center text-lg">
                             {item.icon}
@@ -757,10 +757,10 @@ export default function Header() {
                     </div>
 
                     {/* ออกจากระบบ */}
-                    <div className="border-t border-gray-200 py-1">
+                    <div className="border-t border-line py-1">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-danger-soft transition-colors w-full"
                       >
                         <span className="w-6 text-center text-lg">🚪</span>
                         <span className="font-semibold">ออกจากระบบ</span>
@@ -771,7 +771,7 @@ export default function Header() {
                   <Link
                     href="/login"
                     onClick={() => setIsMenuOpen(false)}
-                    className="mt-4 w-full bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                    className="mt-4 w-full bg-brick hover:bg-brick-hover text-white px-4 py-3 rounded-full font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     🔐 Login
                   </Link>
@@ -784,7 +784,7 @@ export default function Header() {
                       <Link
                         href={link.href}
                         onClick={() => setIsMenuOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive(link.href) ? "bg-slate-600 text-white" : "hover:bg-slate-700 hover:text-white"}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-200 ${isActive(link.href) ? "bg-ink text-cream" : "hover:bg-sand"}`}
                       >
                         <span className="text-xl">{link.icon}</span>
                         <span className="font-medium">{link.label}</span>
@@ -793,7 +793,7 @@ export default function Header() {
                   ))}
                   {user && (
                     <li className="mt-2 px-2">
-                      <div className="bg-red-600 text-white px-3 py-2 rounded text-xs mb-2">
+                      <div className="bg-error text-white px-3 py-2 rounded text-xs mb-2">
                         🔑 Admin: {user.email}
                       </div>
                       <UserMenu user={user} />
@@ -806,7 +806,7 @@ export default function Header() {
               <Link
                 href="/location"
                 onClick={() => setIsMenuOpen(false)}
-                className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold transition-colors ${isActive("/location") ? "bg-amber-500 text-white" : "bg-amber-200/70 hover:bg-amber-200 text-amber-900"}`}
+                className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full font-semibold transition-colors ${isActive("/location") ? "bg-ink text-cream" : "bg-sand hover:bg-line text-ink"}`}
               >
                 <span>📍</span>
                 <span>ที่ตั้งร้าน</span>
@@ -818,16 +818,16 @@ export default function Header() {
 
       {/* ✅ Bottom Navigation — Home / Menu / Cart / Search (มือถือ/แท็บเล็ต) */}
       {!isAdmin && (
-        <nav className="xl:hidden fixed inset-x-0 bottom-0 z-40 bg-amber-100/90 backdrop-blur-xl backdrop-saturate-150 border-t border-amber-900/10 shadow-[0_-2px_10px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)]">
+        <nav className="xl:hidden fixed inset-x-0 bottom-0 z-40 bg-cream/95 backdrop-blur-xl backdrop-saturate-150 border-t border-line font-body pb-[env(safe-area-inset-bottom)]">
           <div className="flex">
             {/* Home */}
             <Link
               href="/"
               aria-label="Home"
-              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${pathname === "/" ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${pathname === "/" ? "text-brick" : "text-muted hover:text-ink"}`}
             >
               {pathname === "/" && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-brick" />
               )}
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-9" />
@@ -839,10 +839,10 @@ export default function Header() {
             <Link
               href="/menu"
               aria-label="Menu"
-              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${onMenuPage ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${onMenuPage ? "text-brick" : "text-muted hover:text-ink"}`}
             >
               {onMenuPage && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-brick" />
               )}
               <svg className="w-6 h-6 transition-transform active:scale-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3.5 18.5h17" />
@@ -857,10 +857,10 @@ export default function Header() {
             <Link
               href={cartHref}
               aria-label="Cart"
-              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${isActive(cartHref) ? "text-amber-700" : "text-amber-800/60 hover:text-amber-900"}`}
+              className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${isActive(cartHref) ? "text-brick" : "text-muted hover:text-ink"}`}
             >
               {isActive(cartHref) && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-amber-500" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-brick" />
               )}
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -876,7 +876,7 @@ export default function Header() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               aria-label="Search"
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors text-amber-800/60 hover:text-amber-900"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors text-muted hover:text-ink"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

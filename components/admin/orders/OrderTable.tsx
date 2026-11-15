@@ -32,7 +32,7 @@ export default function OrderTable({ orders, updating, onOpen, onAction, onViewS
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-amber-500">
+            <tr className="bg-brick">
               {COLUMNS.map((title) => (
                 <th key={title} className="px-4 py-4 text-left text-sm font-semibold text-white">
                   {title}
@@ -60,7 +60,7 @@ export default function OrderTable({ orders, updating, onOpen, onAction, onViewS
       {orders.length === 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📭</div>
-          <p className="text-gray-500">ไม่พบคำสั่งซื้อ</p>
+          <p className="text-muted">ไม่พบคำสั่งซื้อ</p>
         </div>
       )}
 
@@ -81,19 +81,19 @@ function OrderRow({ order, striped, updating, onOpen, onAction, onViewSlip }: Ro
   const channel = channelBadge(order.orderType);
 
   return (
-    <tr className={`border-b border-amber-100 hover:bg-amber-50 ${striped ? "bg-amber-50/50" : "bg-white"}`}>
-      <td className="px-4 py-4 font-bold text-amber-800">#{orderCodeOf(order)}</td>
+    <tr className={`border-b border-line hover:bg-warn-bg ${striped ? "bg-warn-bg/50" : "bg-white"}`}>
+      <td className="px-4 py-4 font-bold text-ink">#{orderCodeOf(order)}</td>
 
       <td className="px-4 py-4">
-        <p className="font-medium text-amber-700 text-sm">{customerNameOf(order)}</p>
-        <p className="text-xs text-gray-500">{order.email}</p>
+        <p className="font-medium text-body text-sm">{customerNameOf(order)}</p>
+        <p className="text-xs text-muted">{order.email}</p>
         <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${channel.className}`}>
           {channel.text}
         </span>
-        {order.orderType !== "dine-in" && <p className="mt-1 text-xs text-gray-600">{receiveSummary(order)}</p>}
+        {order.orderType !== "dine-in" && <p className="mt-1 text-xs text-subtle">{receiveSummary(order)}</p>}
       </td>
 
-      <td className="px-4 py-4 font-semibold text-amber-600">฿{formatPrice(order.total)}</td>
+      <td className="px-4 py-4 font-semibold text-brick">฿{formatPrice(order.total)}</td>
 
       <td className="px-4 py-4">
         <div className="space-y-1">
@@ -101,7 +101,7 @@ function OrderRow({ order, striped, updating, onOpen, onAction, onViewSlip }: Ro
           {order.slipImage && (
             <button
               onClick={() => onViewSlip(slipUrlOf(order.slipImage))}
-              className="block text-xs text-blue-600 hover:underline"
+              className="block text-xs text-new-ink hover:underline"
             >
               🧾 ดูสลิป
             </button>
@@ -115,13 +115,13 @@ function OrderRow({ order, striped, updating, onOpen, onAction, onViewSlip }: Ro
         </span>
       </td>
 
-      <td className="px-4 py-4 text-xs text-gray-500">{formatDateTime(order.createdAt)}</td>
+      <td className="px-4 py-4 text-xs text-muted">{formatDateTime(order.createdAt)}</td>
 
       <td className="px-4 py-4">
         <div className="flex flex-col gap-1">
           <button
             onClick={() => onOpen(order.id)}
-            className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 text-xs font-medium"
+            className="px-3 py-1.5 bg-warn-soft text-body rounded-lg hover:bg-warn-line text-xs font-medium"
           >
             🔍 รายละเอียด
           </button>

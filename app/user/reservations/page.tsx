@@ -21,23 +21,23 @@ type StatusStyle = {
 
 const STATUS_CONFIG: Record<string, StatusStyle> = {
   pending: {
-    badge: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-    bgGradient: "from-yellow-50 to-amber-50",
+    badge: "bg-warn-soft text-body border border-line",
+    bgGradient: "bg-warn-bg",
     icon: "⏳",
   },
   confirmed: {
-    badge: "bg-green-100 text-green-700 border border-green-200",
-    bgGradient: "from-green-50 to-emerald-50",
+    badge: "bg-success-soft text-success border border-success-soft",
+    bgGradient: "bg-success-soft",
     icon: "✅",
   },
   cancelled: {
-    badge: "bg-red-100 text-red-700 border border-red-200",
-    bgGradient: "from-red-50 to-rose-50",
+    badge: "bg-danger-soft text-danger border border-danger-line",
+    bgGradient: "bg-danger-soft",
     icon: "❌",
   },
   completed: {
-    badge: "bg-blue-100 text-blue-700 border border-blue-200",
-    bgGradient: "from-blue-50 to-sky-50",
+    badge: "bg-new-soft text-new-ink border border-line",
+    bgGradient: "bg-new-soft",
     icon: "🎉",
   },
 };
@@ -91,12 +91,12 @@ export default function MyReservationsPage() {
     const result = await Swal.fire({
       icon: "warning",
       title: "ยืนยันการยกเลิก?",
-      html: `รหัส <b class="font-mono">${code}</b><div class="text-sm text-gray-500 mt-2">การจองนี้จะถูกยกเลิก</div>`,
+      html: `รหัส <b class="font-mono">${code}</b><div class="text-sm text-muted mt-2">การจองนี้จะถูกยกเลิก</div>`,
       showCancelButton: true,
       confirmButtonText: "ยืนยันยกเลิก",
       cancelButtonText: "ไม่ยกเลิก",
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#b3261e",
+      cancelButtonColor: "#6b5e52",
     });
     if (!result.isConfirmed) return;
 
@@ -115,7 +115,7 @@ export default function MyReservationsPage() {
           title: "ยกเลิกสำเร็จ",
           timer: 1200,
           showConfirmButton: false,
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
         fetchMyReservations();
       } else {
@@ -123,14 +123,14 @@ export default function MyReservationsPage() {
           icon: "error",
           title: "เกิดข้อผิดพลาด",
           text: data.message,
-          confirmButtonColor: "#f97316",
+          confirmButtonColor: "#a84a0e",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
         title: "ไม่สามารถเชื่อมต่อได้",
-        confirmButtonColor: "#f97316",
+        confirmButtonColor: "#a84a0e",
       });
     }
   }
@@ -187,17 +187,17 @@ export default function MyReservationsPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -205,18 +205,18 @@ export default function MyReservationsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div className="min-h-screen bg-cream   py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* ── Header ── */}
         <div className="mb-8">
           <Link
             href="/"
-            className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mb-4"
+            className="text-brick hover:text-body flex items-center gap-2 mb-4"
           >
             ← กลับหน้าหลัก
           </Link>
-          <h1 className="text-3xl font-bold text-amber-800">📅 การจองคิว</h1>
-          <p className="text-amber-600 mt-1">
+          <h1 className="text-3xl font-bold text-ink">📅 การจองคิว</h1>
+          <p className="text-brick mt-1">
             การจองทั้งหมด {filtered.length} รายการ
           </p>
         </div>
@@ -229,19 +229,19 @@ export default function MyReservationsPage() {
               <nav className="space-y-2">
                 <Link
                   href="/user/profile"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>👤</span> ข้อมูลส่วนตัว
                 </Link>
                 <Link
                   href="/user/orders"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>📋</span> รายการสั่งซื้อ
                 </Link>
                 <Link
                   href="/user/search-order"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>🔍</span> ค้นหาคำสั่งซื้อ
                 </Link>
@@ -249,20 +249,20 @@ export default function MyReservationsPage() {
                 {/* 🟢 เมนูที่เลือกอยู่ (Active) เปลี่ยนคลาสให้ตรงกับหน้า Orders */}
                 <Link
                   href="/user/reservations"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-warn-soft text-body font-medium"
                 >
                   <span>📅</span> การจองคิว
                 </Link>
 
                 <Link
                   href="/user/favorites"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>❤️</span> รายการโปรด
                 </Link>
                 <Link
                   href="/user/settings"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 text-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sand text-body"
                 >
                   <span>⚙️</span> ตั้งค่า
                 </Link>
@@ -287,10 +287,10 @@ export default function MyReservationsPage() {
                       setTab(t.value as TabFilter);
                       setStatusFilter("");
                     }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                       tab === t.value
-                        ? "bg-amber-500 text-white shadow"
-                        : "bg-gray-100 text-amber-800 hover:bg-gray-200"
+                        ? "bg-brick text-white shadow"
+                        : "bg-sand text-ink hover:bg-line"
                     }`}
                   >
                     {t.label}
@@ -311,10 +311,10 @@ export default function MyReservationsPage() {
                     <button
                       key={s.val}
                       onClick={() => setStatusFilter(s.val)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                         statusFilter === s.val
-                          ? "bg-amber-500 text-white"
-                          : "bg-gray-100 text-amber-800 hover:bg-gray-200"
+                          ? "bg-brick text-white"
+                          : "bg-sand text-ink hover:bg-line"
                       }`}
                     >
                       {s.label}
@@ -328,19 +328,19 @@ export default function MyReservationsPage() {
             {filtered.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-6xl mb-4">📭</div>
-                <p className="text-gray-500 text-lg font-medium mb-1">
+                <p className="text-muted text-lg font-medium mb-1">
                   {tab === "upcoming"
                     ? "ไม่มีการจองที่จะมาถึง"
                     : tab === "past"
                       ? "ไม่มีประวัติการจอง"
                       : "ยังไม่มีการจอง"}
                 </p>
-                <p className="text-sm text-gray-400 mb-5">
+                <p className="text-sm text-muted mb-5">
                   เริ่มจองโต๊ะแรกของคุณตอนนี้
                 </p>
                 <Link
                   href="/reservation"
-                  className="inline-block px-6 py-3 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-colors"
+                  className="inline-block px-6 py-3 bg-brick text-white font-medium rounded-full hover:bg-brick-hover transition-colors"
                 >
                   ➕ จองโต๊ะใหม่
                 </Link>
@@ -361,14 +361,14 @@ export default function MyReservationsPage() {
                       className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                     >
                       {/* Card Header */}
-                      <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+                      <div className="flex items-center justify-between p-4 bg-sand border-b">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{config.icon}</span>
                           <div>
-                            <p className="font-semibold text-amber-700">
+                            <p className="font-semibold text-body">
                               การจอง #{r.reservationCode}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted">
                               {formatDateThai(r.reservationDate)} |{" "}
                               {r.reservationTime} น.
                             </p>
@@ -376,7 +376,7 @@ export default function MyReservationsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           {isUpcoming && (
-                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-warn-soft text-body">
                               {getDaysLabel(r.reservationDate)}
                             </span>
                           )}
@@ -392,26 +392,26 @@ export default function MyReservationsPage() {
                       <div className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted">
                               👤 {r.customerName} | 📞 {r.customerPhone}
                             </p>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-muted mt-1">
                               👥 จำนวนคน:{" "}
-                              <span className="font-medium text-gray-700">
+                              <span className="font-medium text-body">
                                 {r.partySize} ท่าน
                               </span>
                             </p>
                             {r.note && (
-                              <p className="text-sm text-gray-500 mt-1">
+                              <p className="text-sm text-muted mt-1">
                                 📝 หมายเหตุ: {r.note}
                               </p>
                             )}
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-gray-500 mb-0.5">
+                            <p className="text-sm text-muted mb-0.5">
                               หมายเลขโต๊ะ
                             </p>
-                            <p className="text-2xl font-bold text-gray-800">
+                            <p className="text-2xl font-bold text-ink">
                               {r.tableNo}
                             </p>
                           </div>
@@ -420,12 +420,12 @@ export default function MyReservationsPage() {
                         {/* Actions */}
                         {(r.status === "pending" ||
                           r.status === "confirmed") && (
-                          <div className="flex mt-4 pt-4 border-t border-gray-100">
+                          <div className="flex mt-4 pt-4 border-t border-line">
                             <button
                               onClick={() =>
                                 handleCancel(r.id, r.reservationCode)
                               }
-                              className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                              className="w-full px-4 py-2 bg-danger-soft text-error rounded-lg hover:bg-danger-line transition-colors text-sm font-medium flex items-center justify-center gap-2"
                             >
                               ❌ ยกเลิกการจอง
                             </button>

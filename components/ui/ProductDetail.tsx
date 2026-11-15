@@ -263,17 +263,17 @@ export default function ProductDetail({
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#faf7f2] flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-12 h-12 rounded-full animate-spin"
             style={{
               borderWidth: 3,
               borderStyle: "solid",
-              borderColor: "#f59e0b transparent transparent transparent",
+              borderColor: "#a84a0e transparent transparent transparent",
             }}
           ></div>
-          <p className="text-amber-700 text-sm font-medium">
+          <p className="text-body text-sm font-medium">
             กำลังโหลดข้อมูล...
           </p>
         </div>
@@ -282,18 +282,18 @@ export default function ProductDetail({
 
   if (!product)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-cream    flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">😔</div>
-          <h2 className="text-2xl font-bold text-amber-700 mb-2">
+          <h2 className="text-2xl font-bold text-body mb-2">
             ไม่พบสินค้า
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted mb-6">
             สินค้าที่คุณกำลังมองหาอาจถูกลบหรือไม่มีอยู่
           </p>
           <Link
             href={`/${category}`}
-            className="px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium"
+            className="px-6 py-3 bg-brick text-white rounded-full hover:bg-brick-hover transition-colors font-medium"
           >
             ← กลับหน้า {categoryLabel}
           </Link>
@@ -323,26 +323,26 @@ export default function ProductDetail({
   const maxQuantity = cakeMaxQty;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-cream   ">
       <div className="max-w-6xl mx-auto px-4 pt-6">
-        <nav className="flex items-center gap-2 text-sm text-gray-500">
-          <Link href="/" className="hover:text-amber-600 transition-colors">
+        <nav className="flex items-center gap-2 text-sm text-muted">
+          <Link href="/" className="hover:text-brick transition-colors">
             หน้าหลัก
           </Link>
           <span>/</span>
           <Link
             href={`/${category}`}
-            className="hover:text-amber-600 transition-colors"
+            className="hover:text-brick transition-colors"
           >
             {categoryIcon} {categoryLabel}
           </Link>
           <span>/</span>
-          <span className="text-amber-700 font-medium">{product.name}</span>
+          <span className="text-body font-medium">{product.name}</span>
         </nav>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-[32px] border border-line overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             <div className="relative">
               <img
@@ -352,16 +352,16 @@ export default function ProductDetail({
               />
               {isOutOfStock && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <span className="bg-red-600 text-white px-6 py-3 rounded-xl text-xl font-bold">
+                  <span className="bg-error text-white px-6 py-3 rounded-xl text-xl font-bold">
                     สินค้าหมด
                   </span>
                 </div>
               )}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
-                <span className="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
+                <span className="bg-brick text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
                   {product.type}
                 </span>
-                <span className="bg-white/90 backdrop-blur text-gray-700 px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
+                <span className="bg-white/90 backdrop-blur text-body px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
                   {categoryIcon} {product.category}
                 </span>
               </div>
@@ -369,7 +369,7 @@ export default function ProductDetail({
                 product.stockQuantity > 0 &&
                 product.stockQuantity <= 5 && (
                   <div className="absolute top-4 right-4">
-                    <span className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg animate-pulse">
+                    <span className="bg-error text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg animate-pulse">
                       เหลือ {product.stockQuantity} ชิ้น!
                     </span>
                   </div>
@@ -377,28 +377,28 @@ export default function ProductDetail({
             </div>
 
             <div className="p-8 lg:p-10 flex flex-col">
-              <h1 className="text-2xl lg:text-2xl font-bold text-amber-800 mb-3">
+              <h1 className="font-display text-3xl lg:text-[40px] leading-tight font-bold text-ink mb-3">
                 {product.name}
               </h1>
 
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-3xl font-bold text-amber-600">
+                <span className="text-3xl font-bold text-ink">
                   ฿{formatPrice(pricePerOrder)}
                   {selectedOption?.extraPrice ? (
-                    <span className="text-lg text-green-600 ml-1">
+                    <span className="text-lg text-ok ml-1">
                       (+฿{selectedOption.extraPrice})
                     </span>
                   ) : null}
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${isOutOfStock ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${isOutOfStock ? "bg-danger-soft text-danger" : "bg-success-soft text-success"}`}
                 >
                   {isOutOfStock ? "สินค้าหมด" : "พร้อมขาย"}
                 </span>
                 <button
                   onClick={toggleFavorite}
                   disabled={togglingFav}
-                  className={`ml-auto w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md ${isFavorite ? "bg-red-50 hover:bg-red-100" : "bg-gray-50 hover:bg-gray-100"} disabled:opacity-50`}
+                  className={`ml-auto w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md ${isFavorite ? "bg-danger-soft hover:bg-danger-soft" : "bg-sand hover:bg-sand"} disabled:opacity-50`}
                   title={
                     isFavorite ? "ลบออกจากรายการโปรด" : "เพิ่มเข้ารายการโปรด"
                   }
@@ -408,10 +408,10 @@ export default function ProductDetail({
               </div>
 
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                <h3 className="text-lg font-semibold text-body mb-2">
                   📝 รายละเอียดสินค้า
                 </h3>
-                <p className="text-amber-800 leading-relaxed">
+                <p className="text-ink leading-relaxed">
                   {product.description || "ไม่มีรายละเอียดเพิ่มเติม"}
                 </p>
               </div>
@@ -419,8 +419,8 @@ export default function ProductDetail({
               {/* ✅ ซ่อน Options selector ถ้าเป็น Cake */}
               {hasOptions && !isCake && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                    🎛️ เลือกตัวเลือก <span className="text-red-500">*</span>
+                  <h3 className="text-lg font-semibold text-body mb-3">
+                    🎛️ เลือกตัวเลือก <span className="text-error">*</span>
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {productOptions.map((o) => (
@@ -428,13 +428,13 @@ export default function ProductDetail({
                         key={o.name}
                         type="button"
                         onClick={() => setSelectedOption(o)}
-                        className={`flex flex-col items-center justify-center px-3 py-3 rounded-xl border-2 transition-all ${selectedOption?.name === o.name ? "border-amber-500 bg-amber-50 shadow-md" : "border-gray-200 hover:border-amber-300 hover:bg-amber-50/50"}`}
+                        className={`flex flex-col items-center justify-center px-3 py-3 rounded-xl border-2 transition-all ${selectedOption?.name === o.name ? "border-brick bg-warn-bg" : "border-line hover:border-line-strong hover:bg-warn-bg/50"}`}
                       >
-                        <span className="font-semibold text-amber-700 text-sm">
+                        <span className="font-semibold text-body text-sm">
                           {o.name}
                         </span>
                         <span
-                          className={`text-xs mt-0.5 ${o.extraPrice > 0 ? "text-green-600 font-medium" : "text-gray-400"}`}
+                          className={`text-xs mt-0.5 ${o.extraPrice > 0 ? "text-ok font-medium" : "text-muted"}`}
                         >
                           {o.extraPrice > 0 ? `+฿${o.extraPrice}` : "ราคาเดิม"}
                         </span>
@@ -442,7 +442,7 @@ export default function ProductDetail({
                     ))}
                   </div>
                   {!selectedOption && (
-                    <p className="text-xs text-amber-600 mt-2">
+                    <p className="text-xs text-brick mt-2">
                       ⚠️ กรุณาเลือกตัวเลือกก่อนสั่ง
                     </p>
                   )}
@@ -452,7 +452,7 @@ export default function ProductDetail({
               {/* ✅ เลือกขนาดเค้ก — เฉพาะ category cake */}
               {isCake && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                  <h3 className="text-lg font-semibold text-body mb-3">
                     🎂 เลือกขนาด
                   </h3>
                   <div className="grid grid-cols-3 gap-2">
@@ -473,20 +473,20 @@ export default function ProductDetail({
                           disabled={outOfStock}
                           className={`flex flex-col items-center justify-center px-3 py-3 rounded-xl border-2 transition-all ${
                             cakeSize === size
-                              ? "border-amber-500 bg-amber-50 shadow-md"
+                              ? "border-brick bg-warn-bg"
                               : outOfStock
-                                ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
-                                : "border-gray-200 hover:border-amber-300 hover:bg-amber-50/50"
+                                ? "border-line bg-sand opacity-40 cursor-not-allowed"
+                                : "border-line hover:border-line-strong hover:bg-warn-bg/50"
                           }`}
                         >
-                          <span className="font-semibold text-amber-700 text-sm text-center leading-tight">
+                          <span className="font-semibold text-body text-sm text-center leading-tight">
                             {cfg.label}
                           </span>
-                          <span className="text-xs text-green-600 font-medium mt-0.5">
+                          <span className="text-xs text-ok font-medium mt-0.5">
                             ฿{formatPrice(product.price * cfg.multiplier)}
                           </span>
                           {!fresh && (
-                            <span className="text-[10px] text-gray-400 mt-0.5">
+                            <span className="text-[10px] text-muted mt-0.5">
                               {outOfStock
                                 ? "หมด"
                                 : `สั่งได้ ${maxForSize} ออเดอร์`}
@@ -500,32 +500,32 @@ export default function ProductDetail({
               )}
 
               <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-amber-50 rounded-xl p-4 text-center">
-                  <p className="text-sm text-gray-500 mb-1">หมวดหมู่</p>
-                  <p className="font-semibold text-amber-600 capitalize">
+                <div className="bg-warn-bg rounded-xl p-4 text-center">
+                  <p className="text-sm text-muted mb-1">หมวดหมู่</p>
+                  <p className="font-semibold text-brick capitalize">
                     {categoryIcon} {product.category}
                   </p>
                 </div>
-                <div className="bg-amber-50 rounded-xl p-4 text-center">
-                  <p className="text-sm text-gray-500 mb-1">ประเภท</p>
-                  <p className="font-semibold text-amber-600">{product.type}</p>
+                <div className="bg-warn-bg rounded-xl p-4 text-center">
+                  <p className="text-sm text-muted mb-1">ประเภท</p>
+                  <p className="font-semibold text-brick">{product.type}</p>
                 </div>
-                <div className="bg-amber-50 rounded-xl p-4 text-center">
-                  <p className="text-sm text-gray-500 mb-1">คงเหลือ</p>
+                <div className="bg-warn-bg rounded-xl p-4 text-center">
+                  <p className="text-sm text-muted mb-1">คงเหลือ</p>
                   {fresh ? (
-                    <p className="font-semibold text-teal-600">🍽️ ทำสด</p>
+                    <p className="font-semibold text-ok">🍽️ ทำสด</p>
                   ) : (
                     <p
-                      className={`font-semibold ${product.stockQuantity <= 5 ? "text-red-600" : "text-green-600"}`}
+                      className={`font-semibold ${product.stockQuantity <= 5 ? "text-error" : "text-ok"}`}
                     >
                       {product.stockQuantity} ชิ้น
                     </p>
                   )}
                 </div>
-                <div className="bg-amber-50 rounded-xl p-4 text-center">
-                  <p className="text-sm text-gray-500 mb-1">สถานะ</p>
+                <div className="bg-warn-bg rounded-xl p-4 text-center">
+                  <p className="text-sm text-muted mb-1">สถานะ</p>
                   <p
-                    className={`font-semibold ${isOutOfStock ? "text-red-600" : "text-green-600"}`}
+                    className={`font-semibold ${isOutOfStock ? "text-error" : "text-ok"}`}
                   >
                     {isOutOfStock ? "❌ หมด" : "✅ พร้อมขาย"}
                   </p>
@@ -534,18 +534,18 @@ export default function ProductDetail({
 
               <div className="mt-auto">
                 {error && (
-                  <div className="mb-4 p-3 bg-red-100 text-red-600 rounded-xl text-center text-sm">
+                  <div className="mb-4 p-3 bg-danger-soft text-error rounded-xl text-center text-sm">
                     ⚠️ {error}
                   </div>
                 )}
 
                 {!isOutOfStock && (
                   <div className="flex items-center gap-4 mb-4">
-                    <span className="text-gray-700 font-medium">จำนวน:</span>
-                    <div className="flex items-center border-2 border-amber-300 rounded-xl overflow-hidden">
+                    <span className="text-body font-medium">จำนวน:</span>
+                    <div className="flex items-center border-2 border-line-strong rounded-xl overflow-hidden">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold text-lg transition-colors"
+                        className="px-4 py-2 bg-warn-bg hover:bg-warn-soft text-body font-bold text-lg transition-colors"
                       >
                         −
                       </button>
@@ -561,19 +561,19 @@ export default function ProductDetail({
                               Math.min(maxQuantity, Math.max(1, val)),
                             );
                         }}
-                        className="w-16 py-2 font-bold text-amber-700 text-center focus:outline-none bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-16 py-2 font-bold text-body text-center focus:outline-none bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <button
                         onClick={() =>
                           setQuantity(Math.min(maxQuantity, quantity + 1))
                         }
-                        className="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold text-lg transition-colors"
+                        className="px-4 py-2 bg-warn-bg hover:bg-warn-soft text-body font-bold text-lg transition-colors"
                       >
                         +
                       </button>
                     </div>
                     {/* ✅ ใช้ unit จาก component scope */}
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted">
                       {fresh
                         ? `(สูงสุด ${FRESH_MAX_QTY} ${unit})`
                         : `(สูงสุด ${maxQuantity} ออเดอร์)`}
@@ -590,15 +590,15 @@ export default function ProductDetail({
                     isOutOfStock ||
                     (hasOptions && !isCake && !selectedOption)
                   }
-                  className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
+                  className={`w-full min-h-14 rounded-full font-semibold text-[17px] transition-all duration-200 flex items-center justify-center gap-3 ${
                     added
-                      ? "bg-green-500 text-white shadow-lg"
+                      ? "bg-ok text-white"
                       : blockOnline ||
                           adding ||
                           isOutOfStock ||
                           (hasOptions && !isCake && !selectedOption)
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl"
+                        ? "bg-line text-muted cursor-not-allowed"
+                        : "bg-brick hover:bg-brick-hover text-white"
                   }`}
                 >
                   {blockOnline ? (
@@ -653,7 +653,7 @@ export default function ProductDetail({
 
                 <button
                   onClick={() => router.back()}
-                  className="w-full mt-3 py-3 rounded-xl font-medium text-amber-800 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  className="w-full mt-3 min-h-12 rounded-full font-semibold text-ink border-[1.5px] border-ink hover:bg-ink/5 transition-colors"
                 >
                   ← ย้อนกลับ
                 </button>
